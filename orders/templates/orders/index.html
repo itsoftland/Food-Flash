@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Food Flash">
+    <link rel="apple-touch-icon" href="{% static 'orders/images/logo.png' %}">
+    <title>Food Flash</title>
+    <link rel="manifest" href="{% static 'orders/manifest.json' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'orders/css/styles.css' %}" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="container-wrapper mx-auto">
+            <!-- Header -->
+            <header class="header d-flex justify-content-between align-items-center px-4 py-2">
+                <img src="{% static 'orders/images/logo.png' %}" alt="Company Logo" class="logo" style="height: 50px;">
+                <h2 class="company-name text-white mb-0 fw-semibold">Food Flash</h2>
+            </header>
+
+            <!-- Image Tiles -->
+            <div class="image-tiles">
+                <div class="tiles-container d-flex h-100 align-items-center">
+                    <img src="{% static 'orders/images/image1.jpg' %}" class="tile" alt="Image 1">
+                    <img src="{% static 'orders/images/image2.jpg' %}" class="tile" alt="Image 2">
+                    <img src="{% static 'orders/images/image3.jpg' %}" class="tile" alt="Image 3">
+                    <img src="{% static 'orders/images/image4.jpg' %}" class="tile" alt="Image 4">
+                    <img src="{% static 'orders/images/image5.jpg' %}" class="tile" alt="Image 5">
+                    <img src="{% static 'orders/images/image6.jpg' %}" class="tile" alt="Image 6">
+                    <img src="{% static 'orders/images/image7.jpg' %}" class="tile" alt="Image 7">
+                    <img src="{% static 'orders/images/image8.jpg' %}" class="tile" alt="Image 8">
+                </div>
+            </div>
+
+            <!-- Chat Response -->
+            <div class="chat-response p-1 overflow-auto" id="chat-container">
+                <div class="message-bubble server">Hi, Good Day, Welcome!</div>
+                <div class="message-bubble server">Kindly Enter the Bill Number and Send so that we can Track your Order.</div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-request p-2">
+                <div class="predefined-buttons d-flex justify-content-between pb-4 pt-2">
+                    <button id="menu-button" class="menu-button btn text-white rounded-pill px-4"
+                    data-menu-url="{% static 'orders/files/menu.jpg' %}">Menu</button>
+                    <button class="menu-button btn text-white rounded-pill px-4">Rating</button>
+                    <button class="menu-button btn text-white rounded-pill px-4">Feedback</button>
+                </div>
+                <div class="d-flex">
+                    <input type="text" id="chat-input" class="form-control rounded-pill" placeholder="Enter your message...">
+                    <button id="send-button" class="btn text-white rounded-pill ms-2 px-4">Send</button>
+                </div>
+            </div> 
+
+            <!-- Branding -->
+            <div class="branding d-flex justify-content-center align-items-center">
+                <p class="mb-0 small">Product Name</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <div class="modal fade" id="menuImageModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Our Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="{% static 'orders/files/menu.jpg' %}" alt="Menu" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+   <div class="modal fade" id="permissionModal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <h5 class="mb-4">Please grant permissions to play sound, receive notifications, and enable vibration.</h5>
+                    <button id="grant-permission" class="btn btn-primary px-4 me-2">Grant Permission</button>
+                    <button id="deny-permission" class="btn btn-outline-danger px-4">Deny Permission</button>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+
+
+
+    <div class="modal fade" id="notificationModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <h5 class="mb-4"></h5>
+                    <button id="ok-notification" class="btn btn-primary px-4 me-2">OK</button>
+                    <button id="disable-notifications" class="btn btn-outline-danger px-4">Disable Notifications</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="{% static 'orders/js/scripts.js' %}"></script>
+    {% comment %} <script src="{% static 'templates/orders/service-worker.js' %}"></script> {% endcomment %}
+
+</body>
+</html>

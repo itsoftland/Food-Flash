@@ -1,0 +1,161 @@
+:root {
+    --primary-color: #2A3B47;
+    --secondary-color: #3F72AF;
+    --accent-color: #7EC8E3;
+    --light-bg: #F8F9FA;
+    --dark-text: #2A3B47;
+}
+
+.logo {
+    background: transparent !important;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow: hidden; /* Prevents right-side overflow */
+}
+
+.container {
+    width: 100%; /* Ensures it stretches fully */
+    max-width: 100%; /* Prevents Bootstrap from limiting width */
+    margin: 0; /* Removes any extra margins */
+    padding: 0; /* Removes default padding */
+}
+
+.container-wrapper {
+    /* Use the dynamic vh value and account for any safe-area inset at the bottom */
+    height: calc(var(--vh) * 100 - env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    overflow-y: hidden;
+  }
+  
+
+
+
+.header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-bottom: 3px solid var(--accent-color);
+    height: 9vh;
+}
+
+.image-tiles {
+    height: 18vh;
+    background: var(--light-bg);
+    overflow-x: auto;
+}
+
+.tiles-container {
+    animation: scroll 10s linear infinite;
+    min-width: fit-content;
+}
+
+.tile {
+    width: 200px;
+    height: 150px;
+    border-radius: 10px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    border: 2px solid var(--accent-color);
+}
+
+.chat-request {
+    height: 18vh;
+    background: var(--light-bg);
+    
+}
+.predefined-buttons{
+    overflow-x: scroll;
+}
+.chat-response {
+    height: 48vh;
+    background: white;
+    border-bottom: 2px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 12px 18px;
+    border-radius: 15px;
+    margin: 8px 0;
+    word-wrap: break-word;
+    display: inline-block;
+    clear: both;
+  }
+  
+  .message-row {
+    display: flex;
+    justify-content: space-between;
+    align-items:last baseline;
+  }
+  
+  .message-content {
+    font-size: 1rem;
+    /* etc. */
+  }
+  
+  .message-timestamp {
+    font-size: 0.6rem;
+    opacity: 0.5;
+    white-space: nowrap;
+    margin-left: 8px;
+  }
+  
+
+.message-bubble.server {
+    background: var(--secondary-color);
+    color: white;
+    border-bottom-left-radius: 5px;
+    align-self: flex-start;
+}
+
+.message-bubble.user {
+    background: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 5px;
+    align-self: flex-end;
+}
+
+
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.branding {
+    background: var(--primary-color);
+    color: white;
+    height: 7vh;
+}
+.menu-button {
+    background: var(--secondary-color);
+    transition: all 0.3s ease;
+}
+.menu-button:hover{
+    background-color: #2E5C8E;
+}
+
+.menu-button:focus,
+.menu-button:active {
+    background-color: #1d528b !important;
+    outline: none;
+    box-shadow: none;
+}
+
+
+
+#send-button {
+    background: var(--secondary-color);
+    transition: all 0.3s ease;
+}
+
+.modal-content {
+    border: 2px solid var(--accent-color);
+    border-radius: 15px;
+}
