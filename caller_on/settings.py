@@ -77,12 +77,12 @@ LOGGING = {
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # ALLOWED_HOSTS = ['webtest.softlandindia.co.in','192.168.0.197','192.168.0.33', 'feline-clever-mutually.ngrok-free.app', 'random-id.ngrok-free.app','0.0.0.0','127.0.0.1','localhost']
 ALLOWED_HOSTS = ['*']
 CORS_ALLOW_ALL_ORIGINS = True
-
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -141,13 +141,6 @@ WSGI_APPLICATION = 'caller_on.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # Use MySQL backend which is compatible with MariaDB.
@@ -155,7 +148,7 @@ DATABASES = {
         'USER': 'caller_on',                # The database user you created.
         'PASSWORD': 'sil@2025',          # The password for the user.
         'HOST': 'localhost',                  # Set to empty string for localhost.
-        'PORT': '3306',                       # Default MariaDB port.
+        'PORT': '3308',                       # Default MariaDB port.
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
