@@ -33,51 +33,34 @@ VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY")
 VAPID_CLAIMS = {
     "sub": "mailto:sanju.softland@gmail.com"
 }
-# VAPID_PUBLIC_KEY = "BE_nRyG4teLDX5IIeKaYrz5MUguUp3B0vxuBnCHowgNcXH6lZ3N5W6FAurkJZkOSxamISYtGth4EHA--8RkiIFA"
-# VAPID_PRIVATE_KEY = "VwNg3OAqqItodRkxwO7fkwF1HmmncewXICqA4SbYtDg"
-# VAPID_CLAIMS = {"sub": "mailto:sanju.softland@gmail.com"}
+
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "[{asctime}] {levelname} {name}: {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname}: {message}",
-            "style": "{",
-        },
-    },
     "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
         "file": {
+            "level": "ERROR",
             "class": "logging.FileHandler",
-            "filename": "django_debug.log",
-            "formatter": "verbose",
+            "filename": os.path.join(BASE_DIR, "error.log"),
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
+            "handlers": ["file"],
+            "level": "ERROR",
             "propagate": True,
-        },
-        # You can add your own logger as well, for example:
-        "vendors": {
-            "handlers": ["console", "file"],
-            "level": "DEBUG",
-            "propagate": False,
         },
     },
 }
 
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # ALLOWED_HOSTS = ['webtest.softlandindia.co.in','192.168.0.197','192.168.0.33', 'feline-clever-mutually.ngrok-free.app', 'random-id.ngrok-free.app','0.0.0.0','127.0.0.1','localhost']
 ALLOWED_HOSTS = ['*']
@@ -87,16 +70,19 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.humanize',
+    'rest_framework',
+    'django_extensions',
+    'orders',
+    'vendors',
+    'adminlte3',
+    'adminlte3_theme',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'django_extensions',
-    'orders',
-    'vendors'
 ]
 
 REST_FRAMEWORK = {
@@ -148,7 +134,7 @@ DATABASES = {
         'USER': 'caller_on',                # The database user you created.
         'PASSWORD': 'sil@2025',          # The password for the user.
         'HOST': 'localhost',                  # Set to empty string for localhost.
-        'PORT': '3308',                       # Default MariaDB port.
+        'PORT': '3306',                       # Default MariaDB port.
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
@@ -191,8 +177,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

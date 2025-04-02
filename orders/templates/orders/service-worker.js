@@ -32,7 +32,7 @@ self.addEventListener("push", (event) => {
   const title = data.title || "Order Update";
   const options = {
     body: data.body || "Your order is ready!",
-    icon: "https://feline-clever-mutually.ngrok-free.app/static/orders/images/logo.png",
+    icon: "https://webtest.softlandindia.co.in/static/orders/images/logo.png",
     data: data, // Full payload attached (if needed for future use)
   };
 
@@ -85,7 +85,7 @@ self.addEventListener("notificationclick", (event) => {
         });
       } else {
         // If no client is open, open a new window/tab to your main URL
-        await clients.openWindow("https://feline-clever-mutually.ngrok-free.app");
+        await clients.openWindow("https://webtest.softlandindia.co.in");
       }
     })()
   );

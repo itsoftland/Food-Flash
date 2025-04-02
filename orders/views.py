@@ -16,6 +16,8 @@ def home(request):
 @permission_classes([AllowAny])
 def check_status(request):
     token_no = request.GET.get('token_no')
+    vendor_id = request.GET.get('vendor_id')
+    print(vendor_id)
     
     if not token_no:
         return Response({'error': 'Token number is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -36,7 +38,7 @@ def check_status(request):
         try:
             # If order not found, create a new one with status 'preparing'
             # Here, we assume a default vendor (e.g., vendor with id=1)
-            vendor = Vendor.objects.get(id=1)
+            vendor = Vendor.objects.get(vendor_id=vendor_id)
             new_order_data = {
                 'token_no': token_no,
                 'vendor': vendor.id,

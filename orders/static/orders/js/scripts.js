@@ -5,10 +5,61 @@ document.addEventListener('DOMContentLoaded', async function() {
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
     const menuButton = document.getElementById('menu-button');
+    const ratingButton = document.getElementById('rating-button');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const vendorFromQR = urlParams.get('vendor_id');
+    console.log(vendorFromQR);
+    function getStoredVendors() {
+        // Retrieve the stored vendors from localStorage
+        const storedVendors = localStorage.getItem('selectedVendors');
+        return storedVendors ? JSON.parse(storedVendors) : [];
+    }
+
+    function setCurrentVendor(vendor) {
+        // Retrieve current vendors
+        let vendors = getStoredVendors();
+
+        // Add new vendor only if not already in the list
+        if (!vendors.includes(vendor)) {
+            vendors.push(vendor);
+            localStorage.setItem('selectedVendors', JSON.stringify(vendors));
+        }
+
+        // Update the dropdown UI
+        // updateVendorDropdown(vendors);
+    }
+    if (vendorFromQR) {
+        // Set the current vendor in your app state
+        setCurrentVendor(vendorFromQR);
+        // Optionally, store in localStorage
+        localStorage.setItem('selectedVendors', JSON.stringify([...currentVendorList, vendorFromQR]));
+
+        // Remove the vendor_id parameter from the URL to keep it clean
+        const newUrl = window.location.origin + window.location.pathname;
+        history.replaceState(null, "", newUrl);
+    }
+
+    if (ratingButton) {
+        ratingButton.addEventListener('click', function () {
+            console.log("Rating button clicked");
+
+            // Define the Google Place ID for Softland India Ltd
+            const placeId = "ChIJQ94r10S-BTsRDtOmYzIplto"; // Softland India Ltd
+
+            // Construct the Google Review URL
+            const googleReviewUrl = `https://search.google.com/local/writereview?placeid=${placeId}`;
+
+            // Open the review page in a new browser tab
+            window.open(googleReviewUrl, "_blank");
+        });
+    } else {
+        console.error("Rating button not found.");
+    }
 
     let notificationsEnabled = true;
     const isAndroid = /Android/i.test(navigator.userAgent);
-    console.log("Android device detected:", isAndroid);
+    console.log("Android device:", isAndroid);
     if (isAndroid) {
         // Add a bit of extra bottom padding to .branding or .container-wrapper
         document.querySelector('.container-wrapper')
@@ -50,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 3) If Brave is detected, show instructions
     if (braveDetected) {
-        alert("It looks like you’re using Brave. Please ensure:\n\n1. Brave Settings > Privacy and Security > Site and Shields Settings > Notifications > 'Sites can ask to send notifications' is ON.\n2. Enable 'Use Google Services for Push Messaging' if shown.\n\nOtherwise, push notifications may fail.");
+        alert("It looks like you're using Brave. Please ensure:\n\n1. Brave Settings > Privacy and Security > Site and Shields Settings > Notifications > 'Sites can ask to send notifications' is ON.\n2. Enable 'Use Google Services for Push Messaging' if shown.\n\nOtherwise, push notifications may fail.");
     }
     
     // Show permission modal
@@ -68,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         permissionModal.hide();
         alert('Permissions denied. Service may not function properly.');
     });
-
+ 
     // Additional function to request other permissions or do setup
     function requestPermissions() {
         Notification.requestPermission().then(permission => {
@@ -342,13 +393,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (message !== '') {
             appendMessage(message, 'user');
             chatInput.value = '';
-            fetchOrderStatusOnce(message);
+            fetchOrderStatusOnce(message,vendorFromQR);
         }
     });
 
     // Single check to confirm the order status
-    function fetchOrderStatusOnce(token) {
-        fetch(`/check-status/?token_no=${token}`)
+    function fetchOrderStatusOnce(token,vendorFromQR) {
+        fetch(`/check-status/?token_no=${token}&vendor_id=${vendorFromQR}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -415,5 +466,5 @@ document.addEventListener('DOMContentLoaded', async function() {
     
         console.log("Chat window is now open or refreshed.", data);
     }
-    
+   
 });
