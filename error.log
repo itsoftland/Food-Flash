@@ -887,3 +887,30 @@ Traceback (most recent call last):
   File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 130, in reraise
     raise new from exc
 django.template.exceptions.TemplateDoesNotExist: base.html
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/

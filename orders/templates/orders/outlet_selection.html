@@ -1,8 +1,15 @@
 {% extends "orders/base.html" %}
 
 {% block content %}
+{% comment %} <div class="container">
+    <h2 class="text-center mt-4">Select Outlets</h2>
+    <div class="row" id="outlet-list">
+        <!-- Tiles will be added dynamically here -->
+    </div>
+</div> {% endcomment %}
 <div class="container">
-    <h2 class="text-center mt-4">Welcome to Food Flash</h2>
-    <p class="text-center">Outlet Selection Page</p>
+    <h2 class="title">Select Outlets</h2>
+    <div id="outlet-list" class="outlet-grid"></div>
+    <button id="continue-btn" class="continue-btn">Continue</button>
 </div>
 {% endblock %}

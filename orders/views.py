@@ -60,5 +60,24 @@ def check_status(request):
     
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+from django.conf import settings
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_outlets(request):
+    location_id = request.GET.get('location_id', None)  # Fetch location ID from query params
+    
+    if not location_id:
+        return Response({"error": "Location ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+    outlets = Vendor.objects.filter(location_id=location_id)
+    
+    data = [
+        {
+            "id": outlet.id,
+            "name": outlet.name,
+            "logo": f"{settings.MEDIA_URL}{outlet.logo}" if outlet.logo else None
+        }
+        for outlet in outlets
+    ]
 
-
+    return Response(data, status=status.HTTP_200_OK)
