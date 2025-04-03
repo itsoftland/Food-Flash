@@ -779,3 +779,111 @@ Traceback (most recent call last):
     raise TemplateSyntaxError(
 django.template.exceptions.TemplateSyntaxError: length requires 1 arguments, 2 provided
 "GET /admin/vendors/device/add/ HTTP/1.1" 500 801520
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 1008, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 969, in render_annotated
+    return self.render(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 163, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 109, in render
+    reraise(exc, self.backend)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html
+Internal Server Error: /outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 1008, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 969, in render_annotated
+    return self.render(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 163, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 109, in render
+    reraise(exc, self.backend)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html

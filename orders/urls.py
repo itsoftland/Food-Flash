@@ -6,4 +6,5 @@ urlpatterns = [
     
     # Fetch order status (GET request)
     path('check-status/', views.check_status, name='check_status'),
+    path('outlets/', views.outlet_selection, name="outlet_selection"),
 ]

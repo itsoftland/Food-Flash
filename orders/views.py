@@ -7,6 +7,9 @@ from vendors.serializers import OrdersSerializer
 from vendors.models import Order,Vendor
 from django.core.cache import cache
 
+def outlet_selection(request):
+    return render(request, "orders/outlet_selection.html")
+
 def home(request):
     cache.clear()
     return render(request, 'orders/index.html')

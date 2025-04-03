@@ -1,15 +1,30 @@
 from django.db import models
 
-class Vendor(models.Model):
-    name = models.CharField(max_length=255)
-    location = models.CharField(max_length=255, blank=True, null=True)
-    place_id = models.CharField(max_length=255, blank=True, null=True)
-    vendor_id = models.IntegerField(unique=True)
+class AdminOutlet(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20, unique=True)
+    address = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.vendor_id)
+        return self.name
+
+class Vendor(models.Model):
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE, related_name='vendors')
+    name = models.CharField(max_length=255)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    place_id = models.CharField(max_length=255, blank=True, null=True)
+    vendor_id = models.IntegerField(unique=True)
+    location_id = models.IntegerField()  # Unique ID for each location
+    logo = models.ImageField(upload_to='vendor_logos/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    
+    def __str__(self):
+        return f"{self.name} - {self.admin_outlet.name}"
 
 class Device(models.Model):
     serial_no = models.CharField(max_length=255)
