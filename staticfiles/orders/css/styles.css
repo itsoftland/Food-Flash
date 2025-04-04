@@ -41,14 +41,21 @@ body {
 }
 
 .vendor-logo {
-    width: 50px;              /* You can adjust size as needed */
+    width: 50px;              
     height: 50px;
-    border-radius: 50%;       /* This makes it a circle */
-    object-fit: cover;        /* Makes the image fill the box without stretching */
-    border: 2px solid #ccc;   /* Optional: adds a subtle border */
-    margin-right: 10px;       /* Space between logos if multiple */
+    border-radius: 50%;      
+    object-fit: cover;       
+    border: 2px solid #ccc;   
+    margin-right: 10px;  
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;    
 }
-
+#vendor-logo-bar {
+    padding: 6px 4px; 
+    flex-wrap: wrap;
+    background-color: #fff;
+  }
+  
 .image-tiles {
     height: 18vh;
     background: var(--light-bg);
