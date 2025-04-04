@@ -82,3 +82,44 @@ def get_outlets(request):
     ]
 
     return Response(data, status=status.HTTP_200_OK)
+
+from .serializers import VendorLogoSerializer  # We’ll define this below
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_vendor_logos(request):
+    try:
+        vendor_ids = request.data.get("vendor_ids")
+        print(f"Received vendor_ids: {vendor_ids} | Type: {type(vendor_ids)}")
+        
+        # Validate input
+        if vendor_ids is None or not isinstance(vendor_ids, list):
+            return Response(
+                {"error": "vendor_ids must be provided as a list."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Ensure each ID is an integer
+        if not all(isinstance(v_id, int) for v_id in vendor_ids):
+            return Response(
+                {"error": "All vendor_ids must be integers."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Filter using vendor_id, not id
+        vendors = Vendor.objects.filter(vendor_id__in=vendor_ids)
+
+        if not vendors.exists():
+            return Response(
+                {"error": "No matching vendors found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serialized = VendorLogoSerializer(vendors, many=True, context={'request': request})
+        return Response(serialized.data, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        return Response(
+            {"error": "An unexpected error occurred.", "details": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

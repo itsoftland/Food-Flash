@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const menuButton = document.getElementById('menu-button');
     const ratingButton = document.getElementById('rating-button');
 
+    
+
     const urlParams = new URLSearchParams(window.location.search);
     const vendorFromQR = urlParams.get('vendor_id');
 
@@ -56,6 +58,61 @@ document.addEventListener('DOMContentLoaded', async function() {
     const activeVendor = getActiveVendor();
     console.log("Active Vendor ID:", activeVendor);
 
+    const vendorIdsString = localStorage.getItem("selectedVendors");
+    if (vendorIdsString) {
+        console.log(vendorIdsString,"vendoridsstring")
+        const vendorIdsArray = JSON.parse(vendorIdsString);
+
+    // Make sure to filter only integers
+    const vendorIds = vendorIdsArray
+        .map(id => parseInt(id))
+        .filter(id => Number.isInteger(id) && !isNaN(id));
+
+    console.log("Filtered vendorIds:", vendorIds);
+        fetch("/api/get_vendor_logos/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),  // ensure CSRF token is handled
+        },
+        body: JSON.stringify({ vendor_ids: vendorIds }),
+        })
+        .then(response => response.json())
+        .then(data => {
+        const logoContainer = document.getElementById("vendor-logo-bar");
+        if (logoContainer) {
+            logoContainer.innerHTML = ""; // Clear any existing logos
+            console.log(data);
+            data.forEach(vendor => {
+            const logo = document.createElement("img");
+            logo.src = vendor.logo_url;
+            logo.alt = vendor.name;
+            logo.classList.add("vendor-logo"); // for future CSS styling
+            logo.dataset.vendorId = vendor.vendor_id;
+            
+            // Add event listener for outlet selection (used later)
+            logo.addEventListener("click", () => {
+                console.log('vendor',vendor)
+                handleOutletSelection(vendor.vendor_id);
+            });
+
+            logoContainer.appendChild(logo);
+            });
+        }
+        })
+        .catch(error => {
+        console.error("Error fetching vendor logos:", error);
+        });
+    }
+    function getCSRFToken() {
+        const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+        return cookie ? cookie.split('=')[1] : '';
+      }
+      
+    function handleOutletSelection(vendorId) {
+        // Placeholder for next step
+        console.log("Selected Vendor ID:", vendorId);
+    }
 
     if (ratingButton) {
         ratingButton.addEventListener('click', function () {

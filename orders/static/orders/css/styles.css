@@ -40,6 +40,15 @@ body {
     height: 9vh;
 }
 
+.vendor-logo {
+    width: 50px;              /* You can adjust size as needed */
+    height: 50px;
+    border-radius: 50%;       /* This makes it a circle */
+    object-fit: cover;        /* Makes the image fill the box without stretching */
+    border: 2px solid #ccc;   /* Optional: adds a subtle border */
+    margin-right: 10px;       /* Space between logos if multiple */
+}
+
 .image-tiles {
     height: 18vh;
     background: var(--light-bg);
