@@ -9,36 +9,53 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const vendorFromQR = urlParams.get('vendor_id');
-    console.log(vendorFromQR);
+
     function getStoredVendors() {
-        // Retrieve the stored vendors from localStorage
         const storedVendors = localStorage.getItem('selectedVendors');
         return storedVendors ? JSON.parse(storedVendors) : [];
     }
 
-    function setCurrentVendor(vendor) {
-        // Retrieve current vendors
-        let vendors = getStoredVendors();
+    function setCurrentVendors(vendorInput) {
+    let vendors = getStoredVendors();
 
-        // Add new vendor only if not already in the list
-        if (!vendors.includes(vendor)) {
-            vendors.push(vendor);
-            localStorage.setItem('selectedVendors', JSON.stringify(vendors));
-        }
+    // Convert vendorInput to an array if it's a comma-separated string
+    let newVendors = [];
 
-        // Update the dropdown UI
-        // updateVendorDropdown(vendors);
+    if (typeof vendorInput === 'string') {
+        newVendors = vendorInput.split(',').map(v => parseInt(v.trim(), 10));
+    } else if (Array.isArray(vendorInput)) {
+        newVendors = vendorInput.map(v => parseInt(v, 10));
     }
-    if (vendorFromQR) {
-        // Set the current vendor in your app state
-        setCurrentVendor(vendorFromQR);
-        // Optionally, store in localStorage
-        localStorage.setItem('selectedVendors', JSON.stringify([...currentVendorList, vendorFromQR]));
 
-        // Remove the vendor_id parameter from the URL to keep it clean
+    // Merge and remove duplicates
+    const updatedList = Array.from(new Set([...vendors, ...newVendors]));
+    
+    // Store updated vendors list
+    localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
+
+    // Store the last added vendor ID separately
+    if (newVendors.length > 0) {
+        localStorage.setItem('activeVendor', newVendors[newVendors.length - 1]);
+    }
+    }
+
+    // Retrieve the last active vendor ID
+    function getActiveVendor() {
+        return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
+    }
+
+    if (vendorFromQR) {
+        setCurrentVendors(vendorFromQR);
+
+        // Optional: Clean the URL
         const newUrl = window.location.origin + window.location.pathname;
         history.replaceState(null, "", newUrl);
     }
+
+    // Example usage: Get the last active vendor ID
+    const activeVendor = getActiveVendor();
+    console.log("Active Vendor ID:", activeVendor);
+
 
     if (ratingButton) {
         ratingButton.addEventListener('click', function () {

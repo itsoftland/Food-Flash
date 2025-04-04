@@ -90,6 +90,6 @@ document.getElementById("continue-btn").addEventListener("click", function () {
     // Redirect with vendor IDs (can modify as per your logic)
     const vendorIds = selectedData.map(outlet => outlet.vendor_id).join(",");
     console.log("vendorids",vendorIds)
-    window.location.href = `/?vendors=${vendorIds}`;
+    window.location.href = `/?vendor_id=${vendorIds}`;
 });
 
