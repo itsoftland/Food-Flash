@@ -75,7 +75,8 @@ def get_outlets(request):
         {
             "id": outlet.id,
             "name": outlet.name,
-            "logo": f"{settings.MEDIA_URL}{outlet.logo}" if outlet.logo else None
+            "logo": f"{settings.MEDIA_URL}{outlet.logo}" if outlet.logo else None,
+            "vendor_id":outlet.vendor_id
         }
         for outlet in outlets
     ]

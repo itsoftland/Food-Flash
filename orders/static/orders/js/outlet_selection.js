@@ -47,7 +47,11 @@ document.addEventListener("DOMContentLoaded", function () {
             data.forEach(outlet => {
                 const tile = document.createElement("div");
                 tile.className = "outlet-tile";
-                
+                // Add attributes for later access
+                tile.dataset.vendorId = outlet.vendor_id;
+                tile.dataset.name = outlet.name;
+                tile.dataset.location = outlet.location || '';
+            
                 tile.innerHTML = `
                     <img src="${outlet.logo || '/static/default-logo.png'}" alt="${outlet.name}">
                     <p class="outlet-name">${outlet.name}</p>
@@ -57,9 +61,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 tile.addEventListener("click", function () {
                     tile.classList.toggle("selected");
                 });
-
+            
                 outletList.appendChild(tile);
             });
+            
         })
         .catch(error => console.error("Error fetching outlets:", error));
 });
@@ -67,11 +72,24 @@ document.addEventListener("DOMContentLoaded", function () {
 // Continue Button Click Event
 document.getElementById("continue-btn").addEventListener("click", function () {
     const selectedOutlets = document.querySelectorAll(".outlet-tile.selected");
+
     if (selectedOutlets.length === 0) {
         alert("Please select at least one outlet.");
         return;
     }
 
-    const selectedData = [...selectedOutlets].map(tile => tile.querySelector(".outlet-name").textContent);
-    console.log("Selected Outlets:", selectedData);
+    // Extract all necessary data
+    const selectedData = [...selectedOutlets].map(tile => ({
+        vendor_id: tile.dataset.vendorId,
+        name: tile.dataset.name,
+        location: tile.dataset.location
+    }));
+
+    console.log("Selected Outlet Data:", selectedData);
+
+    // Redirect with vendor IDs (can modify as per your logic)
+    const vendorIds = selectedData.map(outlet => outlet.vendor_id).join(",");
+    console.log("vendorids",vendorIds)
+    window.location.href = `/?vendors=${vendorIds}`;
 });
+
