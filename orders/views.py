@@ -31,6 +31,7 @@ def check_status(request):
         print("new vendor name",order.vendor.name)
         data = {
             'vendor_name': order.vendor.name,
+            'vendor': order.vendor.id,
             'token_no': order.token_no,
             'status': order.status,
             'counter_no':order.counter_no,
@@ -126,3 +127,24 @@ def get_vendor_logos(request):
             {"error": "An unexpected error occurred.", "details": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+        
+from .serializers import VendorAdsSerializer
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_vendor_ads(request):
+    try:
+        vendor_ids = request.data.get("vendor_ids")
+
+        if not vendor_ids or not isinstance(vendor_ids, list):
+            return Response({"error": "vendor_ids must be provided as a list."}, status=400)
+
+        vendors = Vendor.objects.filter(vendor_id__in=vendor_ids)
+
+        # ✅ Use serializer to convert ad paths to full URLs
+        serializer = VendorAdsSerializer(vendors, many=True, context={'request': request})
+        return Response(serializer.data, status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+

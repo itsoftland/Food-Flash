@@ -15,3 +15,26 @@ class VendorLogoSerializer(serializers.ModelSerializer):
             data['logo_url'] = ''
         data.pop('logo')  # Optional: remove raw logo field
         return data
+
+class VendorAdsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vendor
+        fields = ['vendor_id', 'ads', 'name']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+
+        # Process JSON string of ads and convert to full URLs
+        ad_paths = instance.get_ads_list()
+        full_ad_urls = []
+
+        if request:
+            for path in ad_paths:
+                if not path.startswith("http"):
+                    full_ad_urls.append(request.build_absolute_uri(f"/media/{path}"))
+                else:
+                    full_ad_urls.append(path)
+        
+        data['ads'] = full_ad_urls
+        return data

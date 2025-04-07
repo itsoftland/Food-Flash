@@ -134,25 +134,33 @@ def update_order(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from django.shortcuts import get_object_or_404
-import json
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def save_subscription(request):
-    data = json.loads(request.body)
+    data = request.data
     endpoint = data.get("endpoint")
     keys = data.get("keys", {})
     browser_id = data.get("browser_id")
     token_number = data.get("token_number")
+    vendor_id = data.get("vendor")  
 
-    if not endpoint or not browser_id or not token_number:
+    if not endpoint or not browser_id or not token_number or not vendor_id:
         return Response({"error": "Invalid subscription data"}, status=400)
 
-    # Get or create subscription by browser_id
-    subscription, created = PushSubscription.objects.get_or_create(
+    try:
+        vendor = Vendor.objects.get(id=vendor_id)
+    except Vendor.DoesNotExist:
+        return Response({"error": "Vendor not found."}, status=404)
+
+    # Fetch latest order with matching token_no and vendor
+    order = Order.objects.filter(token_no=token_number, vendor=vendor).order_by('-created_at').first()
+
+    if not order:
+        return Response({"error": "Order not found."}, status=404)
+
+    # Get or create the subscription
+    subscription, _ = PushSubscription.objects.get_or_create(
         browser_id=browser_id,
         defaults={
             "endpoint": endpoint,
@@ -161,17 +169,16 @@ def save_subscription(request):
         },
     )
 
-    # Update keys in case they changed
+    # Update subscription fields (if changed)
     subscription.endpoint = endpoint
     subscription.p256dh = keys.get("p256dh", "")
     subscription.auth = keys.get("auth", "")
     subscription.save()
 
-    # Link the subscription to the token
-    order = get_object_or_404(Order, token_no=token_number)
-    subscription.tokens.add(order)  # Add token to subscription
+    # Link the subscription to the order
+    subscription.tokens.add(order)
 
-    return Response({"message": "Subscription updated successfully"})
+    return Response({"message": "Subscription updated successfully."})
 
 # In orders/views.py
 

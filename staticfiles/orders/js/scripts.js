@@ -1,3 +1,4 @@
+import { AdSliderService } from './services/adSliderService.js';
 document.addEventListener('DOMContentLoaded', async function() {
     const permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
@@ -57,23 +58,80 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Example usage: Get the last active vendor ID
    
 
+    // function getCSRFToken() {
+    //     const meta = document.querySelector('meta[name="csrf-token"]');
+    //     return meta ? meta.getAttribute("content") : "";
+    // }
+    console.log(getCSRFToken());
     const vendorIdsString = localStorage.getItem("selectedVendors");
     if (vendorIdsString) {
         console.log(vendorIdsString,"vendoridsstring")
         const vendorIdsArray = JSON.parse(vendorIdsString);
 
-    // Make sure to filter only integers
-    const vendorIds = vendorIdsArray
-        .map(id => parseInt(id))
-        .filter(id => Number.isInteger(id) && !isNaN(id));
+        // Make sure to filter only integers
+        const vendorIds = vendorIdsArray
+            .map(id => parseInt(id))
+            .filter(id => Number.isInteger(id) && !isNaN(id));
 
-    console.log("Filtered vendorIds:", vendorIds);
+        console.log("Filtered vendorIds:", vendorIds);
+        console.log(getCSRFToken());
+        // fetch("/api/get_vendor_ads/", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         "X-CSRFToken": getCSRFToken(),  // Make sure this returns a valid token
+        //     },
+        //     credentials: "same-origin",  // IMPORTANT: ensures cookies are sent
+        //     body: JSON.stringify({ vendor_ids: vendorIds }),
+        // })
+        // .then(response => {
+        //     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        //     return response.json();
+        // })
+        // .then(data => {
+        //     console.log("Received ads:", data);
+            
+        //     const adContainer = document.getElementById("ad-slider");
+        //     if (adContainer) {
+        //         adContainer.innerHTML = ""; // Clear existing ads
+        
+        //         const allAds = data.flatMap(vendor => vendor.ads);
+        
+        //         allAds.forEach(adUrl => {
+        //             const img = document.createElement("img");
+        //             img.src = adUrl;
+        //             img.alt = "Advertisement";
+        //             img.classList.add("ad-slide");
+        //             adContainer.appendChild(img);
+        //         });
+        
+        //         // Optionally initialize slider here
+        //     }
+        // })
+        // .catch(error => {
+        //     console.error("Error fetching ads:", error);
+        // });
+        
+
+        // Assuming vendorIds is already available
+        (async () => {
+            const adsData = await AdSliderService.fetchAds(vendorIds);
+            const vendorAdsArray = adsData.map(vendor => vendor.ads);
+            const interleavedAds = AdSliderService.interleaveAds(vendorAdsArray);
+
+            AdSliderService.renderAds(interleavedAds);
+            AdSliderService.initModalListeners();
+        })();
+
+       
+
         fetch("/api/get_vendor_logos/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCSRFToken(),  // ensure CSRF token is handled
         },
+        credentials: "same-origin",
         body: JSON.stringify({ vendor_ids: vendorIds }),
         })
         .then(response => response.json())
@@ -102,12 +160,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         .catch(error => {
         console.error("Error fetching vendor logos:", error);
         });
+        
     }
-    function getCSRFToken() {
-        const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
-        return cookie ? cookie.split('=')[1] : '';
-      }
-      
+
     function handleOutletSelection(vendorId) {
         // Placeholder for next step
         localStorage.setItem('activeVendor', vendorId);
@@ -267,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Subscribe to push notifications (called after user enters a token)
-    async function subscribeToPushNotifications(token) {
+    async function subscribeToPushNotifications(token,vendor_id) {
         try {
             if (!token) {
                 console.error("Token not provided. Cannot subscribe.");
@@ -328,15 +383,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const sub = subscription.toJSON();
 
                 const payload = {
-                    endpoint: sub.endpoint,       // e.g., "https://fcm.googleapis.com/fcm/send/..."
-                    keys: sub.keys,               // Contains "p256dh" and "auth"
-                    browser_id: getBrowserId(),   // Your generated browser ID
-                    token_number: token           // The token provided by the user
+                    endpoint: sub.endpoint,       
+                    keys: sub.keys,               
+                    browser_id: getBrowserId(),   
+                    token_number: token,
+                    vendor:vendor_id
                 };
                                 
                 const response = await fetch('/vendors/api/save-subscription/', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' ,
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    credentials: "same-origin",
                     body: JSON.stringify(payload)
                 });
                 
@@ -507,7 +566,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
 
                 // Finally, subscribe for push notifications with the token
-                subscribeToPushNotifications(token);
+                subscribeToPushNotifications(token,data.vendor);
             })
             .catch(error => {
                 console.error("Error fetching order status:", error);

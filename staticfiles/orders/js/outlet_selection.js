@@ -88,7 +88,7 @@ document.getElementById("continue-btn").addEventListener("click", function () {
     const selectedData = [...selectedOutlets].map(tile => ({
         vendor_id: tile.dataset.vendorId,
         name: tile.dataset.name,
-        location: tile.dataset.location
+        location: tile.dataset.location, 
     }));
 
     console.log("Selected Outlet Data:", selectedData);

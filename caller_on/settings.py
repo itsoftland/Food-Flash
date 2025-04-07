@@ -66,6 +66,9 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_COOKIE_SECURE = True  # If you're on HTTPS
+SESSION_COOKIE_SECURE = True
+
 
 # Application definition
 

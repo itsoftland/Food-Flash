@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Food Flash">
+    <link rel="apple-touch-icon" href="{% static 'orders/images/logo.png' %}">
+    <title>Food Flash</title>
+    <link rel="manifest" href="{% static 'orders/json/manifest.json' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'orders/css/styles.css' %}" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="bg-white text-primary-emphasis px-1">
+        <img src="{% static 'orders/images/food-flash-logo.png' %}" alt="Logo" class="header-logo">
+        <h1 class="header-title">Food Flash</h1>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-dark text-white px-1 ">
+        <p class="footer-title" >&copy; 2025 Softland India Ltd</p>
+    </footer>
+    <script src="{% static 'orders/js/utils.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script type="module" src="{% static 'orders/js/scripts.js' %}"></script>
+    
+</body>
+</html>
