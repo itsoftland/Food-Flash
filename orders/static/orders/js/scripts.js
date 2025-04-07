@@ -55,8 +55,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Example usage: Get the last active vendor ID
-    const activeVendor = getActiveVendor();
-    console.log("Active Vendor ID:", activeVendor);
+   
 
     const vendorIdsString = localStorage.getItem("selectedVendors");
     if (vendorIdsString) {
@@ -111,9 +110,11 @@ document.addEventListener('DOMContentLoaded', async function() {
       
     function handleOutletSelection(vendorId) {
         // Placeholder for next step
+        localStorage.setItem('activeVendor', vendorId);
         console.log("Selected Vendor ID:", vendorId);
+        const activeVendor = getActiveVendor();
+        console.log("Active Vendor ID:", activeVendor);
     }
-
     if (ratingButton) {
         ratingButton.addEventListener('click', function () {
             console.log("Rating button clicked");
@@ -467,13 +468,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (message !== '') {
             appendMessage(message, 'user');
             chatInput.value = '';
-            fetchOrderStatusOnce(message,vendorFromQR);
+            fetchOrderStatusOnce(message);
         }
     });
 
     // Single check to confirm the order status
-    function fetchOrderStatusOnce(token,vendorFromQR) {
-        fetch(`/check-status/?token_no=${token}&vendor_id=${vendorFromQR}`)
+    function fetchOrderStatusOnce(token) {
+        const activeVendor = getActiveVendor();
+        console.log("Active Vendor ID in order update:", activeVendor);
+        fetch(`/check-status/?token_no=${token}&vendor_id=${activeVendor}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -482,6 +485,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             })
             .then(data => {
                 const messageHTML = `
+                    <strong>Outlet Name:</strong> ${data.vendor_name || "Unknown"}<br>
                     <strong>Order Status:</strong> ${data.status || "Unknown"}<br>
                     <strong>Counter No:</strong> ${data.counter_no || "N/A"}<br>
                     <strong>Token No:</strong> ${token}

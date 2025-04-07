@@ -32,7 +32,13 @@
 // }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const locationId = 2001; // Change dynamically as needed
+    const urlParams = new URLSearchParams(window.location.search);
+    const locationId = urlParams.get("location_id");
+
+    if (!locationId) {
+        console.error("No location_id found in URL");
+        return;
+    }
     fetch(`/api/outlets/?location_id=${locationId}`)
         .then(response => response.json())
         .then(data => {
@@ -90,6 +96,6 @@ document.getElementById("continue-btn").addEventListener("click", function () {
     // Redirect with vendor IDs (can modify as per your logic)
     const vendorIds = selectedData.map(outlet => outlet.vendor_id).join(",");
     console.log("vendorids",vendorIds)
-    window.location.href = `/?vendor_id=${vendorIds}`;
+    window.location.href = `/home/?vendor_id=${vendorIds}`;
 });
 

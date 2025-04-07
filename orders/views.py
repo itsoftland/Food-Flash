@@ -27,9 +27,10 @@ def check_status(request):
     
     try:
         # Try to fetch the existing order by token_no
-        order = Order.objects.get(token_no=token_no)
+        order = Order.objects.get(token_no=token_no,vendor__vendor_id=int(vendor_id))
+        print("new vendor name",order.vendor.name)
         data = {
-            'vendor': order.vendor.name,
+            'vendor_name': order.vendor.name,
             'token_no': order.token_no,
             'status': order.status,
             'counter_no':order.counter_no,
@@ -41,8 +42,10 @@ def check_status(request):
         try:
             # If order not found, create a new one with status 'preparing'
             # Here, we assume a default vendor (e.g., vendor with id=1)
-            vendor = Vendor.objects.get(vendor_id=vendor_id)
+            vendor = Vendor.objects.get(vendor_id=int(vendor_id))
+            print("vendor name",vendor.name)
             new_order_data = {
+                'vendor_name':vendor.name,
                 'token_no': token_no,
                 'vendor': vendor.id,
                 'status': 'preparing',
