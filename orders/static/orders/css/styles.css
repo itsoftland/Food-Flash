@@ -6,38 +6,50 @@
     --dark-text: #2A3B47;
 }
 
-.logo {
-    background: transparent !important;
-}
-
 body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    overflow: hidden; /* Prevents right-side overflow */
+    padding-top: 55px;
+    overflow: hidden;
 }
 
 .container {
-    width: 100%; /* Ensures it stretches fully */
-    max-width: 100%; /* Prevents Bootstrap from limiting width */
-    margin: 0; /* Removes any extra margins */
-    padding: 0; /* Removes default padding */
+    width: 100%; 
+    max-width: 100%; 
+    margin: 0; 
+    padding: 0; 
 }
-
 .container-wrapper {
-    /* Use the dynamic vh value and account for any safe-area inset at the bottom */
     height: calc(var(--vh) * 100 - env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
     overflow-y: hidden;
-  }
-  
-
-
-
-.header {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-bottom: 3px solid var(--accent-color);
-    height: 9vh;
+}
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 4px 4px 4px 8px #0000001a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+}
+.header-title {
+    padding-top: 5px;
+}
+.header-logo {
+    height: 50px; /* Adjust size */
+    width: auto;
+    max-width: 100px; /* Optional max width */
+}
+.footer-title{
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+}
+footer {
+    position: fixed;
+    width: 100%;
+    bottom: 0;    
 }
 
 .vendor-logo {
@@ -73,7 +85,7 @@ body {
 }
 
 .chat-request {
-    height: 18vh;
+    height: 15vh;
     background: var(--light-bg);
     
 }
@@ -81,20 +93,19 @@ body {
     overflow-x: scroll;
 }
 .chat-response {
-    height: 48vh;
+    height: 40vh;
     background: white;
     border-bottom: 2px solid #dee2e6;
     display: flex;
     flex-direction: column;
-    padding: 15px;
     overflow-y: auto;
 }
 
 .message-bubble {
     max-width: 75%;
-    padding: 12px 18px;
+    padding: 8px 18px;
     border-radius: 15px;
-    margin: 8px 0;
+    margin: 4px 0;
     word-wrap: break-word;
     display: inline-block;
     clear: both;
@@ -181,7 +192,7 @@ body {
     white-space: nowrap;
     position: relative;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    padding: 10px 0;
+    padding: 5px 0;
 }
 
 #ad-slider {
@@ -192,8 +203,8 @@ body {
 .ad-slide {
     display: inline-block;
     width: 200px;
-    height: 120px;
-    margin: 0 10px;
+    height: 100px;
+    margin: 0 2px;
     object-fit: contain;
     border-radius: 8px;
     cursor: pointer;

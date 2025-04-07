@@ -75,44 +75,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         console.log("Filtered vendorIds:", vendorIds);
         console.log(getCSRFToken());
-        // fetch("/api/get_vendor_ads/", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //         "X-CSRFToken": getCSRFToken(),  // Make sure this returns a valid token
-        //     },
-        //     credentials: "same-origin",  // IMPORTANT: ensures cookies are sent
-        //     body: JSON.stringify({ vendor_ids: vendorIds }),
-        // })
-        // .then(response => {
-        //     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        //     return response.json();
-        // })
-        // .then(data => {
-        //     console.log("Received ads:", data);
-            
-        //     const adContainer = document.getElementById("ad-slider");
-        //     if (adContainer) {
-        //         adContainer.innerHTML = ""; // Clear existing ads
-        
-        //         const allAds = data.flatMap(vendor => vendor.ads);
-        
-        //         allAds.forEach(adUrl => {
-        //             const img = document.createElement("img");
-        //             img.src = adUrl;
-        //             img.alt = "Advertisement";
-        //             img.classList.add("ad-slide");
-        //             adContainer.appendChild(img);
-        //         });
-        
-        //         // Optionally initialize slider here
-        //     }
-        // })
-        // .catch(error => {
-        //     console.error("Error fetching ads:", error);
-        // });
-        
-
         // Assuming vendorIds is already available
         (async () => {
             const adsData = await AdSliderService.fetchAds(vendorIds);
@@ -197,20 +159,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Adjust viewport for mobile devices
-    function setVh() {
-        // 1% of the window's *innerHeight*
+    function setDynamicVH() {
         let vh = window.innerHeight * 0.01;
-        // Set the value in a CSS variable
         document.documentElement.style.setProperty('--vh', `${vh}px`);
-      }
-      
-    // Call the function once to set the initial value
-    setVh();
+    }
+    window.addEventListener('resize', setDynamicVH);
+    setDynamicVH();
     
-    // Recompute on resize/orientation changes
-    window.addEventListener('resize', setVh);
-    window.addEventListener('orientationchange', setVh);
-      
     // 1) Try the official Brave check
     let braveDetected = false;
     if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
