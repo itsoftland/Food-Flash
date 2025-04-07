@@ -53,21 +53,48 @@ footer {
 }
 
 .vendor-logo {
-    width: 50px;              
+    width: 50px;
     height: 50px;
-    border-radius: 50%;      
-    object-fit: cover;       
-    border: 2px solid #ccc;   
-    margin-right: 10px;  
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease;    
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background-color: #fff;  
 }
 #vendor-logo-bar {
-    padding: 6px 4px; 
-    flex-wrap: wrap;
-    background-color: #fff;
-  }
-  
+    padding: 0.5rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* ensures space between logos and add button */
+    gap: 0.5rem;
+}
+
+.add-btn-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.add-outlet-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 24px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px rgba(0,0,0,0.15);
+    transition: background-color 0.2s ease-in-out;
+}
+
+.add-outlet-btn:hover {
+    background-color: #0056b3;
+    cursor: pointer;
+} 
 
 
 .tiles-container {

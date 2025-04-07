@@ -101,7 +101,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const logoContainer = document.getElementById("vendor-logo-bar");
         if (logoContainer) {
             logoContainer.innerHTML = ""; // Clear any existing logos
-            console.log(data);
             data.forEach(vendor => {
             const logo = document.createElement("img");
             logo.src = vendor.logo_url;
@@ -117,7 +116,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             logoContainer.appendChild(logo);
             });
-        }
+            // ✅ Add "+" Button at the end
+            const addBtnWrapper = document.createElement("div");
+            addBtnWrapper.className = "add-btn-wrapper flex-shrink-0 ms-2";
+            addBtnWrapper.innerHTML = `
+                <button id="add-outlet-btn" class="btn add-outlet-btn">+</button>
+            `;
+            const spacer = document.createElement("div");
+            spacer.style.flex = "1"; // pushes the + button to the end
+
+            logoContainer.appendChild(spacer);
+            logoContainer.appendChild(addBtnWrapper);
+            }
         })
         .catch(error => {
         console.error("Error fetching vendor logos:", error);
