@@ -1,4 +1,5 @@
 from django.db import models
+import json
 
 class AdminOutlet(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -19,9 +20,16 @@ class Vendor(models.Model):
     vendor_id = models.IntegerField(unique=True)
     location_id = models.IntegerField()  # Unique ID for each location
     logo = models.ImageField(upload_to='vendor_logos/', blank=True, null=True)
+    ads = models.TextField(blank=True, null=True)    # Stores JSON string of paths
+    menus = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_ads_list(self):
+        return json.loads(self.ads or "[]")
+
+    def get_menus_list(self):
+        return json.loads(self.menus or "[]")
     
     def __str__(self):
         return f"{self.name} - {self.admin_outlet.name}"
