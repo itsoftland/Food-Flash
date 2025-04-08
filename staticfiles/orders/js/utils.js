@@ -21,7 +21,6 @@ function getStoredVendors() {
 }
 
 function setCurrentVendors(vendorInput) {
-    let vendors = getStoredVendors();
     let newVendors = [];
 
     if (typeof vendorInput === 'string') {
@@ -30,14 +29,16 @@ function setCurrentVendors(vendorInput) {
         newVendors = vendorInput.map(v => parseInt(v, 10));
     }
 
-    const updatedList = Array.from(new Set([...vendors, ...newVendors]));
+    // ✅ Replace instead of merge
+    const updatedList = Array.from(new Set(newVendors));
 
     localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
 
-    if (newVendors.length > 0) {
-        localStorage.setItem('activeVendor', newVendors[newVendors.length - 1]);
+    if (updatedList.length > 0) {
+        localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
     }
 }
+
 
 function getActiveVendor() {
     return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
