@@ -31,41 +31,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     const vendorFromQR = urlParams.get('vendor_id');
-   
-
-    function getStoredVendors() {
-        const storedVendors = localStorage.getItem('selectedVendors');
-        return storedVendors ? JSON.parse(storedVendors) : [];
-    }
-
-    function setCurrentVendors(vendorInput) {
-        let vendors = getStoredVendors();
-
-        // Convert vendorInput to an array if it's a comma-separated string
-        let newVendors = [];
-
-        if (typeof vendorInput === 'string') {
-            newVendors = vendorInput.split(',').map(v => parseInt(v.trim(), 10));
-        } else if (Array.isArray(vendorInput)) {
-            newVendors = vendorInput.map(v => parseInt(v, 10));
-        }
-
-        // Merge and remove duplicates
-        const updatedList = Array.from(new Set([...vendors, ...newVendors]));
-    
-        // Store updated vendors list
-        localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
-
-        // Store the last added vendor ID separately
-        if (newVendors.length > 0) {
-            localStorage.setItem('activeVendor', newVendors[newVendors.length - 1]);
-        }
-    }
-
-    // Retrieve the last active vendor ID
-    function getActiveVendor() {
-        return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
-    }
 
     if (vendorFromQR) {
         setCurrentVendors(vendorFromQR);
@@ -156,6 +121,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         const activeVendor = getActiveVendor();
         console.log("Active Vendor ID:", activeVendor);
     }
+
+    const modal = document.getElementById("addOutletModal");
+    const closeModalBtn = document.getElementById("close-modal");
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+    }
+
+    const modalContent = document.querySelector(".modal-content");
+
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            // Prevent closing when clicking inside content
+            if (!modalContent.contains(e.target)) {
+                e.stopPropagation();
+            }
+        });
+    }
+
     if (ratingButton) {
         ratingButton.addEventListener('click', function () {
             console.log("Rating button clicked");

@@ -2,22 +2,10 @@ export const AddOutletService = (() => {
     let locationId = null;
     let selectedVendorIds = new Set();
 
-    const getExistingVendors = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const vendorIdsParam = urlParams.get("vendor_id");
-        if (vendorIdsParam) {
-            vendorIdsParam.split(",").forEach(id => selectedVendorIds.add(id));
-        }
-    };
-
     const fetchOutlets = async () => {
         try {
             const response = await fetch(`/api/outlets/?location_id=${locationId}`);
-            if (!response.ok) {
-                console.error("Error fetching outlets");
-                return [];
-            }
-            return await response.json();
+            return response.ok ? await response.json() : [];
         } catch (err) {
             console.error("Fetch error:", err);
             return [];
@@ -26,21 +14,16 @@ export const AddOutletService = (() => {
 
     const toggleSelection = (tile, vendorId) => {
         tile.classList.toggle("selected");
-        if (tile.classList.contains("selected")) {
-            selectedVendorIds.add(vendorId);
-        } else {
-            selectedVendorIds.delete(vendorId);
-        }
+        tile.classList.contains("selected")
+            ? selectedVendorIds.add(vendorId)
+            : selectedVendorIds.delete(vendorId);
     };
 
     const renderOutlets = (outlets) => {
         const outletList = document.getElementById("outlet-list");
-        outletList.innerHTML = "";
-
-        if (outlets.length === 0) {
-            outletList.innerHTML = "<p class='text-center'>No outlets found</p>";
-            return;
-        }
+        outletList.innerHTML = outlets.length
+            ? ""
+            : "<p class='text-center'>No outlets found</p>";
 
         outlets.forEach(outlet => {
             const tile = document.createElement("div");
@@ -68,40 +51,43 @@ export const AddOutletService = (() => {
     };
 
     const openModal = async () => {
-        console.log("Opening Add Outlet Modal...");
-        locationId = getCurrentLocation();
+        locationId = getCurrentLocation(); // from utils.js
+
         if (!locationId) {
-            console.error("Missing location_id in URL");
+            alert("Location ID is missing. Please scan or provide location.");
             return;
         }
 
         selectedVendorIds.clear();
-        getExistingVendors();
-        console.log("existing vendors",getExistingVendors())
+
+        // Ensure vendor IDs are stored as strings
+        const storedVendorIds = getStoredVendors().map(String);
+        storedVendorIds.forEach(id => selectedVendorIds.add(id));
 
         const outlets = await fetchOutlets();
         renderOutlets(outlets);
+
+        // Show modal
+        const modal = document.getElementById("addOutletModal");
+        if (modal) {
+            modal.classList.add("show");
+            modal.style.display = "block";
+            document.body.classList.add("modal-open");
+        }
     };
 
     const bindEvents = () => {
-        const addOutletBtn = document.getElementById("add-outlet-btn");
-        const continueBtn = document.getElementById("continue-btn");
+        document.getElementById("add-outlet-btn")?.addEventListener("click", openModal);
 
-        if (addOutletBtn) {
-            addOutletBtn.addEventListener("click", openModal);
-        }
+        document.getElementById("continue-btn")?.addEventListener("click", () => {
+            if (selectedVendorIds.size === 0) {
+                alert("Please select at least one outlet.");
+                return;
+            }
 
-        if (continueBtn) {
-            continueBtn.addEventListener("click", () => {
-                if (selectedVendorIds.size === 0) {
-                    alert("Please select at least one outlet.");
-                    return;
-                }
-
-                const finalVendorIds = Array.from(selectedVendorIds).join(",");
-                window.location.href = `/home/?location_id=${locationId}&vendor_id=${finalVendorIds}`;
-            });
-        }
+            const finalVendorIds = Array.from(selectedVendorIds).join(",");
+            window.location.href = `/home/?location_id=${locationId}&vendor_id=${finalVendorIds}`;
+        });
     };
 
     return {
