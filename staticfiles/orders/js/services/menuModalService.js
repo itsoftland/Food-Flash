@@ -30,22 +30,36 @@ export const MenuModalService = (() => {
         if (imageFiles.length > 1) {
             const carouselId = "menuCarousel";
             menuContent.innerHTML = `
-                <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        ${imageFiles.map((file, index) => `
-                            <div class="carousel-item ${index === 0 ? "active" : ""}">
-                                <img src="${file}" class="d-block w-100" alt="Menu Page ${index + 1}">
-                            </div>
-                        `).join("")}
+                <div class="menu-carousel-wrapper text-center">
+                    <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            ${imageFiles.map((file, index) => `
+                                <div class="carousel-item ${index === 0 ? "active" : ""}">
+                                    <img src="${file}" class="d-block w-100" alt="Menu Page ${index + 1}">
+                                </div>
+                            `).join("")}
+                        </div>
+
+                        <!-- Prev / Next Controls -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                            <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
+
+                    <!-- Indicators placed outside the image -->
+                    <ol class="carousel-indicators custom-indicators mt-3">
+                        ${imageFiles.map((_, index) => `
+                            <li data-bs-target="#${carouselId}" data-bs-slide-to="${index}" class="${index === 0 ? "active" : ""}"></li>
+                        `).join("")}
+                    </ol>
                 </div>
             `;
+
             return;
         }
 
@@ -53,15 +67,20 @@ export const MenuModalService = (() => {
         menuContent.innerHTML = `<p class="text-warning">Unsupported or mixed format.</p>`;
     };
 
+    let modalInstance = null;
+
     const openModalWithFiles = (filePaths) => {
         renderMenu(filePaths);
 
-        const modal = new bootstrap.Modal(document.getElementById("menuImageModal"), {
-            backdrop: 'static',
-            keyboard: false
-        });
-        modal.show();
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal(document.getElementById("menuImageModal"), {
+                backdrop: 'static',
+                keyboard: false
+            });
+        }
+        modalInstance.show();
     };
+
 
     const bindEvents = () => {
         const menuButton = document.getElementById("menu-button");
@@ -78,7 +97,8 @@ export const MenuModalService = (() => {
                     const res = await fetch(`/api/menus/`, {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": getCSRFToken(),
                         },
                         body: JSON.stringify({ vendor_ids: [parseInt(activeVendorId)] })
                     });
@@ -98,12 +118,16 @@ export const MenuModalService = (() => {
                 } catch (err) {
                     console.error("Menu fetch failed:", err);
                     menuContent.innerHTML = `<p class="text-danger">Failed to load menu.</p>`;
-                    const modal = new bootstrap.Modal(document.getElementById("menuImageModal"), {
-                        backdrop: 'static',
-                        keyboard: false
-                    });
-                    modal.show();
-                }
+                
+                    if (!modalInstance) {
+                        modalInstance = new bootstrap.Modal(document.getElementById("menuImageModal"), {
+                            backdrop: 'static',
+                            keyboard: false
+                        });
+                    }
+                
+                    modalInstance.show();
+                }                
             });
         }
     };

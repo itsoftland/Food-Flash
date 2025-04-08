@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const newUrl = window.location.origin + window.location.pathname;
         history.replaceState(null, "", newUrl);
     }
-
+    MenuModalService.init();
     // Example usage: Get the last active vendor ID
 
     const vendorIdsString = localStorage.getItem("selectedVendors");
@@ -122,28 +122,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const activeVendor = getActiveVendor();
         console.log("Active Vendor ID:", activeVendor);
     }
-
-    const modal = document.getElementById("addOutletModal");
-    const closeModalBtn = document.getElementById("close-modal");
-
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener("click", () => {
-            modal.style.display = "none";
-        });
-    }
-
-    const modalContent = document.querySelector(".modal-content");
-
-    if (modal) {
-        modal.addEventListener("click", (e) => {
-            // Prevent closing when clicking inside content
-            if (!modalContent.contains(e.target)) {
-                e.stopPropagation();
-            }
-        });
-    }
-
-    MenuModalService.init();
+    
 
 
     if (ratingButton) {
@@ -166,12 +145,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     let notificationsEnabled = true;
     const isAndroid = /Android/i.test(navigator.userAgent);
     console.log("Android device:", isAndroid);
-    if (isAndroid) {
-        // Add a bit of extra bottom padding to .branding or .container-wrapper
-        document.querySelector('.container-wrapper')
-                .style.paddingBottom = '8px';
-    }
-
     // Adjust viewport for mobile devices
     function setDynamicVH() {
         let vh = window.innerHeight * 0.01;
@@ -543,34 +516,52 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
     }
 
+    // function showChatWindow(data) {
+    //     window.onload = function () {
+    //         document.querySelector('.chat-container').style.display = "none";
+    //         setTimeout(() => {
+    //             document.querySelector('.chat-container').style.display = "block";
+    //         }, 100);
+    //     };
+    //     setTimeout(() => {
+    //         chatContainer.scrollTop = chatContainer.scrollHeight;
+    //       }, 50);
+    //     if (data && data.token_no) {
+
+    //         chatInput.value = data.token_no;
+    //         chatInput.value = '';
+    //     }
+        
+       
+    //     chatContainer.scrollIntoView({ behavior: "smooth" });
+    
+    //     console.log("Chat window is now open or refreshed.", data);
+    // }
     function showChatWindow(data) {
-        // Make sure the chat container is visible.
-        // (If you’re hiding it by default using CSS, e.g., display: none,
-        //  then set it to block or flex as required.)
-        window.onload = function () {
-            document.querySelector('.chat-container').style.display = "none";
-            setTimeout(() => {
-                document.querySelector('.chat-container').style.display = "block";
-            }, 100);
-        };
+        const chatContainer = document.querySelector('.chat-container');
+        const chatInput = document.getElementById('chat-input'); // Assuming it's the input field
+    
+        if (!chatContainer || !chatInput) return;
+    
+        // Temporarily hide and show chat
+        chatContainer.style.display = "none";
+        setTimeout(() => {
+            chatContainer.style.display = "block";
+        }, 100);
+    
+        // Auto-scroll
         setTimeout(() => {
             chatContainer.scrollTop = chatContainer.scrollHeight;
-          }, 50);
-        // Optionally, if the payload contains a token number,
-        // pre-populate the chat input or perform any additional logic.
+        }, 50);
+    
+        // Set token if available
         if (data && data.token_no) {
-
             chatInput.value = data.token_no;
-            chatInput.value = '';
-            // If you want to refresh the chat messages based on token,
-            // you could call your fetch function here, e.g.:
-            // fetchOrderStatusOnce(data.token_no);
+            chatInput.value = '';  // Not sure why this is cleared immediately after setting?
         }
-        
-        // Optionally, you could scroll to the chat container if needed.
+    
         chatContainer.scrollIntoView({ behavior: "smooth" });
     
         console.log("Chat window is now open or refreshed.", data);
-    }
-   
+    }    
 });

@@ -52,29 +52,32 @@ export const AddOutletService = (() => {
 
     const openModal = async () => {
         locationId = getCurrentLocation(); // from utils.js
-
+    
         if (!locationId) {
             alert("Location ID is missing. Please scan or provide location.");
             return;
         }
-
+    
         selectedVendorIds.clear();
-
+    
         // Ensure vendor IDs are stored as strings
         const storedVendorIds = getStoredVendors().map(String);
         storedVendorIds.forEach(id => selectedVendorIds.add(id));
-
+    
         const outlets = await fetchOutlets();
         renderOutlets(outlets);
-
-        // Show modal
-        const modal = document.getElementById("addOutletModal");
-        if (modal) {
-            modal.classList.add("show");
-            modal.style.display = "block";
-            document.body.classList.add("modal-open");
+    
+        // ✅ Use Bootstrap API to show the modal properly
+        const modalElement = document.getElementById("addOutletModal");
+        if (modalElement) {
+            const bsModal = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: true
+            });
+            bsModal.show();
         }
     };
+    
 
     const bindEvents = () => {
         document.getElementById("add-outlet-btn")?.addEventListener("click", openModal);

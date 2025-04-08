@@ -4,11 +4,6 @@ from .models import Vendor, Order, Device, PushSubscription, AdminOutlet
 @admin.register(AdminOutlet)
 class AdminOutletAdmin(admin.ModelAdmin):
     list_display = ('id','name', 'email', 'phone', 'created_at')
-    
-# @admin.register(Vendor)
-# class VendorsAdmin(admin.ModelAdmin):
-#     list_display = ('id', 'name', 'location_id','location','admin_outlet','vendor_id','created_at','updated_at')  # Display fields in the admin panel
-#     list_filter = ('admin_outlet', 'location_id','name')      # Enable search functionality
 
 @admin.register(Order)
 class OrdersAdmin(admin.ModelAdmin):
