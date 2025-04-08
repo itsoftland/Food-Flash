@@ -7,7 +7,12 @@
     <div class="container px-0">
         <div id="vendor-logo-bar">
             <div class="add-btn-wrapper flex-shrink-0">
-                <button id="add-outlet-btn" class="btn add-outlet-btn">+</button>
+                <button id="add-outlet-btn"
+                    class="btn add-outlet-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addOutletModal">
+                        +
+                </button>
             </div>
         </div>
 
@@ -38,6 +43,24 @@
 
 
 <!-- Modals -->
+
+<div class="modal fade" id="addOutletModal" tabindex="-1" aria-labelledby="addOutletLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addOutletLabel">Select Outlets</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="outlet-list" class="outlet-grid"></div>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button id="continue-btn" class="continue-btn">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 
 <div id="ad-modal" class="ad-modal">
     <span class="ad-modal-close">&times;</span>

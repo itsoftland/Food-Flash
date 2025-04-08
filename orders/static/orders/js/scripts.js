@@ -1,4 +1,6 @@
 import { AdSliderService } from './services/adSliderService.js';
+import { AddOutletService } from "./services/addOutletService.js"; // adjust the path if needed
+
 document.addEventListener('DOMContentLoaded', async function() {
     const permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
@@ -9,9 +11,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     const ratingButton = document.getElementById('rating-button');
 
     
-
     const urlParams = new URLSearchParams(window.location.search);
+    let locationId = urlParams.get("location_id");
+
+    // 1️⃣ Check URL param first
+    if (locationId) {
+        setCurrentLocation(locationId); // Store it
+    } else {
+        // 2️⃣ Fallback to localStorage
+        locationId = getCurrentLocation();
+
+        if (!locationId) {
+            // 3️⃣ Ask for it / show error / redirect
+            alert("No location ID found. Please select a location to proceed.");
+            // Optionally redirect to a location selection page
+            // window.location.href = "/select-location/";
+            throw new Error("Missing location ID");
+        }
+    }
+
     const vendorFromQR = urlParams.get('vendor_id');
+   
 
     function getStoredVendors() {
         const storedVendors = localStorage.getItem('selectedVendors');
@@ -19,27 +39,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     function setCurrentVendors(vendorInput) {
-    let vendors = getStoredVendors();
+        let vendors = getStoredVendors();
 
-    // Convert vendorInput to an array if it's a comma-separated string
-    let newVendors = [];
+        // Convert vendorInput to an array if it's a comma-separated string
+        let newVendors = [];
 
-    if (typeof vendorInput === 'string') {
-        newVendors = vendorInput.split(',').map(v => parseInt(v.trim(), 10));
-    } else if (Array.isArray(vendorInput)) {
-        newVendors = vendorInput.map(v => parseInt(v, 10));
-    }
+        if (typeof vendorInput === 'string') {
+            newVendors = vendorInput.split(',').map(v => parseInt(v.trim(), 10));
+        } else if (Array.isArray(vendorInput)) {
+            newVendors = vendorInput.map(v => parseInt(v, 10));
+        }
 
-    // Merge and remove duplicates
-    const updatedList = Array.from(new Set([...vendors, ...newVendors]));
+        // Merge and remove duplicates
+        const updatedList = Array.from(new Set([...vendors, ...newVendors]));
     
-    // Store updated vendors list
-    localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
+        // Store updated vendors list
+        localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
 
-    // Store the last added vendor ID separately
-    if (newVendors.length > 0) {
-        localStorage.setItem('activeVendor', newVendors[newVendors.length - 1]);
-    }
+        // Store the last added vendor ID separately
+        if (newVendors.length > 0) {
+            localStorage.setItem('activeVendor', newVendors[newVendors.length - 1]);
+        }
     }
 
     // Retrieve the last active vendor ID
@@ -56,13 +76,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Example usage: Get the last active vendor ID
-   
 
-    // function getCSRFToken() {
-    //     const meta = document.querySelector('meta[name="csrf-token"]');
-    //     return meta ? meta.getAttribute("content") : "";
-    // }
-    console.log(getCSRFToken());
     const vendorIdsString = localStorage.getItem("selectedVendors");
     if (vendorIdsString) {
         console.log(vendorIdsString,"vendoridsstring")
@@ -73,8 +87,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             .map(id => parseInt(id))
             .filter(id => Number.isInteger(id) && !isNaN(id));
 
-        console.log("Filtered vendorIds:", vendorIds);
-        console.log(getCSRFToken());
         // Assuming vendorIds is already available
         (async () => {
             const adsData = await AdSliderService.fetchAds(vendorIds);
@@ -127,6 +139,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             logoContainer.appendChild(spacer);
             logoContainer.appendChild(addBtnWrapper);
+            // ✅ Init modal handlers after button is injected
+            AddOutletService.init();
             }
         })
         .catch(error => {

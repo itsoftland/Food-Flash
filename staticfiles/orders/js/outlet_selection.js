@@ -1,39 +1,7 @@
-// document.addEventListener("DOMContentLoaded", function () {
-//     const locationId = 2001; // Change dynamically as needed
-//     fetch(`/api/outlets/?location_id=${locationId}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             const outletList = document.getElementById("outlet-list");
-//             outletList.innerHTML = ""; // Clear previous content
-
-//             if (data.length === 0) {
-//                 outletList.innerHTML = "<p class='text-center'>No outlets found</p>";
-//                 return;
-//             }
-
-//             data.forEach(outlet => {
-//                 const col = document.createElement("div");
-//                 col.className = "col-md-3 col-sm-6";  // Responsive tiles
-                
-//                 col.innerHTML = `
-//                     <div class="outlet-tile" onclick="toggleSelect(this)">
-//                         <img src="${outlet.logo || '/static/default-logo.png'}" alt="${outlet.name}">
-//                         <p>${outlet.name}</p>
-//                     </div>
-//                 `;
-//                 outletList.appendChild(col);
-//             });
-//         })
-//         .catch(error => console.error("Error fetching outlets:", error));
-// });
-
-// function toggleSelect(element) {
-//     element.classList.toggle("selected");
-// }
-
+let locationId = null; // <-- define globally
 document.addEventListener("DOMContentLoaded", function () {
     const urlParams = new URLSearchParams(window.location.search);
-    const locationId = urlParams.get("location_id");
+    locationId = urlParams.get("location_id");
 
     if (!locationId) {
         console.error("No location_id found in URL");
@@ -96,6 +64,7 @@ document.getElementById("continue-btn").addEventListener("click", function () {
     // Redirect with vendor IDs (can modify as per your logic)
     const vendorIds = selectedData.map(outlet => outlet.vendor_id).join(",");
     console.log("vendorids",vendorIds)
-    window.location.href = `/home/?vendor_id=${vendorIds}`;
+    console.log("locationid",locationId)
+    window.location.href = `/home/?location_id=${locationId}&vendor_id=${vendorIds}`;
 });
 
