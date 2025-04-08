@@ -1,5 +1,6 @@
 import { AdSliderService } from './services/adSliderService.js';
 import { AddOutletService } from "./services/addOutletService.js"; // adjust the path if needed
+import { MenuModalService } from './services/menuModalService.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     const permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
@@ -141,6 +142,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
+
+    MenuModalService.init();
+
 
     if (ratingButton) {
         ratingButton.addEventListener('click', function () {

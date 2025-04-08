@@ -87,7 +87,7 @@ def get_outlets(request):
 
     return Response(data, status=status.HTTP_200_OK)
 
-from .serializers import VendorLogoSerializer  # We’ll define this below
+from .serializers import VendorLogoSerializer,VendorMenuSerializer  
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -148,3 +148,19 @@ def get_vendor_ads(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_vendor_menus(request):
+    try:
+        vendor_ids = request.data.get("vendor_ids")
+
+        if not vendor_ids or not isinstance(vendor_ids, list):
+            return Response({"error": "vendor_ids must be provided as a list."}, status=400)
+
+        vendors = Vendor.objects.filter(vendor_id__in=vendor_ids)
+
+        serializer = VendorMenuSerializer(vendors, many=True, context={'request': request})
+        return Response(serializer.data, status=200)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
