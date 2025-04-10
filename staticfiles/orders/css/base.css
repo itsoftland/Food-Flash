@@ -1,5 +1,4 @@
-
-header {
+.custom-header {
     position: fixed;
     top: 0;
     left: 0;
@@ -8,23 +7,42 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between; 
+    padding: 0rem 1rem; 
+    background-color: white;
+    color: #052c65; 
+    
 }
-.header-title {
-    padding-top: 10px;
-}
+
 .header-logo {
-    height: 50px; 
-    width: auto;
-    max-width: 100px; 
+    height: 50px;
+    max-width: 100px;
+    padding-left: 0.25rem;
 }
-.footer-title{
-    padding-top: 20px;
+
+.header-title {
+    margin: 0;
+    font-size: 1.5rem;
+    padding-right: 0.25rem;
 }
-footer {
+
+
+.custom-footer {
     position: fixed;
-    width: 100%;
     bottom: 0;
+    width: 100%;
+    height: 45px;
+    background-color:#ffffff; 
+    color: #052c65;
     display: flex;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
+    padding: 0; 
+    margin: 0;
+    z-index: 9999; 
+}
+
+.footer-title {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
 }
