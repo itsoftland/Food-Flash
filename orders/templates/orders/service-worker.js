@@ -32,7 +32,7 @@ self.addEventListener("push", (event) => {
   const title = data.title || "Order Update";
   const options = {
     body: data.body || "Your order is ready!",
-    icon: "https://webtest.softlandindia.co.in/static/orders/images/logo.png",
+    icon: "https://webtest.softlandindia.co.in/static/orders/images/food-flash-logo.png",
     data: data, // Full payload attached (if needed for future use)
   };
 

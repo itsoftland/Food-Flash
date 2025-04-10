@@ -1,5 +1,5 @@
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
-let locationId = null; // <-- define globally
+let locationId = null; 
 document.addEventListener("DOMContentLoaded", function () {
     IosPwaInstallService.init();
     document.getElementById("ios-got-it-btn")?.addEventListener("click", () => {
@@ -9,15 +9,34 @@ document.addEventListener("DOMContentLoaded", function () {
     const urlParams = new URLSearchParams(window.location.search);
     locationId = urlParams.get("location_id");
 
-    if (!locationId) {
-        console.error("No location_id found in URL");
-        return;
+    // 1️⃣ Check URL param first
+    if (locationId) {
+        setCurrentLocation(locationId); // Store it
+    } else {
+        // 2️⃣ Fallback to localStorage
+        locationId = getCurrentLocation();
+
+        if (!locationId) {
+            // 3️⃣ Ask for it / show error / redirect
+            alert("No location ID found. Please select a location to proceed.");
+            // Optionally redirect to a location selection page
+            // window.location.href = "/select-location/";
+            throw new Error("Missing location ID");
+        }
     }
+
+    if (window.location.pathname === "/" && !window.location.search.includes("location_id")) {
+        if (locationId) {
+            console.log("Redirecting to location_id from localStorage...");
+            window.location.href = `/?location_id=${locationId}`;
+        }
+    }
+
     fetch(`/api/outlets/?location_id=${locationId}`)
         .then(response => response.json())
         .then(data => {
             const outletList = document.getElementById("outlet-list");
-            outletList.innerHTML = ""; // Clear previous content
+            outletList.innerHTML = "";
 
             if (data.length === 0) {
                 outletList.innerHTML = "<p class='text-center'>No outlets found</p>";
@@ -69,8 +88,6 @@ document.getElementById("continue-btn").addEventListener("click", function () {
 
     // Redirect with vendor IDs (can modify as per your logic)
     const vendorIds = selectedData.map(outlet => outlet.vendor_id).join(",");
-    console.log("vendorids",vendorIds)
-    console.log("locationid",locationId)
     window.location.href = `/home/?location_id=${locationId}&vendor_id=${vendorIds}`;
 });
 
