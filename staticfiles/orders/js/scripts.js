@@ -1,6 +1,8 @@
 import { AdSliderService } from './services/adSliderService.js';
 import { AddOutletService } from "./services/addOutletService.js"; // adjust the path if needed
 import { MenuModalService } from './services/menuModalService.js';
+import { FeedbackService } from "./services/feedBackService.js";
+
 
 document.addEventListener('DOMContentLoaded', async function() {
     const permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
@@ -41,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         history.replaceState(null, "", newUrl);
     }
     MenuModalService.init();
+    FeedbackService.init();
     // Example usage: Get the last active vendor ID
 
     const vendorIdsString = localStorage.getItem("selectedVendors");

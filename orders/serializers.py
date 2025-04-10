@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from vendors.models import Vendor
+from vendors.models import Vendor, Feedback
 
 class VendorLogoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,3 +64,10 @@ class VendorMenuSerializer(serializers.ModelSerializer):
 
         data['menus'] = full_menu_urls
         return data
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ['id', 'vendor', 'comment', 'created_at']
+        read_only_fields = ['id', 'created_at']
+

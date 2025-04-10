@@ -77,3 +77,12 @@ class PushSubscription(models.Model):
 
     def __str__(self):
         return f"Subscription for {self.browser_id}"
+
+class Feedback(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='feedbacks')
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback for {self.vendor.name}"
+

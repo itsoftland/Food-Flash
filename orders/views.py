@@ -128,7 +128,7 @@ def get_vendor_logos(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
         
-from .serializers import VendorAdsSerializer
+from .serializers import VendorAdsSerializer,FeedbackSerializer
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -164,3 +164,30 @@ def get_vendor_menus(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+    
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def submit_feedback(request):
+    vendor_id = request.data.get('vendor_id')
+
+    if not vendor_id:
+        return Response({'success': False, 'message': 'Vendor ID is required'}, status=400)
+
+    try:
+        vendor = Vendor.objects.get(vendor_id=vendor_id)
+    except Vendor.DoesNotExist:
+        return Response({'success': False, 'message': 'Vendor not found'}, status=404)
+
+    # Add vendor manually to data for serializer
+    data = {
+        'vendor': vendor.id,  # use actual Vendor model primary key (id)
+        'comment': request.data.get('comment')
+    }
+
+    serializer = FeedbackSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'success': True, 'message': 'Feedback submitted successfully'}, status=201)
+    else:
+        return Response({'success': False, 'errors': serializer.errors}, status=400)
