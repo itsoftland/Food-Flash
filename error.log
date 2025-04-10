@@ -1763,3 +1763,589 @@ Traceback (most recent call last):
 RuntimeError: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to 202.88.237.202/admin/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
 Internal Server Error: /api/menus/
 Internal Server Error: /api/menus/
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 510, in parse
+    compile_func = self.tags[command]
+KeyError: 'static'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 518, in parse
+    raise self.error(token, e)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 16: 'static', expected 'endblock'. Did you forget to register or load this tag?
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 519, in parse
+    self.extend_nodelist(nodelist, compiled_result, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 536, in extend_nodelist
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: <ExtendsNode: extends "orders/base.html"> must be the first tag in the template.
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 11, in outlet_selection
+    return render(request, "orders/outlet_selection.html")
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/backends/django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 519, in parse
+    self.extend_nodelist(nodelist, compiled_result, token)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 536, in extend_nodelist
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: <ExtendsNode: extends "orders/base.html"> must be the first tag in the template.

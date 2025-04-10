@@ -1,0 +1,30 @@
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+}
+.header-title {
+    padding-top: 10px;
+}
+.header-logo {
+    height: 70px; 
+    width: auto;
+    max-width: 100px; 
+}
+.footer-title{
+    padding-top: 20px;
+}
+footer {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+}
