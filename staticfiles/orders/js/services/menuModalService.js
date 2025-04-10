@@ -84,15 +84,24 @@ export const MenuModalService = (() => {
 
     const bindEvents = () => {
         const menuButton = document.getElementById("menu-button");
+        const menuModal = document.getElementById("menuImageModal");
+    
+        // 🧹 Cleanup any leftover backdrops if modal is closed
+        menuModal.addEventListener("hidden.bs.modal", () => {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+        });
+    
         if (menuButton) {
             menuButton.addEventListener("click", async function () {
                 const activeVendorId = localStorage.getItem("activeVendor");
-
+    
                 if (!activeVendorId) {
                     alert("No active vendor selected.");
                     return;
                 }
-
+    
                 try {
                     const res = await fetch(`/api/menus/`, {
                         method: "POST",
@@ -102,35 +111,35 @@ export const MenuModalService = (() => {
                         },
                         body: JSON.stringify({ vendor_ids: [parseInt(activeVendorId)] })
                     });
-
+    
                     if (!res.ok) throw new Error("Menu not found");
-
+    
                     const data = await res.json();
-
+    
                     if (!Array.isArray(data) || data.length === 0) {
                         throw new Error("No menu data");
                     }
-
-                    const vendorMenu = data[0];  // single vendor expected
+    
+                    const vendorMenu = data[0];
                     const menuFiles = vendorMenu.menus || [];
-
+    
                     openModalWithFiles(menuFiles);
                 } catch (err) {
                     console.error("Menu fetch failed:", err);
                     menuContent.innerHTML = `<p class="text-danger">Failed to load menu.</p>`;
-                
+    
                     if (!modalInstance) {
-                        modalInstance = new bootstrap.Modal(document.getElementById("menuImageModal"), {
+                        modalInstance = new bootstrap.Modal(menuModal, {
                             backdrop: 'static',
                             keyboard: false
                         });
                     }
-                
+    
                     modalInstance.show();
-                }                
+                }
             });
         }
-    };
+    };    
 
     return {
         init: bindEvents,

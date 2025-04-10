@@ -1750,3 +1750,14 @@ Traceback (most recent call last):
   File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/middleware/common.py", line 87, in get_full_path_with_slash
     raise RuntimeError(
 RuntimeError: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to 202.88.237.202/admin/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
+Internal Server Error: /admin
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/utils/deprecation.py", line 131, in __call__
+    response = self.process_response(request, response)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/middleware/common.py", line 108, in process_response
+    return self.response_redirect_class(self.get_full_path_with_slash(request))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/middleware/common.py", line 87, in get_full_path_with_slash
+    raise RuntimeError(
+RuntimeError: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to 202.88.237.202/admin/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
