@@ -1,5 +1,15 @@
+import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 let locationId = null; // <-- define globally
 document.addEventListener("DOMContentLoaded", function () {
+    IosPwaInstallService.init();
+    // document.getElementById("ios-dismiss-btn")?.addEventListener("click", () => {
+    //     IosPwaInstallService.dismiss();
+    // });
+    
+    document.getElementById("ios-got-it-btn")?.addEventListener("click", () => {
+        IosPwaInstallService.dismiss();
+    });
+    
     const urlParams = new URLSearchParams(window.location.search);
     locationId = urlParams.get("location_id");
 

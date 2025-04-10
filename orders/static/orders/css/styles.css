@@ -28,7 +28,6 @@ header {
     left: 0;
     width: 100%;
     z-index: 1000;
-    box-shadow: 4px 4px 4px 8px #0000001a;
     display: flex;
     align-items: center;
     justify-content: space-between; 

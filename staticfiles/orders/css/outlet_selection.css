@@ -1,13 +1,11 @@
 
-
-
 header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 1000;
-    box-shadow: 4px 4px 4px 8px #0000001a;
+    /* box-shadow: 2px 2px 2px 4px #0000001a; */
     display: flex;
     align-items: center;
     justify-content: space-between; 
@@ -16,9 +14,9 @@ header {
     padding-top: 10px;
 }
 .header-logo {
-    height: 70px; /* Adjust size */
+    height: 70px; 
     width: auto;
-    max-width: 100px; /* Optional max width */
+    max-width: 100px; 
 }
 .footer-title{
     padding-top: 20px;
@@ -31,69 +29,6 @@ footer {
     justify-content: center; 
     align-items: center;
 }
-
-
-/* body {
-    padding-top: 80px;
-    padding-bottom: 80px;
-    font-family: Arial, sans-serif;
-    overflow-x: hidden; 
-    overflow-y: auto; 
-    height: 100vh; 
-    margin: 0;
-}
-.container {
-    max-width: 1200px;
-    margin: auto;
-    padding: 10px;
-    overflow: hidden;
-}
-
-#outlet-list {
-    display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    justify-content: center;
-}
-
-
-main {
-    padding-bottom: 100px; 
-}
-
-
-.outlet-tile {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    text-align: center;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-
-.outlet-tile img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    border-radius: 5px;
-}
-
-.outlet-tile:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-.selected {
-    border: 2px solid #007bff;
-}   */
-
 
 @media (max-width: 480px) {
     #outlet-list {
