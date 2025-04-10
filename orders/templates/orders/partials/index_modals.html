@@ -1,0 +1,67 @@
+{% load static %}
+<!-- Modals -->
+<div class="modal fade" id="addOutletModal" tabindex="-1" aria-labelledby="addOutletLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addOutletLabel">Select Outlets</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-outlet-modal" ></button>
+        </div>
+        <div class="modal-body">
+          <div id="outlet-list" class="outlet-grid"></div>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button id="continue-btn" class="continue-btn">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+<div id="ad-modal" class="ad-modal">
+    <span class="ad-modal-close">&times;</span>
+    <img class="ad-modal-content" id="ad-modal-img">
+</div>
+
+<div class="modal fade" id="menuImageModal" tabindex="-1" aria-labelledby="menuImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Menu</h5>
+          <button type="button" id="close-menu-modal" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> <!-- Important -->
+        </div>
+        <div class="modal-body" id="menuContent">
+          <!-- Dynamic content injected here -->
+        </div>
+      </div>
+    </div>
+  </div>
+  
+    
+
+<div class="modal fade" id="permissionModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <h5 class="mb-4">Please grant permissions to play sound, receive notifications, and enable vibration.</h5>
+                <button id="grant-permission" class="btn btn-primary px-4 me-2">Grant Permission</button>
+                <button id="deny-permission" class="btn btn-outline-danger px-4">Deny Permission</button>
+            </div>
+        </div>
+    </div>
+</div> 
+
+
+
+
+<div class="modal fade" id="notificationModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <h5 class="mb-4"></h5>
+                <button id="ok-notification" class="btn btn-primary px-4 me-2">OK</button>
+                <button id="disable-notifications" class="btn btn-outline-danger px-4">Disable Notifications</button>
+            </div>
+        </div>
+    </div>
+</div>

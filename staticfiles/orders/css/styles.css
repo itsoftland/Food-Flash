@@ -22,42 +22,13 @@ body {
     padding-bottom: env(safe-area-inset-bottom);
     overflow-y: hidden;
 }
-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; 
-}
-.header-title {
-    padding-top: 5px;
-}
-.header-logo {
-    height: 50px; /* Adjust size */
-    width: auto;
-    max-width: 100px; /* Optional max width */
-}
-.footer-title{
-    display: flex;
-    justify-content: center; 
-    align-items: center;
-}
-footer {
-    position: fixed;
-    width: 100%;
-    bottom: 0;    
-}
-
 .vendor-logo {
     width: 50px;
     height: 50px;
     object-fit: cover;
     border-radius: 50%;
     border: 2px solid #ccc;
-    background-color: #fff;  
+    background-color: #f8f9fa;  
 }
 #vendor-logo-bar {
     padding: 0.5rem;

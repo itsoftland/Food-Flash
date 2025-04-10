@@ -1,0 +1,20 @@
+{% load static %}
+  <!-- iOS Install Modal -->
+  <div class="modal fade" id="iosInstallModal" tabindex="-1" aria-labelledby="iosInstallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+        <div class="modal-header">
+        <h5 class="modal-title" id="iosInstallModalLabel">Add Food Flash to Home Screen</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+        <p><strong>To receive real-time order updates</strong>, please add <strong>Food Flash</strong> to your iPhone or iPad home screen.</p>
+        <p>Tap the <strong>Share</strong> icon <img src="/static/orders/images/ios-share-button.png" alt="Share Icon" style="width: 24px; vertical-align: middle;"> and then select <strong>"Add to Home Screen"</strong>.</p>
+        <img src="{% static 'orders/images/ios-share-button.png' %}" alt="Food Flash Logo" style="width: 60px; margin-top: 10px;">
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary w-100" id="ios-got-it-btn">Got it</button>
+        </div>
+    </div>
+    </div>
+</div>

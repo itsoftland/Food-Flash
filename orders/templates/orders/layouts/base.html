@@ -1,54 +1,3 @@
-{% comment %} {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Flash</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'orders/css/outlet_selection.css' %}">
-</head>
-<body>
-
-    <!-- Header Section -->
-    <header class="bg-white text-primary-emphasis px-1">
-        <img src="{% static 'orders/images/food-flash-logo.png' %}" alt="Logo" class="header-logo">
-        <h1 class="header-title">Food Flash</h1>
-    </header>
-
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer Section -->
-    <footer class="bg-secondary text-white px-1 ">
-        <p class="footer-title" >&copy; 2025 Softland India Ltd</p>
-    </footer>
-    <!-- iOS Install Modal -->
-    <div class="modal fade" id="iosInstallModal" tabindex="-1" aria-labelledby="iosInstallModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-center">
-            <div class="modal-header">
-            <h5 class="modal-title" id="iosInstallModalLabel">Add Food Flash to Home Screen</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-            <p><strong>To receive real-time order updates</strong>, please add <strong>Food Flash</strong> to your iPhone or iPad home screen.</p>
-            <p>Tap the <strong>Share</strong> icon <img src="/static/orders/images/ios-share-button.png" alt="Share Icon" style="width: 24px; vertical-align: middle;"> and then select <strong>"Add to Home Screen"</strong>.</p>
-            <img src="{% static 'orders/images/ios-share-button.png' %}" alt="Food Flash Logo" style="width: 60px; margin-top: 10px;">
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary w-100" onclick="window.IosPwaInstallService.dismiss()">Got it</button>
-            </div>
-        </div>
-        </div>
-    </div>
-  
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="{% static 'orders/js/outlet_selection.js' %}"></script>
-</body>
-</html> {% endcomment %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -84,31 +33,10 @@
         <p class="footer-title">&copy; 2025 Softland India Ltd</p>
     </footer>
 
-    <!-- iOS Install Modal -->
-    <div class="modal fade" id="iosInstallModal" tabindex="-1" aria-labelledby="iosInstallModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-center">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="iosInstallModalLabel">Add Food Flash to Home Screen</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>To receive real-time order updates</strong>, please add <strong>Food Flash</strong> to your iPhone or iPad home screen.</p>
-                    <p>Tap the <strong>Share</strong> icon 
-                        <img src="{% static 'orders/images/ios-share-button.png' %}" alt="Share Icon" style="width: 24px; vertical-align: middle;">
-                        and then select <strong>"Add to Home Screen"</strong>.
-                    </p>
-                    <img src="{% static 'orders/images/food-flash-logo.png' %}" alt="Food Flash Logo" style="width: 60px; margin-top: 10px;">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary w-100" onclick="window.IosPwaInstallService.dismiss()">Got it</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Core JS -->
+    <script src="{% static 'orders/js/utils.js' %}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Page-specific JS -->
