@@ -1,0 +1,209 @@
+/* base.css or _variables.css */
+:root {
+    --primary-color: #2A3B47;
+    --secondary-color: #3F72AF;
+    --accent-color: #7EC8E3;
+    --light-bg: #F8F9FA;
+    --dark-text: #2A3B47;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, sans-serif;
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+    padding-top: 55px; /* Assuming fixed header */
+    overflow-x: hidden;
+    height: 100%;
+}
+
+/* layout.css */
+.container,
+.container-wrapper {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.container-wrapper {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.chat-request {
+    height: 15vh;
+    background: var(--light-bg);
+}
+
+.chat-response {
+    height: 40vh;
+    background: white;
+    border-bottom: 2px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 8px 18px;
+    border-radius: 15px;
+    margin: 4px 0;
+    word-wrap: break-word;
+    display: inline-block;
+    clear: both;
+}
+
+.message-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: last baseline;
+}
+
+.message-content {
+    font-size: 1rem;
+}
+
+.message-timestamp {
+    font-size: 0.6rem;
+    opacity: 0.5;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+
+.message-bubble.server {
+    background: var(--secondary-color);
+    color: white;
+    border-bottom-left-radius: 5px;
+    align-self: flex-start;
+}
+
+.message-bubble.user {
+    background: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 5px;
+    align-self: flex-end;
+}
+
+
+/* --- Add Outlet Button --- */
+.add-outlet-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #052c65;
+    color: #fff;
+    font-size: 24px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.2s ease-in-out;
+}
+
+.add-outlet-btn:hover {
+    background-color: #0056b3;
+    cursor: pointer;
+}
+
+/* --- Menu Button --- */
+.menu-button {
+    background: var(--secondary-color);
+    transition: all 0.3s ease;
+}
+
+.menu-button:hover {
+    background-color: #2E5C8E;
+}
+
+.menu-button:focus,
+.menu-button:active {
+    background-color: #1d528b !important;
+    outline: none;
+    box-shadow: none;
+}
+
+/* --- Send Button --- */
+#send-button {
+    background: var(--secondary-color);
+    transition: all 0.3s ease;
+}
+
+/* --- Ad Slider Wrapper --- */
+#ad-slider-wrapper {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    padding: 5px 0;
+}
+
+/* --- Ad Slider Animation Container --- */
+#ad-slider {
+    display: inline-block;
+    animation: scroll-left 30s linear infinite;
+}
+
+/* --- Individual Slide --- */
+.ad-slide {
+    display: inline-block;
+    width: 200px;
+    height: 100px;
+    margin: 0 2px;
+    object-fit: contain;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.ad-slide:hover {
+    transform: scale(1.05);
+}
+
+/* --- Scroll Animation Keyframes --- */
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* --- Ad Modal --- */
+.ad-modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+}
+
+/* --- Ad Modal Content --- */
+.ad-modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+    margin-top: 5%;
+}
+
+/* --- Modal Close Button --- */
+.ad-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+}

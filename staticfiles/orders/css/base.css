@@ -37,6 +37,7 @@
     height: 45px;
     z-index: 1030;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .footer-title {
@@ -45,3 +46,6 @@
     line-height: 1;
 }
 
+main.flex-fill {
+    overflow: auto; /* Let the main content scroll if needed */
+}

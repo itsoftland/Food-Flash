@@ -24,7 +24,7 @@
     <!-- Page-specific CSS -->
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100" >
 
     <!-- Header -->
     <header class="bg-white text-primary-emphasis custom-header">
@@ -34,7 +34,7 @@
     
 
     <!-- Main Content -->
-    <main>
+    <main class="flex-fill">
         {% block content %}{% endblock %}
     </main>
 
