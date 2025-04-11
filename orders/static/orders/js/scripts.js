@@ -2,9 +2,11 @@ import { AdSliderService } from './services/adSliderService.js';
 import { AddOutletService } from "./services/addOutletService.js"; // adjust the path if needed
 import { MenuModalService } from './services/menuModalService.js';
 import { FeedbackService } from "./services/feedBackService.js";
+import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 
 
 document.addEventListener('DOMContentLoaded', async function() {
+    setViewportHeightVar();
     const permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
     const chatContainer = document.getElementById('chat-container');
@@ -44,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     MenuModalService.init();
     FeedbackService.init();
+    IosPwaInstallService.init();
     // Example usage: Get the last active vendor ID
 
     const vendorIdsString = localStorage.getItem("selectedVendors");
@@ -470,6 +473,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     sendButton.addEventListener('click', function () {
         const message = chatInput.value.trim();
         if (message !== '') {
+            if (IosPwaInstallService.shouldRePrompt()) {
+                IosPwaInstallService.showModal(); // Remind the user to install
+            }
             appendMessage(message, 'user');
             chatInput.value = '';
             fetchOrderStatusOnce(message);

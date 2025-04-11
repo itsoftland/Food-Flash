@@ -2,10 +2,24 @@ import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 let locationId = null; 
 document.addEventListener("DOMContentLoaded", function () {
     IosPwaInstallService.init();
-    document.getElementById("ios-got-it-btn")?.addEventListener("click", () => {
-        IosPwaInstallService.dismiss();
-    });
-    
+    // Handle Agree Button
+    const agreeBtn = document.getElementById("ios-a2hs-agree");
+    if (agreeBtn) {
+        agreeBtn.addEventListener("click", () => {
+            localStorage.setItem("iosA2HSAgree", "true");
+            IosPwaInstallService.dismiss();
+        });
+    }
+
+    // Handle Deny Button
+    const denyBtn = document.getElementById("ios-a2hs-deny");
+    if (denyBtn) {
+        denyBtn.addEventListener("click", () => {
+            localStorage.setItem("iosA2HSDeny", "true");
+            IosPwaInstallService.dismiss();
+        });
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     locationId = urlParams.get("location_id");
 

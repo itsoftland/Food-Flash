@@ -71,3 +71,11 @@ function setCurrentVendors(vendorInput) {
 function getActiveVendor() {
     return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
 }
+
+function setViewportHeightVar() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+window.addEventListener('resize', setViewportHeightVar);
+window.addEventListener('orientationchange', setViewportHeightVar);
+document.addEventListener('DOMContentLoaded', setViewportHeightVar);

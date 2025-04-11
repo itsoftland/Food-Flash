@@ -12,9 +12,14 @@ export const IosPwaInstallService = (() => {
         return ('standalone' in window.navigator) && window.navigator.standalone;
     };
 
+    const hasAgreed = () => localStorage.getItem("iosA2HSAgree") === "true";
+    const hasDenied = () => localStorage.getItem("iosA2HSDeny") === "true";
+
     const shouldShowPrompt = () => {
-        const alreadyShown = localStorage.getItem("iosPwaPromptShown");
-        return !alreadyShown;
+        return !(hasAgreed() || hasDenied());
+    };
+    const shouldRePrompt = () => {
+        return hasAgreed() && !isInStandaloneMode();
     };
 
     const showModal = () => {
@@ -29,10 +34,7 @@ export const IosPwaInstallService = (() => {
     };
 
     const dismiss = () => {
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-        localStorage.setItem("iosPwaPromptShown", "true");
+        modalInstance?.hide();
     };
 
     const init = () => {
@@ -43,6 +45,11 @@ export const IosPwaInstallService = (() => {
 
     return {
         init,
-        dismiss
+        showModal,
+        dismiss,
+        hasAgreed,
+        hasDenied,
+        isInStandaloneMode,
+        shouldRePrompt
     };
 })();
