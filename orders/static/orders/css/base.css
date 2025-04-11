@@ -34,9 +34,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(45px + env(safe-area-inset-bottom, 0px)); /* auto-adjust for iOS */
-    padding-bottom: env(safe-area-inset-bottom, 0px); /* add safe area space */
+    height: 45px;
+    padding-bottom: constant(safe-area-inset-bottom); /* iOS 11+ */
+    padding-bottom: env(safe-area-inset-bottom);      /* Modern iOS */
     z-index: 1030;
+    box-sizing: border-box;
 }
 
 .footer-title {
@@ -44,3 +46,4 @@
     padding: 0;
     line-height: 1;
 }
+
