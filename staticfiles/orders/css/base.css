@@ -35,8 +35,6 @@
     justify-content: center;
     align-items: center;
     height: 45px;
-    padding-bottom: constant(safe-area-inset-bottom); /* iOS 11+ */
-    padding-bottom: env(safe-area-inset-bottom);      /* Modern iOS */
     z-index: 1030;
     box-sizing: border-box;
 }
