@@ -8,7 +8,16 @@ from vendors.models import Order,Vendor
 from django.core.cache import cache
 
 def outlet_selection(request):
-    return render(request, "orders/outlet_selection.html")
+    location_id = request.GET.get("location_id")
+    context = {}  # Add any extra context here if needed
+
+    response = render(request, "orders/outlet_selection.html", context)
+
+    if location_id:
+        # Set cookie for 30 days (optional: domain='yourdomain.com' if needed)
+        response.set_cookie("location_id", location_id, max_age=30 * 24 * 60 * 60)
+
+    return response
 
 def home(request):
     cache.clear()
@@ -20,7 +29,6 @@ def home(request):
 def check_status(request):
     token_no = request.GET.get('token_no')
     vendor_id = request.GET.get('vendor_id')
-    print(vendor_id)
     
     if not token_no:
         return Response({'error': 'Token number is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -28,7 +36,6 @@ def check_status(request):
     try:
         # Try to fetch the existing order by token_no
         order = Order.objects.get(token_no=token_no,vendor__vendor_id=int(vendor_id))
-        print("new vendor name",order.vendor.name)
         data = {
             'vendor_name': order.vendor.name,
             'vendor': order.vendor.id,
@@ -44,7 +51,6 @@ def check_status(request):
             # If order not found, create a new one with status 'preparing'
             # Here, we assume a default vendor (e.g., vendor with id=1)
             vendor = Vendor.objects.get(vendor_id=int(vendor_id))
-            print("vendor name",vendor.name)
             new_order_data = {
                 'vendor_name':vendor.name,
                 'token_no': token_no,
@@ -94,7 +100,6 @@ from .serializers import VendorLogoSerializer,VendorMenuSerializer
 def get_vendor_logos(request):
     try:
         vendor_ids = request.data.get("vendor_ids")
-        print(f"Received vendor_ids: {vendor_ids} | Type: {type(vendor_ids)}")
         
         # Validate input
         if vendor_ids is None or not isinstance(vendor_ids, list):

@@ -1,17 +1,48 @@
+// --- CSRF Token Utility ---
 window.getCSRFToken = function () {
     const meta = document.querySelector('meta[name="csrf-token"]');
     return meta ? meta.getAttribute("content") : "";
 };
 
-// Location ID Utils
+// --- Cookie Helpers ---
+function setCookie(name, value, days = 365) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}; SameSite=Lax`;
+}
+
+function getCookie(name) {
+    const cookieStr = `; ${document.cookie}`;
+    const parts = cookieStr.split(`; ${name}=`);
+    if (parts.length >= 2) {
+        return decodeURIComponent(parts.pop().split(';')[0]);
+    }
+    return null;
+}
+
+// --- Location ID Utils (with fallback) ---
 function setCurrentLocation(locationId) {
     if (locationId) {
+        console.log("Setting location:", locationId);
         localStorage.setItem('activeLocation', locationId);
+        setCookie('activeLocation', locationId);
     }
 }
 
+
 function getCurrentLocation() {
-    return localStorage.getItem('activeLocation') || null;
+    let locationId = localStorage.getItem('activeLocation');
+    console.log("LocalStorage location:", locationId);
+
+    if (!locationId) {
+        locationId = getCookie('activeLocation');
+        console.log("Fallback Cookie location:", locationId);
+
+        if (locationId) {
+            localStorage.setItem('activeLocation', locationId); // Rehydrate
+        }
+    }
+
+    return locationId || null;
 }
 
 // --- Vendor Helpers ---
@@ -29,16 +60,13 @@ function setCurrentVendors(vendorInput) {
         newVendors = vendorInput.map(v => parseInt(v, 10));
     }
 
-    // ✅ Replace instead of merge
     const updatedList = Array.from(new Set(newVendors));
-
     localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
 
     if (updatedList.length > 0) {
         localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
     }
 }
-
 
 function getActiveVendor() {
     return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
