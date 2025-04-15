@@ -12,8 +12,8 @@ export const IosPwaInstallService = (() => {
         return ('standalone' in window.navigator) && window.navigator.standalone;
     };
 
-    const hasAgreed = () => localStorage.getItem("iosA2HSAgree") === "true";
-    const hasDenied = () => localStorage.getItem("iosA2HSDeny") === "true";
+    const hasAgreed = () => localStorage.getItem("iosA2HS") === "true";
+    const hasDenied = () => localStorage.getItem("iosA2HS") === "false";
 
     const shouldShowPrompt = () => {
         return !(hasAgreed() || hasDenied());

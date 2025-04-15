@@ -45,7 +45,3 @@
     padding: 0;
     line-height: 1;
 }
-
-main.flex-fill {
-    overflow: auto; /* Let the main content scroll if needed */
-}

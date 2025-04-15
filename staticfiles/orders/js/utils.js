@@ -79,3 +79,12 @@ function setViewportHeightVar() {
 window.addEventListener('resize', setViewportHeightVar);
 window.addEventListener('orientationchange', setViewportHeightVar);
 document.addEventListener('DOMContentLoaded', setViewportHeightVar);
+window.addEventListener('load', setViewportHeightVar);
+window.addEventListener('focusin', setViewportHeightVar);   // Handle keyboard open
+window.addEventListener('focusout', setViewportHeightVar);  
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+        const isKeyboardOpen = window.visualViewport.height < window.innerHeight;
+        document.body.classList.toggle('keyboard-open', isKeyboardOpen);
+    });
+}

@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const agreeBtn = document.getElementById("ios-a2hs-agree");
     if (agreeBtn) {
         agreeBtn.addEventListener("click", () => {
-            localStorage.setItem("iosA2HSAgree", "true");
+            localStorage.setItem("iosA2HS", "true");
             IosPwaInstallService.dismiss();
         });
     }
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const denyBtn = document.getElementById("ios-a2hs-deny");
     if (denyBtn) {
         denyBtn.addEventListener("click", () => {
-            localStorage.setItem("iosA2HSDeny", "true");
+            localStorage.setItem("iosA2HS", "false");
             IosPwaInstallService.dismiss();
         });
     }

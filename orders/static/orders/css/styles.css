@@ -26,8 +26,8 @@ body {
     height: 7vh;
     object-fit: cover;
     border-radius: 50%;
-    border: 2px solid #f8f9fa;
-    background-color: #f8f9fa;  
+    border: 2px solid #ffffff;
+    background-color: #ffffff;  
 }
 #vendor-logo-bar {
     padding: 0.5rem;

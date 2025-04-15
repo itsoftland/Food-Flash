@@ -3,11 +3,10 @@ import { AddOutletService } from "./services/addOutletService.js"; // adjust the
 import { MenuModalService } from './services/menuModalService.js';
 import { FeedbackService } from "./services/feedBackService.js";
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
-
+import { PermissionService } from "./services/permissionService.js";
 
 document.addEventListener('DOMContentLoaded', async function() {
     setViewportHeightVar();
-    const permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
     const chatContainer = document.getElementById('chat-container');
     const chatInput = document.getElementById('chat-input');
@@ -47,6 +46,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     MenuModalService.init();
     FeedbackService.init();
     IosPwaInstallService.init();
+    PermissionService.init();
+    PermissionService.showModal();
     // Example usage: Get the last active vendor ID
 
     const vendorIdsString = localStorage.getItem("selectedVendors");
@@ -181,41 +182,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (braveDetected) {
         alert("It looks like you're using Brave. Please ensure:\n\n1. Brave Settings > Privacy and Security > Site and Shields Settings > Notifications > 'Sites can ask to send notifications' is ON.\n2. Enable 'Use Google Services for Push Messaging' if shown.\n\nOtherwise, push notifications may fail.");
     }
-    
-    // Show permission modal
-    permissionModal.show();
-
-    // Grant permission button
-    document.getElementById('grant-permission').addEventListener('click', ()=> {
-        permissionModal.hide();
-        requestPermissions();
-        playWelcomeMessage();
-    });
-
-    // Deny permission button
-    document.getElementById('deny-permission').addEventListener('click', function() {
-        permissionModal.hide();
-        alert('Permissions denied. Service may not function properly.');
-    });
- 
-    // Additional function to request other permissions or do setup
-    function requestPermissions() {
-        Notification.requestPermission().then(permission => {
-            console.log("permission:",permission);
-            if (permission === "granted") {
-                console.log("Notifications allowed!");
-            } else {
-                console.log("Notifications denied!");
-            }
-        });
-    }
-
-    // Welcome message
-    function playWelcomeMessage() {
-        const welcomeMessage = new SpeechSynthesisUtterance('Hi, Welcome, Good Day. Please enter the Bill Number and send to track your order.');
-        speechSynthesis.speak(welcomeMessage);
-    }
-
     // Buttons for notification modal
     document.getElementById('ok-notification').addEventListener('click', function() {
         notificationModal.hide();
@@ -470,17 +436,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     
 
     // Send button logic
-    sendButton.addEventListener('click', function () {
+    sendButton.addEventListener('click', async function () {
         const message = chatInput.value.trim();
         if (message !== '') {
-            if (IosPwaInstallService.shouldRePrompt()) {
-                IosPwaInstallService.showModal(); // Remind the user to install
+            const granted = await PermissionService.requestPermissions();
+
+            if (!granted) {
+                console.warn("Notification not enabled. Proceeding without push alerts.");
             }
+
+            if (IosPwaInstallService.shouldRePrompt()) {
+                IosPwaInstallService.showModal();
+            }
+
             appendMessage(message, 'user');
             chatInput.value = '';
             fetchOrderStatusOnce(message);
         }
     });
+
 
     // Single check to confirm the order status
     function fetchOrderStatusOnce(token) {
@@ -525,30 +499,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
     }
 
-    // function showChatWindow(data) {
-    //     window.onload = function () {
-    //         document.querySelector('.chat-container').style.display = "none";
-    //         setTimeout(() => {
-    //             document.querySelector('.chat-container').style.display = "block";
-    //         }, 100);
-    //     };
-    //     setTimeout(() => {
-    //         chatContainer.scrollTop = chatContainer.scrollHeight;
-    //       }, 50);
-    //     if (data && data.token_no) {
-
-    //         chatInput.value = data.token_no;
-    //         chatInput.value = '';
-    //     }
-        
-       
-    //     chatContainer.scrollIntoView({ behavior: "smooth" });
-    
-    //     console.log("Chat window is now open or refreshed.", data);
-    // }
     function showChatWindow(data) {
         const chatContainer = document.querySelector('.chat-container');
-        const chatInput = document.getElementById('chat-input'); // Assuming it's the input field
+        const chatInput = document.getElementById('chat-input'); 
     
         if (!chatContainer || !chatInput) return;
     
@@ -566,7 +519,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Set token if available
         if (data && data.token_no) {
             chatInput.value = data.token_no;
-            chatInput.value = '';  // Not sure why this is cleared immediately after setting?
+            chatInput.value = '';  
         }
     
         chatContainer.scrollIntoView({ behavior: "smooth" });
