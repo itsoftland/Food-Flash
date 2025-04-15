@@ -11,7 +11,7 @@ def outlet_selection(request):
     location_id = request.GET.get("location_id")
     context = {}  # Add any extra context here if needed
 
-    response = render(request, "orders/outlet_selection.html", context)
+    response = render(request, "orders/landing_page.html", context)
 
     if location_id:
         # Set cookie for 30 days (optional: domain='yourdomain.com' if needed)
@@ -21,7 +21,7 @@ def outlet_selection(request):
 
 def home(request):
     cache.clear()
-    return render(request, 'orders/index.html')
+    return render(request, 'orders/index2.html')
 
 
 @api_view(['GET'])

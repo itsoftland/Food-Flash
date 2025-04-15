@@ -1,6 +1,8 @@
 {% extends "orders/layouts/base.html" %}
 {% load static %}
 
+{% block body_class %}fixed-body{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'orders/css/styles.css' %}">
 <link rel="stylesheet" href="{% static 'orders/css/outlet_selection.css' %}">
@@ -43,8 +45,6 @@
                 <input type="text" id="chat-input" class="form-control rounded-pill" placeholder="Enter your message...">
                 <button id="send-button" class="btn text-white rounded-pill px-8">Send</button>
             </div>
-        </div>
-        <div id="bottom-div">
         </div>
     </div>
 </div> 

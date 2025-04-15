@@ -1,0 +1,42 @@
+{% extends "orders/layouts/base.html" %}
+{% load static %}
+{% block body_class %}fixed-body{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'orders/css/main.css' %}">
+<link rel="stylesheet" href="{% static 'orders/css/outlet_selection.css' %}">
+{% endblock %}
+{% block content %}
+<div class="page-wrapper">
+    <!-- Header and Slider -->
+    <div class="header-bar flex-shrink-0">
+        <div id="vendor-logo-bar" class="d-flex justify-content-between align-items-center px-3 pt-2">
+            <div class="add-btn-wrapper flex-shrink-0">
+                <button id="add-outlet-btn" class="btn add-outlet-btn" data-bs-toggle="modal" data-bs-target="#addOutletModal">+</button>
+            </div>
+        </div>
+    </div>
+    <div id="ad-slider-wrapper" class="ad-slider flex-shrink-0 px-3 pt-2">
+        <div id="ad-slider" class="d-flex justify-content-start gap-2 overflow-auto"></div>
+    </div>
+    <!-- Scrollable Chat Area -->
+    <div class="chat-response px-1 overflow-auto" id="chat-container">
+    </div>
+</div>
+<!-- MOVE FOOTER OUTSIDE -->
+<div class="chat-footer px-3 pt-2 pb-2">
+    <div class="predefined-buttons d-flex justify-content-between pb-2">
+        <button id="menu-button" class="menu-button btn text-white rounded-pill px-4" data-menu-url="">Menu</button>
+        <button id="rating-button" class="menu-button btn text-white rounded-pill px-4">Rating</button>
+        <button id="feedback-button" class="menu-button btn text-white rounded-pill px-4">Feedback</button>
+    </div>
+    <div class="d-flex">
+        <input type="text" id="chat-input" class="form-control rounded-pill me-2" placeholder="Enter your message...">
+        <button id="send-button" class="btn text-white rounded-pill px-4">Send</button>
+    </div>
+</div>
+<!-- Modals -->
+{% include "orders/partials/index_modals.html" %}
+{% endblock %}
+{% block extra_js %}
+<script type="module" src="{% static 'orders/js/scripts.js' %}"></script>
+{% endblock %}

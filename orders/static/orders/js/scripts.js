@@ -97,6 +97,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             logo.addEventListener("click", () => {
                 console.log('vendor',vendor)
                 handleOutletSelection(vendor.vendor_id);
+                localStorage.setItem("selectedOutletName", vendor.name);
+                showWelcomeMessage(vendor.name);
             });
 
             logoContainer.appendChild(logo);
@@ -128,6 +130,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log("Selected Vendor ID:", vendorId);
         const activeVendor = getActiveVendor();
         console.log("Active Vendor ID:", activeVendor);
+    }
+    const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
+    showWelcomeMessage(outletName)
+    function showWelcomeMessage(outletName) {
+        const chatContainer = document.getElementById("chat-container");
+        if (!chatContainer) return;
+    
+        chatContainer.innerHTML = ""; // Clear previous messages (optional)
+    
+        const messages = [
+            `Hi, Good Day! Welcome to ${outletName}.`,
+            "Kindly enter the Bill Number and Send so that we can track your order."
+        ];
+    
+        messages.forEach(msg => {
+            const bubble = document.createElement("div");
+            bubble.classList.add("message-bubble", "server");
+            bubble.textContent = msg;
+            chatContainer.appendChild(bubble);
+        });
+    
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
     
 

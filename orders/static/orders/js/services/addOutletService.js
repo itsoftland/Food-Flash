@@ -88,7 +88,18 @@ export const AddOutletService = (() => {
                 return;
             }
 
-            const finalVendorIds = Array.from(selectedVendorIds).join(",");
+            const vendorIdArray = Array.from(selectedVendorIds);
+            const finalVendorIds = vendorIdArray.join(",");
+
+            // ✅ Get the last selected outlet's vendor ID
+            const lastVendorId = vendorIdArray[vendorIdArray.length - 1];
+
+            // ✅ Find that tile and get its name
+            const selectedTile = document.querySelector(`.outlet-tile[data-vendor-id="${lastVendorId}"]`);
+            const selectedOutletName = selectedTile?.dataset?.name || "Outlet";
+
+            // ✅ Save to localStorage
+            localStorage.setItem("selectedOutletName", selectedOutletName);
             window.location.href = `/home/?location_id=${locationId}&vendor_id=${finalVendorIds}`;
         });
     };

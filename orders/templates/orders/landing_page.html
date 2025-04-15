@@ -1,6 +1,8 @@
 {% extends "orders/layouts/base.html" %}
 {% load static %}
 
+{% block body_class %}scrollable-body{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'orders/css/landing_page.css' %}">
 <link rel="stylesheet" href="{% static 'orders/css/outlet_selection.css' %}">
@@ -12,6 +14,7 @@
     <div id="outlet-list" class="outlet-grid"></div>
     <button id="continue-btn" class="continue-btn">Continue</button>
 </div>
+
 <!-- Modals -->
 {% include "orders/partials/base_modals.html" %}
 {% endblock %}

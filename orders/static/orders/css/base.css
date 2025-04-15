@@ -34,7 +34,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 45px;
+    height: 50px;
     z-index: 1030;
     box-sizing: border-box;
     flex-shrink: 0;
@@ -44,4 +44,15 @@
     margin: 0;
     padding: 0;
     line-height: 1;
+}
+
+.scrollable-body main.flex-fill {
+    overflow: auto;
+    padding-top: 70px;
+    padding-bottom: 60px;
+}
+
+.fixed-body main.flex-fill {
+    overflow: hidden;
+    padding: 0;
 }
