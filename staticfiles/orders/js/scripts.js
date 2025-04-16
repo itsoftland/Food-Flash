@@ -60,15 +60,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             .map(id => parseInt(id))
             .filter(id => Number.isInteger(id) && !isNaN(id));
 
-        // Assuming vendorIds is already available
-        (async () => {
-            const adsData = await AdSliderService.fetchAds(vendorIds);
-            const vendorAdsArray = adsData.map(vendor => vendor.ads);
-            const interleavedAds = AdSliderService.interleaveAds(vendorAdsArray);
-
-            AdSliderService.renderAds(interleavedAds);
-            AdSliderService.initModalListeners();
-        })();
+        if (vendorIds.length > 0) {
+            try {
+                const adsData = await AdSliderService.fetchAds(vendorIds);
+                const vendorAdsArray = adsData.map(vendor => vendor.ads);
+                const interleavedAds = AdSliderService.interleaveAds(vendorAdsArray);
+                AdSliderService.renderAds(interleavedAds);
+                AdSliderService.init();
+            } catch (err) {
+                console.error("Failed to load ads:", err);
+            }
+        }
 
        
 

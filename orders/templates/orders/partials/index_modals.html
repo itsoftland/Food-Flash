@@ -18,10 +18,22 @@
   </div>
   
 
-<div id="ad-modal" class="ad-modal">
-    <span class="ad-modal-close">&times;</span>
-    <img class="ad-modal-content" id="ad-modal-img">
+<!-- Modal for Ad View -->
+<div class="modal fade" id="ad-modal" tabindex="-1" aria-labelledby="adModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="adModalLabel">Advertisement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" id="ad-modal-close" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="ad-modal-img" src="" alt="Ad" class="img-fluid rounded" style="max-height: 70vh; object-fit: contain;" />
+      </div>
+    </div>
+  </div>
 </div>
+<!-- Modal for Ad View End -->
+
 
 <div class="modal fade" id="menuImageModal" tabindex="-1" aria-labelledby="menuImageModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
