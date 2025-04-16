@@ -226,44 +226,73 @@ body.fixed-body {
 .message-row {
     display: flex;
     width: 100%;
+    margin: 4px 0;
     justify-content: space-between;
     align-items:last baseline;
 }
 
+/* Align user messages to right */
+.message-row.user {
+    justify-content: flex-end;
+}
+
+/* Align server messages to left */
+.message-row.server {
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+/* Message bubble */
 .message-bubble {
     max-width: 70%;
     padding: 8px 18px;
-    border-radius: 15px;
     margin: 4px 0;
+    border-radius: 15px;
     word-wrap: break-word;
     display: inline-block;
     clear: both;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
+/* Message content */
 .message-content {
     font-size: 1rem;
 }
 
+/* Timestamp */
 .message-timestamp {
-    font-size: 0.6rem;
-    opacity: 0.5;
+    font-size: 0.65rem;
+    opacity: 0.6;
     white-space: nowrap;
-    margin-left: 8px;
+    margin-top: 6px;
+    text-align: right;
+    padding-left:10px;
 }
 
-/* Server Message Styles */
+/* Server message bubble */
 .message-bubble.server {
     background: var(--secondary-color);
     color: white;
     border-bottom-left-radius: 5px;
-    align-self: flex-start;
 }
 
-/* User Message Styles */
+/* User message bubble */
 .message-bubble.user {
     background: var(--primary-color);
     color: white;
     border-bottom-right-radius: 5px;
+}
+
+/* Server logo outside the chat bubble */
+.server-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+    border: 2px solid #fff;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
     align-self: flex-end;
 }
 

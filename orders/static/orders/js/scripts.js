@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                             // Add active to clicked one
                             logo.classList.add("active");
-                            handleOutletSelection(vendor.vendor_id);
+                            handleOutletSelection(vendor.vendor_id,vendor.logo_url);
                             localStorage.setItem("selectedOutletName", vendor.name);
                             showWelcomeMessage(vendor.name);
                         });
@@ -146,7 +146,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     // Store selected vendor ID
-    function handleOutletSelection(vendorId) {
+    function handleOutletSelection(vendorId,vendor_logo) {
+        localStorage.setItem("activeVendorLogo",vendor_logo);
+
         localStorage.setItem('activeVendor', vendorId);
         console.log("Selected Vendor ID:", vendorId);
         const activeVendor = getActiveVendor();
@@ -452,33 +454,49 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
     }
 
-    // Chat messaging
     function appendMessage(text, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message-bubble', sender);
+        const messageRow = document.createElement('div');
+        messageRow.classList.add('message-row', sender);
     
         // Get current time in HH:MM AM/PM format
         const now = new Date();
         const timeStamp = now.toLocaleTimeString([], { 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          hour12: true 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
         });
     
-        // Create message content with flex layout
-        messageDiv.innerHTML = `
-          <div class="message-row">
-            <div class="message-content">${text}</div>
-            <div class="message-timestamp">
-              ${timeStamp}
-              <span class="message-check">&#10003;</span>
+        // Create message bubble
+        const messageBubble = document.createElement('div');
+        messageBubble.classList.add('message-bubble', sender);
+        messageBubble.innerHTML = `
+            <div class="message-row">
+                <div class="message-content">${text}</div>
+                <div class="message-timestamp">
+                    ${timeStamp}
+                    <span class="message-check">&#10003;</span>
+                </div>
             </div>
-          </div>
         `;
     
-        chatContainer.appendChild(messageDiv);
+        // Add logo for server
+        if (sender === 'server') {
+            const activeLogo = localStorage.getItem("activeVendorLogo") || '/static/images/default-logo.png';
+            const logoImg = document.createElement('img');
+            logoImg.src = activeLogo;
+            logoImg.alt = 'Vendor Logo';
+            logoImg.className = 'server-logo';
+    
+            messageRow.appendChild(logoImg);
+        }
+    
+        messageRow.appendChild(messageBubble);
+    
+        chatContainer.appendChild(messageRow);
         chatContainer.scrollTop = chatContainer.scrollHeight; // Auto-scroll to bottom
     }
+    
+    
     
 
     // Send button logic
