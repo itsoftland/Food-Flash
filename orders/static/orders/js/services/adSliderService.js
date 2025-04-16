@@ -39,24 +39,27 @@ export const AdSliderService = (() => {
     };
 
     const renderAds = (ads, containerId = "ad-slider") => {
-        const adContainer = document.getElementById(containerId);
-        if (!adContainer) return;
+        const container = document.getElementById(containerId);
+        if (!container) return;
 
-        adContainer.innerHTML = "";
+        container.innerHTML = "";
 
-        const baseAds = [...ads];
-        const allAds = baseAds.concat(baseAds); // Duplicate for infinite scroll
+        const track = document.createElement("div");
+        track.classList.add("ad-slider-track");
 
-        allAds.forEach(adUrl => {
+        const duplicatedAds = [...ads, ...ads]; // Infinite loop
+
+        duplicatedAds.forEach(adUrl => {
             const img = document.createElement("img");
             img.src = adUrl;
             img.alt = "Advertisement";
             img.classList.add("ad-slide");
-             // ✅ iOS rendering fixes
+
+            // ✅ iOS-specific rendering fixes
             img.style.willChange = "transform";
             img.style.backfaceVisibility = "hidden";
-            img.style.WebkitTransform = "translateZ(0)"; // iOS GPU trigger
-            img.loading = "eager"; // force load early
+            img.style.WebkitTransform = "translateZ(0)";
+            img.loading = "eager";
             img.width = 180;
             img.height = 100;
 
@@ -64,20 +67,38 @@ export const AdSliderService = (() => {
                 openAdModal(adUrl);
             });
 
-            adContainer.appendChild(img);
+            track.appendChild(img);
         });
-        // 👇 Wait for layout paint before triggering animation
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                adContainer.classList.add("start-scroll");
-            });
-        });
+
+        container.appendChild(track);
+
+        // Start scrolling using JavaScript transform loop
+        startScroll(track);
+    };
+
+    const startScroll = (track) => {
+        let offset = 0;
+        const speed = 0.5; // px per frame
+
+        const scroll = () => {
+            offset -= speed;
+            const resetThreshold = track.scrollWidth / 2;
+
+            if (Math.abs(offset) >= resetThreshold) {
+                offset = 0;
+            }
+
+            track.style.transform = `translateX(${offset}px)`;
+            requestAnimationFrame(scroll);
+        };
+
+        scroll();
     };
 
     const openAdModal = (src) => {
         const modalElement = document.getElementById("ad-modal");
         const modalImg = document.getElementById("ad-modal-img");
-    
+
         if (modalElement && modalImg) {
             modalImg.src = src;
             const bsModal = new bootstrap.Modal(modalElement, {
@@ -87,17 +108,17 @@ export const AdSliderService = (() => {
             bsModal.show();
         }
     };
-    
+
     const initModalListeners = () => {
         const modalElement = document.getElementById("ad-modal");
         if (!modalElement) return;
-    
+
         modalElement.addEventListener("hidden.bs.modal", () => {
             const modalImg = document.getElementById("ad-modal-img");
-            if (modalImg) modalImg.src = ""; // clear when closed
+            if (modalImg) modalImg.src = "";
         });
     };
-    
+
     const init = () => {
         initModalListeners();
     };

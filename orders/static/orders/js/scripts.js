@@ -52,14 +52,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const vendorIdsString = localStorage.getItem("selectedVendors");
     if (vendorIdsString) {
-        console.log(vendorIdsString,"vendoridsstring")
+        console.log(vendorIdsString, "vendoridsstring");
         const vendorIdsArray = JSON.parse(vendorIdsString);
-
-        // Make sure to filter only integers
+    
         const vendorIds = vendorIdsArray
             .map(id => parseInt(id))
             .filter(id => Number.isInteger(id) && !isNaN(id));
-
+    
         if (vendorIds.length > 0) {
             try {
                 const adsData = await AdSliderService.fetchAds(vendorIds);
@@ -70,69 +69,90 @@ document.addEventListener('DOMContentLoaded', async function() {
             } catch (err) {
                 console.error("Failed to load ads:", err);
             }
+    
+            fetch("/api/get_vendor_logos/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({ vendor_ids: vendorIds }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const logoContainer = document.getElementById("vendor-logo-bar");
+                const activeVendorId = getActiveVendor();
+                console.log("vennnnn",activeVendorId)
+    
+                if (logoContainer) {
+                    logoContainer.innerHTML = "";
+    
+                    data.forEach(vendor => {
+                        const logo = document.createElement("img");
+                        logo.src = vendor.logo_url;
+                        logo.alt = vendor.name;
+                        logo.classList.add("vendor-logo");
+                        logo.dataset.vendorId = vendor.vendor_id;
+    
+                        // Add highlight if active
+                        if (vendor.vendor_id === activeVendorId) {
+                            console.log("success")
+                            logo.classList.add("active");
+    
+                            // Scroll into view after render
+                            setTimeout(() => {
+                                logo.scrollIntoView({
+                                    behavior: "smooth",
+                                    inline: "center",
+                                    block: "nearest"
+                                });
+                            }, 100);
+                        }
+    
+                        logo.addEventListener("click", () => {
+                            document.querySelectorAll('.vendor-logo').forEach(el => el.classList.remove('active'));
+
+                            // Add active to clicked one
+                            logo.classList.add("active");
+                            handleOutletSelection(vendor.vendor_id);
+                            localStorage.setItem("selectedOutletName", vendor.name);
+                            showWelcomeMessage(vendor.name);
+                        });
+    
+                        logoContainer.appendChild(logo);
+                    });
+    
+                    // Add spacer and "+" button
+                    const spacer = document.createElement("div");
+                    spacer.style.flex = "1";
+    
+                    const addBtnWrapper = document.createElement("div");
+                    addBtnWrapper.className = "add-btn-wrapper flex-shrink-0 ms-2";
+                    addBtnWrapper.innerHTML = `
+                        <button id="add-outlet-btn" class="btn add-outlet-btn">+</button>
+                    `;
+    
+                    logoContainer.appendChild(spacer);
+                    logoContainer.appendChild(addBtnWrapper);
+    
+                    AddOutletService.init();
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching vendor logos:", error);
+            });
         }
-
-       
-
-        fetch("/api/get_vendor_logos/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken(),  // ensure CSRF token is handled
-        },
-        credentials: "same-origin",
-        body: JSON.stringify({ vendor_ids: vendorIds }),
-        })
-        .then(response => response.json())
-        .then(data => {
-        const logoContainer = document.getElementById("vendor-logo-bar");
-        if (logoContainer) {
-            logoContainer.innerHTML = ""; // Clear any existing logos
-            data.forEach(vendor => {
-            const logo = document.createElement("img");
-            logo.src = vendor.logo_url;
-            logo.alt = vendor.name;
-            logo.classList.add("vendor-logo"); // for future CSS styling
-            logo.dataset.vendorId = vendor.vendor_id;
-            
-            // Add event listener for outlet selection (used later)
-            logo.addEventListener("click", () => {
-                console.log('vendor',vendor)
-                handleOutletSelection(vendor.vendor_id);
-                localStorage.setItem("selectedOutletName", vendor.name);
-                showWelcomeMessage(vendor.name);
-            });
-
-            logoContainer.appendChild(logo);
-            });
-            // ✅ Add "+" Button at the end
-            const addBtnWrapper = document.createElement("div");
-            addBtnWrapper.className = "add-btn-wrapper flex-shrink-0 ms-2";
-            addBtnWrapper.innerHTML = `
-                <button id="add-outlet-btn" class="btn add-outlet-btn">+</button>
-            `;
-            const spacer = document.createElement("div");
-            spacer.style.flex = "1"; // pushes the + button to the end
-
-            logoContainer.appendChild(spacer);
-            logoContainer.appendChild(addBtnWrapper);
-            // ✅ Init modal handlers after button is injected
-            AddOutletService.init();
-            }
-        })
-        .catch(error => {
-        console.error("Error fetching vendor logos:", error);
-        });
-        
     }
-
+    
+    // Store selected vendor ID
     function handleOutletSelection(vendorId) {
-        // Placeholder for next step
         localStorage.setItem('activeVendor', vendorId);
         console.log("Selected Vendor ID:", vendorId);
         const activeVendor = getActiveVendor();
         console.log("Active Vendor ID:", activeVendor);
     }
+    
     const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
     showWelcomeMessage(outletName)
     function showWelcomeMessage(outletName) {
