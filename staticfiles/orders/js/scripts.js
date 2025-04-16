@@ -488,6 +488,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             logoImg.className = 'server-logo';
     
             messageRow.appendChild(logoImg);
+            messageRow.appendChild(messageBubble);
         }
     
         messageRow.appendChild(messageBubble);
