@@ -5,12 +5,21 @@
     width: 100%;
     z-index: 1000;
     display: flex;
+    justify-content: flex-end; /* Align title to the right */
     align-items: center;
-    justify-content: space-between; 
-    padding: 0rem 1rem; 
+    padding:1rem 1rem;
     background-color: white;
-    color: #052c65; 
-    
+    color: #052c65;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Thin and subtle shadow */
+}
+
+.header-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding-right: 0.25rem;
+    font-family: 'Poppins';
+    letter-spacing: 1px;
 }
 
 .header-logo {
@@ -19,11 +28,7 @@
     padding-left: 0.25rem;
 }
 
-.header-title {
-    margin: 0;
-    font-size: 1.5rem;
-    padding-right: 0.25rem;
-}
+
 
 .custom-footer {
     position: fixed;
@@ -31,6 +36,7 @@
     width: 100%;
     background-color: #ffffff;
     color: #052c65;
+    font-family: 'Poppins';
     display: flex;
     justify-content: center;
     align-items: center;

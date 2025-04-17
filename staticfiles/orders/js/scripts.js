@@ -101,7 +101,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                         // Add highlight if active
                         if (vendor.vendor_id === activeVendorId) {
                             wrapper.classList.add("active");
-                    
+                            localStorage.setItem("selectedOutletName", vendor.name);
+                            localStorage.setItem("activeVendorLogo",vendor.logo_url);
+                            const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
+                            showWelcomeMessage(outletName)
                             // Scroll into view after render
                             setTimeout(() => {
                                 wrapper.scrollIntoView({
@@ -118,7 +121,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                             // Add active to clicked one
                             wrapper.classList.add("active");
                             handleOutletSelection(vendor.vendor_id, vendor.logo_url);
-                            localStorage.setItem("selectedOutletName", vendor.name);
                             showWelcomeMessage(vendor.name);
                         });
                     
@@ -159,13 +161,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log("Active Vendor ID:", activeVendor);
     }
     
-    const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
-    showWelcomeMessage(outletName)
     function showWelcomeMessage(outletName) {
         const chatContainer = document.getElementById("chat-container");
         if (!chatContainer) return;
-    
-        chatContainer.innerHTML = ""; // Clear previous messages (optional)
     
         const messages = [
             `Hi, Good Day! Welcome to ${outletName}.`,
@@ -173,14 +171,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         ];
     
         messages.forEach(msg => {
-            const bubble = document.createElement("div");
-            bubble.classList.add("message-bubble", "server");
-            bubble.textContent = msg;
-            chatContainer.appendChild(bubble);
+            const messageRow = document.createElement("div");
+            messageRow.classList.add("message-row", "server");
+    
+            const logoImg = document.createElement("img");
+            logoImg.src = localStorage.getItem("activeVendorLogo") || "/static/images/default-logo.png";
+            logoImg.alt = "Vendor Logo";
+            logoImg.className = "server-logo";
+    
+            const messageBubble = document.createElement("div");
+            messageBubble.classList.add("message-bubble", "server");
+            messageBubble.textContent = msg;
+    
+            messageRow.appendChild(logoImg);
+            messageRow.appendChild(messageBubble);
+            chatContainer.appendChild(messageRow);
         });
     
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
+    
     
 
 
