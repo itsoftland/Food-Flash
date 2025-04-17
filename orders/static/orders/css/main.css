@@ -65,22 +65,35 @@ body.fixed-body {
     display: none;
 }
 
-/* Vendor logo styling */
-#vendor-logo-bar .vendor-logo {
+.vendor-logo-wrapper {
     width: 50px;
     height: 50px;
     border-radius: 50%;
     background-color: #fff;
-    object-fit: contain !important;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+/* Image inside circle - fully visible, never cropped */
+.vendor-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     transition: all 0.3s ease;
 }
 
 /* Premium look for active vendor logo */
-.vendor-logo.active {
-    border: 1px solid #052c65 !important;;
+.vendor-logo-wrapper.active {
+    border: 1px solid #052c65;
     transform: scale(1.1);
     z-index: 1;
     background-color: #ffffff;
+    box-shadow: 0 0 8px rgba(5, 44, 101, 0.25);
 }
 
 /* === ADD OUTLET BUTTON === */

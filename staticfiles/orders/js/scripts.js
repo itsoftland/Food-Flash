@@ -89,39 +89,43 @@ document.addEventListener('DOMContentLoaded', async function() {
                     logoContainer.innerHTML = "";
     
                     data.forEach(vendor => {
+                        const wrapper = document.createElement("div");
+                        wrapper.classList.add("vendor-logo-wrapper");
+                    
                         const logo = document.createElement("img");
                         logo.src = vendor.logo_url;
                         logo.alt = vendor.name;
                         logo.classList.add("vendor-logo");
                         logo.dataset.vendorId = vendor.vendor_id;
-    
+                    
                         // Add highlight if active
                         if (vendor.vendor_id === activeVendorId) {
-                            console.log("success")
-                            logo.classList.add("active");
-    
+                            wrapper.classList.add("active");
+                    
                             // Scroll into view after render
                             setTimeout(() => {
-                                logo.scrollIntoView({
+                                wrapper.scrollIntoView({
                                     behavior: "smooth",
                                     inline: "center",
                                     block: "nearest"
                                 });
                             }, 100);
                         }
-    
+                    
                         logo.addEventListener("click", () => {
-                            document.querySelectorAll('.vendor-logo').forEach(el => el.classList.remove('active'));
-
+                            document.querySelectorAll('.vendor-logo-wrapper').forEach(el => el.classList.remove('active'));
+                    
                             // Add active to clicked one
-                            logo.classList.add("active");
-                            handleOutletSelection(vendor.vendor_id,vendor.logo_url);
+                            wrapper.classList.add("active");
+                            handleOutletSelection(vendor.vendor_id, vendor.logo_url);
                             localStorage.setItem("selectedOutletName", vendor.name);
                             showWelcomeMessage(vendor.name);
                         });
-    
-                        logoContainer.appendChild(logo);
+                    
+                        wrapper.appendChild(logo);
+                        logoContainer.appendChild(wrapper);
                     });
+                    
     
                     // Add spacer and "+" button
                     const spacer = document.createElement("div");
