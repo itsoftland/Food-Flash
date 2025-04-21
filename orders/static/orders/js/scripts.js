@@ -115,11 +115,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                     
                         logo.addEventListener("click", () => {
                             document.querySelectorAll('.vendor-logo-wrapper').forEach(el => el.classList.remove('active'));
-                    
                             // Add active to clicked one
                             wrapper.classList.add("active");
+                            localStorage.setItem("selectedOutletName", vendor.name);
                             handleOutletSelection(vendor.vendor_id, vendor.logo_url);
-                            showWelcomeMessage(vendor.name);
                         });
                     
                         wrapper.appendChild(logo);
@@ -166,16 +165,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         const cachedMessages = JSON.parse(localStorage.getItem(historyKey)) || [];
     
         cachedMessages.forEach(msg => {
-            appendMessage(msg.text, msg.sender);
+            appendMessage(msg.text, msg.sender, msg.timestamp); // Pass the saved timestamp
         });
     
         // Done restoring history
         window.isRestoringHistory = false;
     
-        fetchVendorData(vendorId); // Optional fresh fetch
-    }
-    
-    
+        // fetchVendorData(vendorId); // Optional fresh fetch
+    }   
     
     function showWelcomeMessage(outletName) {
         const chatContainer = document.getElementById("chat-container");
@@ -447,7 +444,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
                 const messageHTML = `
                     <strong>${data.vendor_name || "Unknown"}</strong><br>
-                    <strong>Order Status:</strong> ${pushData.status || "Unknown"}<br>
+                    <strong>Status:</strong> ${pushData.status || "Unknown"}<br>
                     <strong>Counter No:</strong> ${pushData.counter_no || ""}<br>
                     <strong>Token No:</strong> ${pushData.token_no || ""}
                 `;
@@ -484,12 +481,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
     }
 
-    function appendMessage(text, sender) {
+    function appendMessage(text, sender, timestamp = null) {
         const messageRow = document.createElement('div');
         messageRow.classList.add('message-row', sender);
-    
-        const now = new Date();
-        const timeStamp = now.toLocaleTimeString([], { 
+        
+        // Use the passed timestamp if available, else generate the current time
+        const timeStamp = timestamp || new Date().toLocaleTimeString([], { 
             hour: '2-digit', 
             minute: '2-digit', 
             hour12: true 
@@ -506,7 +503,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 </div>
             </div>
         `;
-    
+        
         if (sender === 'server') {
             const activeLogo = localStorage.getItem("activeVendorLogo") || '/static/images/default-logo.png';
             const logoImg = document.createElement('img');
@@ -515,27 +512,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             logoImg.className = 'server-logo';
             messageRow.appendChild(logoImg);
         }
-    
+        
         messageRow.appendChild(messageBubble);
         chatContainer.appendChild(messageRow);
         chatContainer.scrollTop = chatContainer.scrollHeight;
-    
+        
         // ✅ Save only if not restoring history
         if (!window.isRestoringHistory) {
             const activeVendorId = localStorage.getItem("activeVendor");
             if (activeVendorId) {
                 const historyKey = `chat_history_${activeVendorId}`;
                 const existing = JSON.parse(localStorage.getItem(historyKey)) || [];
-                existing.push({ text, sender });
+                existing.push({ text, sender, timestamp: timeStamp }); // Save the timestamp
                 localStorage.setItem(historyKey, JSON.stringify(existing));
             }
         }
     }
-    
-    
-    
-    
-
     // Send button logic
     sendButton.addEventListener('click', async function () {
         const message = chatInput.value.trim();
@@ -575,7 +567,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const data = responseData;
                 const messageHTML = `
                     <strong>${data.vendor_name || "Unknown"}</strong><br>
-                    <strong>Order Status:</strong> ${data.status || "Unknown"}<br>
+                    <strong>Status:</strong> ${data.status || "Unknown"}<br>
                     <strong>Counter No:</strong> ${data.counter_no || "N/A"}<br>
                     <strong>Token No:</strong> ${token}
                 `;

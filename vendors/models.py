@@ -79,7 +79,21 @@ class PushSubscription(models.Model):
         return f"Subscription for {self.browser_id}"
 
 class Feedback(models.Model):
+    TYPE_CHOICES = [
+        ('complaint', 'Complaint'),
+        ('suggestion', 'Suggestion'),
+        ('compliment', 'Compliment'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('dish', 'Dish'),
+        ('service', 'Service'),
+    ]
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='feedbacks')
+    feedback_type = models.CharField(max_length=10, choices=TYPE_CHOICES, null=True, blank=True)
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, null=True, blank=True)
+    want_to_reach_us = models.BooleanField(default=False)
+    name = models.CharField(max_length=255, blank=True, null=True)  
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
