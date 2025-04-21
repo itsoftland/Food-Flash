@@ -149,15 +149,33 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
     
-    // Store selected vendor ID
-    function handleOutletSelection(vendorId,vendor_logo) {
-        localStorage.setItem("activeVendorLogo",vendor_logo);
-
-        localStorage.setItem('activeVendor', vendorId);
-        console.log("Selected Vendor ID:", vendorId);
-        const activeVendor = getActiveVendor();
-        console.log("Active Vendor ID:", activeVendor);
+    function handleOutletSelection(vendorId, vendor_logo) {
+        localStorage.setItem("activeVendor", vendorId);
+        localStorage.setItem("activeVendorLogo", vendor_logo);
+    
+        const chatContainer = document.getElementById("chat-container");
+        chatContainer.innerHTML = "";
+    
+        const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
+        showWelcomeMessage(outletName);
+    
+        // Flag to prevent history messages from being re-saved
+        window.isRestoringHistory = true;
+    
+        const historyKey = `chat_history_${vendorId}`;
+        const cachedMessages = JSON.parse(localStorage.getItem(historyKey)) || [];
+    
+        cachedMessages.forEach(msg => {
+            appendMessage(msg.text, msg.sender);
+        });
+    
+        // Done restoring history
+        window.isRestoringHistory = false;
+    
+        fetchVendorData(vendorId); // Optional fresh fetch
     }
+    
+    
     
     function showWelcomeMessage(outletName) {
         const chatContainer = document.getElementById("chat-container");
@@ -470,7 +488,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const messageRow = document.createElement('div');
         messageRow.classList.add('message-row', sender);
     
-        // Get current time in HH:MM AM/PM format
         const now = new Date();
         const timeStamp = now.toLocaleTimeString([], { 
             hour: '2-digit', 
@@ -478,7 +495,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             hour12: true 
         });
     
-        // Create message bubble
         const messageBubble = document.createElement('div');
         messageBubble.classList.add('message-bubble', sender);
         messageBubble.innerHTML = `
@@ -491,32 +507,31 @@ document.addEventListener('DOMContentLoaded', async function() {
             </div>
         `;
     
-        // Add logo for server
         if (sender === 'server') {
             const activeLogo = localStorage.getItem("activeVendorLogo") || '/static/images/default-logo.png';
             const logoImg = document.createElement('img');
             logoImg.src = activeLogo;
             logoImg.alt = 'Vendor Logo';
             logoImg.className = 'server-logo';
-    
             messageRow.appendChild(logoImg);
-            messageRow.appendChild(messageBubble);
         }
     
         messageRow.appendChild(messageBubble);
-    
         chatContainer.appendChild(messageRow);
-        // Save to localStorage by vendor
-        const activeVendorId = localStorage.getItem("activeVendor");
-        if (activeVendorId) {
-            const historyKey = `chat_history_${activeVendorId}`;
-            const existing = JSON.parse(localStorage.getItem(historyKey)) || [];
-            existing.push({ text, sender });
-            localStorage.setItem(historyKey, JSON.stringify(existing));
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+        // ✅ Save only if not restoring history
+        if (!window.isRestoringHistory) {
+            const activeVendorId = localStorage.getItem("activeVendor");
+            if (activeVendorId) {
+                const historyKey = `chat_history_${activeVendorId}`;
+                const existing = JSON.parse(localStorage.getItem(historyKey)) || [];
+                existing.push({ text, sender });
+                localStorage.setItem(historyKey, JSON.stringify(existing));
+            }
         }
-
-        chatContainer.scrollTop = chatContainer.scrollHeight; // Auto-scroll to bottom
     }
+    
     
     
     
