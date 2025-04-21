@@ -504,5 +504,30 @@ body.fixed-body {
     font-size: 0.8125rem;
   }
 }
+/* --------------------------------------------------
+   Close‑Button Positioning & Styling
+   -------------------------------------------------- */
+
+
+#multi-step-feedback .btn-link {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0a934;
+  text-decoration: none;
+  background-color: transparent;
+  border: none;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+#multi-step-feedback .btn-link:hover {
+  color: #f0a934;
+  transform: scale(1.1);
+  text-decoration: none;
+  cursor: pointer;
+}
 
 
