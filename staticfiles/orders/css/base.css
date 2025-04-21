@@ -9,7 +9,7 @@
     align-items: center;
     padding:1rem 1rem;
     background-color: white;
-    color: #052c65;
+    color: #f9aa33;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Thin and subtle shadow */
 }
 
@@ -18,25 +18,17 @@
     font-size: 1.5rem;
     font-weight: 600;
     padding-right: 0.25rem;
-    font-family: 'Poppins';
+    font-family: -apple-system;
     letter-spacing: 1px;
 }
-
-.header-logo {
-    height: 50px;
-    max-width: 100px;
-    padding-left: 0.25rem;
-}
-
-
 
 .custom-footer {
     position: fixed;
     bottom: 0;
     width: 100%;
     background-color: #ffffff;
-    color: #052c65;
-    font-family: 'Poppins';
+    color: #f9aa33;
+    font-family: -apple-system;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -430,10 +430,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
                 const messageHTML = `
+                    <strong>${data.vendor_name || "Unknown"}</strong><br>
                     <strong>Order Status:</strong> ${pushData.status || "Unknown"}<br>
                     <strong>Counter No:</strong> ${pushData.counter_no || ""}<br>
                     <strong>Token No:</strong> ${pushData.token_no || ""}
-                    
                 `;
                 appendMessage(messageHTML, 'server');
                 if (pushData.status === "ready") {
@@ -539,44 +539,53 @@ document.addEventListener('DOMContentLoaded', async function() {
     function fetchOrderStatusOnce(token) {
         const activeVendor = getActiveVendor();
         console.log("Active Vendor ID in order update:", activeVendor);
+    
         fetch(`/check-status/?token_no=${token}&vendor_id=${activeVendor}`)
-            .then(response => {
+            .then(async (response) => {
+                const responseData = await response.json();
+    
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorMessage = responseData.error || "An unknown error occurred.";
+                    appendMessage(`❌ ${errorMessage}`, 'server');
+                    throw new Error(`Server responded with error: ${errorMessage}`);
                 }
-                return response.json();
-            })
-            .then(data => {
+    
+                const data = responseData;
                 const messageHTML = `
-                    <strong>Outlet Name:</strong> ${data.vendor_name || "Unknown"}<br>
+                    <strong>${data.vendor_name || "Unknown"}</strong><br>
                     <strong>Order Status:</strong> ${data.status || "Unknown"}<br>
                     <strong>Counter No:</strong> ${data.counter_no || "N/A"}<br>
                     <strong>Token No:</strong> ${token}
                 `;
                 appendMessage(messageHTML, 'server');
-
+    
                 // If status is ready, notify user
                 if (data.status === "ready") {
                     playNotificationSound();
-                    const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${token} is ${data.status} at the counter ${data.counter_no}.`);
+                    const orderReadyMessage = new SpeechSynthesisUtterance(
+                        `Your Order ${token} is ${data.status} at the counter ${data.counter_no}.`
+                    );
                     speechSynthesis.speak(orderReadyMessage);
                     notificationModal.show();
                     const modalHeader = document.querySelector('#notificationModal .modal-body h5');
                     modalHeader.innerHTML = `Order <strong>${data.token_no}</strong> is <strong>${data.status}</strong> at Counter <strong>${data.counter_no}</strong>!`;
-                    
+    
                     if (navigator.vibrate) {
                         navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
                     }
                 }
-
-                // Finally, subscribe for push notifications with the token
-                subscribeToPushNotifications(token,data.vendor);
+    
+                // Subscribe for push notifications
+                subscribeToPushNotifications(token, data.vendor);
             })
             .catch(error => {
                 console.error("Error fetching order status:", error);
-                appendMessage("Error fetching order status. Please try again.", 'server');
+                if (!error.handled) {
+                    appendMessage("⚠️ Something went wrong. Please try again.", 'server');
+                }
             });
     }
+    
 
     function showChatWindow(data) {
         const chatContainer = document.querySelector('.chat-container');

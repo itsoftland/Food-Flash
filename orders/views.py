@@ -23,36 +23,50 @@ def home(request):
     cache.clear()
     return render(request, 'orders/index2.html')
 
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def check_status(request):
     token_no = request.GET.get('token_no')
     vendor_id = request.GET.get('vendor_id')
-    
+
+    # Validate presence
     if not token_no:
         return Response({'error': 'Token number is required.'}, status=status.HTTP_400_BAD_REQUEST)
-    
+    if not vendor_id:
+        return Response({'error': 'Vendor ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate integer format
+    try:
+        token_no = int(token_no)
+        if token_no <= 0:
+            return Response({'error': 'Token number must be a positive integer.'}, status=status.HTTP_400_BAD_REQUEST)
+    except ValueError:
+        return Response({'error': 'Token number must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        vendor_id = int(vendor_id)
+    except ValueError:
+        return Response({'error': 'Vendor ID must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         # Try to fetch the existing order by token_no
-        order = Order.objects.get(token_no=token_no,vendor__vendor_id=int(vendor_id))
+        order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id)
         data = {
             'vendor_name': order.vendor.name,
             'vendor': order.vendor.id,
             'token_no': order.token_no,
             'status': order.status,
-            'counter_no':order.counter_no,
+            'counter_no': order.counter_no,
             'message': 'Order retrieved successfully.'
         }
         return Response(data, status=status.HTTP_200_OK)
-    
+
     except Order.DoesNotExist:
         try:
-            # If order not found, create a new one with status 'preparing'
-            # Here, we assume a default vendor (e.g., vendor with id=1)
-            vendor = Vendor.objects.get(vendor_id=int(vendor_id))
+            # Create new order with status 'preparing'
+            vendor = Vendor.objects.get(vendor_id=vendor_id)
             new_order_data = {
-                'vendor_name':vendor.name,
+                'vendor_name': vendor.name,
                 'token_no': token_no,
                 'vendor': vendor.id,
                 'status': 'preparing',
@@ -65,11 +79,14 @@ def check_status(request):
                 return Response(data, status=status.HTTP_201_CREATED)
             else:
                 return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Vendor.DoesNotExist:
+            return Response({"error": "Vendor not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     
 from django.conf import settings
 @api_view(['GET'])

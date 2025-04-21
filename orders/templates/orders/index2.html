@@ -30,9 +30,11 @@
         <button id="feedback-button" class="menu-button btn text-white rounded-pill px-4">Feedback</button>
     </div>
     <div class="d-flex">
-        <input type="text" id="chat-input" class="form-control rounded-pill me-2" placeholder="Enter your message...">
-        <button id="send-button" class="btn text-white rounded-pill px-4">Send</button>
-    </div>
+        <input type="text" id="chat-input" class="form-control rounded-pill me-2" placeholder="Enter your token...">
+        <button id="send-button" class="btn rounded-pill d-flex align-items-center justify-content-center">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>    
 </div>
 <!-- Modals -->
 {% include "orders/partials/index_modals.html" %}
