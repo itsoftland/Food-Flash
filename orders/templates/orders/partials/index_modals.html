@@ -11,7 +11,7 @@
           <div id="outlet-list" class="outlet-grid"></div>
         </div>
         <div class="modal-footer justify-content-center">
-          <button id="continue-btn" class="continue-btn">Continue</button>
+          <button id="continue-btn" class="btn-outline-primary continue-btn">Continue</button>
         </div>
       </div>
     </div>
@@ -56,8 +56,8 @@
         <h5 class="">Please grant permissions to play sound, receive notifications, and enable vibration.</h5>       
       </div>
       <div class="modal-footer d-flex flex-row justify-content-between">
-        <button type="button" class="btn btn-secondary flex-fill me-2" id="grant-permission">I’ll Do It</button>
-        <button type="button" class="btn btn-outline-secondary flex-fill" id="deny-permission">No Thanks</button>
+        <button type="button" class="btn btn-outline-primary flex-fill me-2" id="grant-permission">I’ll Do It</button>
+        <button type="button" class="btn btn-outline-primary flex-fill" id="deny-permission">No Thanks</button>
       </div> 
     </div>
   </div>
@@ -79,7 +79,7 @@
         </ul>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" data-bs-dismiss="modal">Okay</button>
+        <button class="btn btn-outline-primary" data-bs-dismiss="modal">Okay</button>
       </div>
     </div>
   </div>
@@ -91,29 +91,11 @@
         <div class="modal-content">
             <div class="modal-body text-center py-4">
                 <h5 class="mb-4"></h5>
-                <button id="ok-notification" class="btn btn-primary px-4 me-2">OK</button>
-                <button id="disable-notifications" class="btn btn-outline-danger px-4">Disable Notifications</button>
+                <button id="ok-notification" class="btn btn-outline-primary px-4 me-2">OK</button>
+                <button id="disable-notifications" class="btn btn-outline-primary px-4">Disable Notifications</button>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Feedback Modal -->
-<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content rounded-3">
-      <div class="modal-header">
-        <h5 class="modal-title" id="feedbackModalLabel">Submit Feedback</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <textarea id="feedback-textarea" class="form-control" placeholder="Write your feedback here..." rows="5"></textarea>
-      </div>
-      <div class="modal-footer">
-        <button id="submit-feedback-btn" class="btn btn-primary rounded-pill px-4">Submit</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <div id="multi-step-feedback" class="card p-4 rounded-4 shadow-sm" style="display: none;">

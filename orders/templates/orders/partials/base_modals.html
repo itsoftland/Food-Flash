@@ -10,14 +10,14 @@
       <div class="modal-body">
         <p><strong>To receive real-time order updates</strong>, please add <strong>Food Flash</strong> to your iPhone or iPad home screen.</p>
         <p>Tap the <strong>Share</strong> icon 
-          <img src="{% static 'orders/images/ios-share-button.png' %}" alt="Share Icon" style="width: 24px; vertical-align: middle;"> 
-          and then select <strong>"Add to Home Screen"</strong>.
+          <img src="{% static 'orders/images/ios-share-button.png' %}" alt="Share Icon" style="width: 20px; vertical-align: middle;"> 
+          on <strong>safari browser</strong> and then select <strong>"Add to Home Screen"</strong>.
         </p>
-        <img src="{% static 'orders/images/ios-share-button.png' %}" alt="Food Flash Logo" style="width: 60px; margin-top: 10px;">
+        {% comment %} <img src="{% static 'orders/images/ios-share-button.png' %}" alt="Food Flash Logo" style="width: 60px; margin-top: 10px;"> {% endcomment %}
       </div>
       <div class="modal-footer d-flex flex-row justify-content-between">
-        <button type="button" class="btn btn-secondary flex-fill me-2" id="ios-a2hs-agree">I’ll Add It</button>
-        <button type="button" class="btn btn-outline-secondary flex-fill" id="ios-a2hs-deny">No Thanks</button>
+        <button type="button" class="btn btn-outline-primary flex-fill me-2" id="ios-a2hs-agree">I’ll Add It</button>
+        <button type="button" class="btn btn-outline-primary flex-fill" id="ios-a2hs-deny">No Thanks</button>
       </div>           
     </div>
   </div>

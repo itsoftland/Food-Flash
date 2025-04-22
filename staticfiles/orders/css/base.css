@@ -52,3 +52,37 @@
     overflow: hidden;
     padding: 0;
 }
+/* Hide bootstrap’s default btn-secondary/primary backgrounds */
+.btn.btn-secondary,
+.btn.btn-primary {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* -------- Predefined Option Buttons -------- */
+
+/* Override Bootstrap’s outline-primary */
+.btn-outline-primary {
+  background-color: #ffffff;
+  color: #2a2c41;
+  border: 1px solid #f9aa33;
+  border-radius: 999px;
+  padding: 8px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin: 0.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* Hover on options */
+.btn-outline-primary:hover {
+  background-color: #f0a934;
+  color: #ffffff;
+  border-color: #f0a934;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
