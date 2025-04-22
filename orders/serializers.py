@@ -9,12 +9,17 @@ class VendorLogoSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         request = self.context.get('request')
+        
         if request and hasattr(instance.logo, 'url'):
-            data['logo_url'] = request.build_absolute_uri(instance.logo.url)
+            url = request.build_absolute_uri(instance.logo.url)
+            # Force HTTPS
+            data['logo_url'] = url.replace("http://", "https://")
         else:
             data['logo_url'] = ''
+        
         data.pop('logo')  # Optional: remove raw logo field
         return data
+
 
 class VendorAdsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,12 +37,15 @@ class VendorAdsSerializer(serializers.ModelSerializer):
         if request:
             for path in ad_paths:
                 if not path.startswith("http"):
-                    full_ad_urls.append(request.build_absolute_uri(f"/media/{path}"))
+                    url = request.build_absolute_uri(f"/media/{path}")
+                    # Force HTTPS
+                    full_ad_urls.append(url.replace("http://", "https://"))
                 else:
                     full_ad_urls.append(path)
-        
+
         data['ads'] = full_ad_urls
         return data
+
 
 class VendorMenuSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,12 +66,15 @@ class VendorMenuSerializer(serializers.ModelSerializer):
         if request:
             for path in menu_paths:
                 if not path.startswith("http"):
-                    full_menu_urls.append(request.build_absolute_uri(f"/media/{path}"))
+                    url = request.build_absolute_uri(f"/media/{path}")
+                    # Force HTTPS
+                    full_menu_urls.append(url.replace("http://", "https://"))
                 else:
                     full_menu_urls.append(path)
 
         data['menus'] = full_menu_urls
         return data
+
 
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
