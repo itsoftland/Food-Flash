@@ -96,7 +96,8 @@ def update_order(request):
             "body": f"Your order {token_no} is now ready.",
             "token_no": token_no,
             "status": status_to_update,
-            "counter_no": counter_no
+            "counter_no": counter_no,
+            "name":vendor.name
         }
         push_errors = []
 
