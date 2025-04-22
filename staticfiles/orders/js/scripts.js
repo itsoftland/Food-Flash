@@ -227,6 +227,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     let notificationsEnabled = true;
     const isAndroid = /Android/i.test(navigator.userAgent);
     console.log("Android device:", isAndroid);
+    function adjustKeyboardOffset() {
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        document.documentElement.style.setProperty('--keyboard-offset', isAndroid ? '210px' : '150px');
+        console.log("Keyboard offset set for", isAndroid ? "Android" : "Other");
+    }
+    
+    window.addEventListener('load', adjustKeyboardOffset);
+    window.addEventListener('resize', adjustKeyboardOffset);
+    
     // Adjust viewport for mobile devices
     function setDynamicVH() {
         let vh = window.innerHeight * 0.01;

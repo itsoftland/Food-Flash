@@ -1,3 +1,4 @@
+
 // --- CSRF Token Utility ---
 window.getCSRFToken = function () {
     const meta = document.querySelector('meta[name="csrf-token"]');
@@ -88,3 +89,6 @@ if (window.visualViewport) {
         document.body.classList.toggle('keyboard-open', isKeyboardOpen);
     });
 }
+
+
+  
