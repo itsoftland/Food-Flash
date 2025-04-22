@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
                 const messageHTML = `
-                    <strong>${data.vendor_name || "Unknown"}</strong><br>
+                    <strong>${pushData.vendor_name || "Unknown"}</strong><br>
                     <strong>Status:</strong> ${pushData.status || "Unknown"}<br>
                     <strong>Counter No:</strong> ${pushData.counter_no || ""}<br>
                     <strong>Token No:</strong> ${pushData.token_no || ""}
