@@ -5,7 +5,7 @@ export const AdSliderService = (() => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": getCSRFToken(),
+                    "X-CSRFToken": AppUtils.getCSRFToken(),
                 },
                 credentials: "same-origin",
                 body: JSON.stringify({ vendor_ids: vendorIds }),

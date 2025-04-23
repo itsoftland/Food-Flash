@@ -31,7 +31,7 @@ function showNotificationModal(pushData) {
 
         const modalHeader = document.querySelector('#notificationModal .modal-body h5');
         modalHeader.innerHTML = `Order <strong>${pushData.token_no}</strong> is <strong>${pushData.status}</strong> at Counter <strong>${pushData.counter_no}</strong>!`;
-
+        AppUtils.playNotificationSound();
         notificationModal.show();
     }
 }

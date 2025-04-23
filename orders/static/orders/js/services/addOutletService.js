@@ -51,7 +51,7 @@ export const AddOutletService = (() => {
     };
 
     const openModal = async () => {
-        locationId = getCurrentLocation(); // from utils.js
+        locationId = AppUtils.getCurrentLocation(); // from utils.js
     
         if (!locationId) {
             alert("Location ID is missing. Please scan or provide location.");
@@ -61,7 +61,7 @@ export const AddOutletService = (() => {
         selectedVendorIds.clear();
     
         // Ensure vendor IDs are stored as strings
-        const storedVendorIds = getStoredVendors().map(String);
+        const storedVendorIds = AppUtils.getStoredVendors().map(String);
         storedVendorIds.forEach(id => selectedVendorIds.add(id));
     
         const outlets = await fetchOutlets();

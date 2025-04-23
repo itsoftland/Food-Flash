@@ -107,7 +107,7 @@ export const MenuModalService = (() => {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "X-CSRFToken": getCSRFToken(),
+                            "X-CSRFToken": AppUtils.getCSRFToken(),
                         },
                         body: JSON.stringify({ vendor_ids: [parseInt(activeVendorId)] })
                     });

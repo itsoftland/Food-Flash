@@ -7,7 +7,7 @@ import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
-    setViewportHeightVar();
+    AppUtils.setViewportHeightVar();
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
     const chatContainer = document.getElementById('chat-container');
     const chatInput = document.getElementById('chat-input');
@@ -21,10 +21,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 1️⃣ Check URL param first
     if (locationId) {
-        setCurrentLocation(locationId); // Store it
+        AppUtils.setCurrentLocation(locationId); // Store it
     } else {
         // 2️⃣ Fallback to localStorage
-        locationId = getCurrentLocation();
+        locationId = AppUtils.getCurrentLocation();
 
         if (!locationId) {
             // 3️⃣ Ask for it / show error / redirect
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const vendorFromQR = urlParams.get('vendor_id');
 
     if (vendorFromQR) {
-        setCurrentVendors(vendorFromQR);
+        AppUtils.setCurrentVendors(vendorFromQR);
 
         // Optional: Clean the URL
         const newUrl = window.location.origin + window.location.pathname;
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": getCSRFToken(),
+                    "X-CSRFToken": AppUtils.getCSRFToken(),
                 },
                 credentials: "same-origin",
                 body: JSON.stringify({ vendor_ids: vendorIds }),
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             .then(response => response.json())
             .then(data => {
                 const logoContainer = document.getElementById("vendor-logo-bar");
-                const activeVendorId = getActiveVendor();
+                const activeVendorId = AppUtils.getActiveVendor();
                 if (logoContainer) {
                     logoContainer.innerHTML = "";
     
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const response = await fetch('/vendors/api/save-subscription/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' ,
-                        'X-CSRFToken': getCSRFToken()
+                        'X-CSRFToken': AppUtils.getCSRFToken()
                     },
                     credentials: "same-origin",
                     body: JSON.stringify(payload)
@@ -461,7 +461,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 `;
                 appendMessage(messageHTML, 'server');
                 if (pushData.status === "ready") {
-                    playNotificationSound();
                     const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
                     speechSynthesis.speak(orderReadyMessage);
                     if (navigator.vibrate) {
@@ -478,15 +477,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             let menuImageModal = new bootstrap.Modal(document.getElementById('menuImageModal'));
             menuImageModal.show();
         });
-    }
-    
-    function playNotificationSound() {
-        if (notificationsEnabled) {
-            const notificationAudio = new Audio('/static/orders/audio/0112.mp3');
-            notificationAudio.play().catch(err => console.error('Error playing notification sound:', err));
-            } else {
-                console.log('Audio not unlocked. Please tap anywhere to enable audio.');
-            }
     }
 
     function appendMessage(text, sender, timestamp = null) {
@@ -559,7 +549,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Single check to confirm the order status
     function fetchOrderStatusOnce(token) {
-        const activeVendor = getActiveVendor();
+        const activeVendor = AppUtils.getActiveVendor();
         console.log("Active Vendor ID in order update:", activeVendor);
     
         fetch(`/check-status/?token_no=${token}&vendor_id=${activeVendor}`)
@@ -574,7 +564,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
                 const data = responseData;
                 const messageHTML = `
-                    <strong>${data.vendor_name || "Unknown"}</strong><br>
+                    <strong>${data.name || "Unknown"}</strong><br>
                     <strong>Status:</strong> ${data.status || "Unknown"}<br>
                     <strong>Counter No:</strong> ${data.counter_no || "N/A"}<br>
                     <strong>Token No:</strong> ${token}
@@ -583,15 +573,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     
                 // If status is ready, notify user
                 if (data.status === "ready") {
-                    playNotificationSound();
+                    showNotificationModal(data);
                     const orderReadyMessage = new SpeechSynthesisUtterance(
                         `Your Order ${token} is ${data.status} at the counter ${data.counter_no}.`
                     );
                     speechSynthesis.speak(orderReadyMessage);
-                    notificationModal.show();
-                    const modalHeader = document.querySelector('#notificationModal .modal-body h5');
-                    modalHeader.innerHTML = `Order <strong>${data.token_no}</strong> is <strong>${data.status}</strong> at Counter <strong>${data.counter_no}</strong>!`;
-    
                     if (navigator.vibrate) {
                         navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
                     }
