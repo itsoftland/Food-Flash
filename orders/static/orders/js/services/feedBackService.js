@@ -80,7 +80,7 @@ export const FeedbackService = (() => {
     };
 
     const submitFeedback = async () => {
-        const vendorId = getActiveVendor();
+        const vendorId = AppUtils.getActiveVendor();
         const name = document.getElementById("feedback-name")?.value || '';
         const comment = document.getElementById("feedback-comment")?.value || '';
 
@@ -94,7 +94,7 @@ export const FeedbackService = (() => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": getCSRFToken()
+                    "X-CSRFToken": AppUtils.getCSRFToken()
                 },
                 body: JSON.stringify({
                     vendor_id: vendorId,
