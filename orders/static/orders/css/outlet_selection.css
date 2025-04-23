@@ -79,4 +79,8 @@
     max-width: 300px;
     margin: 20px auto;
     display: block;
+    background-color: #f0a934;
+}
+.continue-btn:hover{
+    background-color: #fb8b24;
 }
