@@ -58,7 +58,7 @@ class Order(models.Model):
     token_no = models.IntegerField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='preparing')
     counter_no = models.IntegerField(default=1)
-    notified_at = models.DateTimeField(null=True, blank=True,default=None)
+    notified_at = models.DateTimeField(null=True, blank=True, default=None)
     updated_by = models.CharField(max_length=20, choices=USER_CHOICES, default='client')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

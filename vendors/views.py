@@ -35,6 +35,111 @@ def list_order(request):
 
 from .utils import send_push_notification
 
+# @api_view(['PATCH'])
+# @permission_classes([AllowAny])
+# def update_order(request):
+#     """
+#     This endpoint updates an existing order's token status to "ready".
+#     If the order (token) does not exist, it creates a new order with status "ready".
+#     After updating the order, it sends a push notification to the subscriptions
+#     associated with that order.
+#     """
+#     try:
+#         data = request.data
+#         vendor_id = data.get('vendor_id')
+#         device_id = data.get('device_id')
+#         counter_no = data.get('counter_no')
+#         token_no = data.get('token_no')
+#         status_to_update = data.get('status')
+
+#         if not token_no or not status_to_update or not vendor_id or not device_id or not counter_no:
+#             return Response(
+#                 {"message": "Token number, status, vendor_id, device_id, and counter_no are required."},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # Fetch the vendor and device instances
+#         vendor = Vendor.objects.get(vendor_id=vendor_id)
+#         device = Device.objects.get(serial_no=device_id)
+
+#         try:
+#             # Try to fetch the existing order
+#             order = Order.objects.get(token_no=token_no, vendor=vendor.id)
+#             # Update the order's status and counter number
+#             order.status = status_to_update
+#             order.counter_no = counter_no
+#             order.save()
+
+#         except Order.DoesNotExist:
+#             # Order doesn't exist; create a new order with status "ready"
+#             new_order_data = {
+#                 'token_no': token_no,
+#                 'vendor': vendor.id,
+#                 'device_id': device.id,
+#                 'counter_no': counter_no,
+#                 'status': "ready"
+#             }
+#             serializer = OrdersSerializer(data=new_order_data)
+#             if serializer.is_valid():
+#                 serializer.save()
+#             else:
+#                 return Response(
+#                     {"message": serializer.errors},
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+
+#         # After updating/creating the order, send push notifications
+#         subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no)
+#         # payload = "Your order is ready!" 
+#         payload = {
+#             "title": "Order Update",
+#             "body": f"Your order {token_no} is now ready.",
+#             "token_no": token_no,
+#             "status": status_to_update,
+#             "counter_no": counter_no,
+#             "name":vendor.name
+#         }
+#         push_errors = []
+
+#         for subscription in subscriptions:
+#             subscription_info = {
+#                 "endpoint": subscription.endpoint,
+#                 "keys": {
+#                     "p256dh": subscription.p256dh,
+#                     "auth": subscription.auth
+#                 }
+#             }
+#             try:
+#                 send_push_notification(subscription_info, payload)
+#             except Exception as e:
+#                 push_errors.append(str(e))
+
+#         # Decide the response based on whether push notifications succeeded.
+#         if push_errors:
+#             return Response(
+#                 {
+#                     "message": "Order updated, but push notifications encountered errors.",
+#                     "push_errors": push_errors
+#                 },
+#                 status=status.HTTP_207_MULTI_STATUS
+#             )
+#         else:
+#             return Response(
+#                 {"message": "Order updated and notifications sent.", "token_no": token_no},
+#                 status=status.HTTP_200_OK
+#             )
+
+#     except Exception as e:
+#         return Response(
+#             {"message": str(e)},
+#             status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#         )
+
+from django.utils import timezone
+from datetime import timedelta
+
+
+
 @api_view(['PATCH'])
 @permission_classes([AllowAny])
 def update_order(request):
@@ -42,7 +147,7 @@ def update_order(request):
     This endpoint updates an existing order's token status to "ready".
     If the order (token) does not exist, it creates a new order with status "ready".
     After updating the order, it sends a push notification to the subscriptions
-    associated with that order.
+    associated with that order, unless a recent notification was already sent.
     """
     try:
         data = request.data
@@ -69,7 +174,6 @@ def update_order(request):
             order.status = status_to_update
             order.counter_no = counter_no
             order.save()
-
         except Order.DoesNotExist:
             # Order doesn't exist; create a new order with status "ready"
             new_order_data = {
@@ -81,53 +185,62 @@ def update_order(request):
             }
             serializer = OrdersSerializer(data=new_order_data)
             if serializer.is_valid():
-                serializer.save()
+                order = serializer.save()
             else:
                 return Response(
                     {"message": serializer.errors},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-        # After updating/creating the order, send push notifications
-        subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no)
-        # payload = "Your order is ready!" 
-        payload = {
-            "title": "Order Update",
-            "body": f"Your order {token_no} is now ready.",
-            "token_no": token_no,
-            "status": status_to_update,
-            "counter_no": counter_no,
-            "name":vendor.name
-        }
-        push_errors = []
+        # Cooldown check (only send if last sent > 5 seconds ago)
+        should_notify = (
+            status_to_update.lower() == "ready" and (
+                order.notified_at is None or
+                (timezone.now() - order.notified_at) > timedelta(seconds=5)
+            )
+        )
 
-        for subscription in subscriptions:
-            subscription_info = {
-                "endpoint": subscription.endpoint,
-                "keys": {
-                    "p256dh": subscription.p256dh,
-                    "auth": subscription.auth
-                }
+        if should_notify:
+            subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no)
+            payload = {
+                "title": "Order Update",
+                "body": f"Your order {token_no} is now ready.",
+                "token_no": token_no,
+                "status": status_to_update,
+                "counter_no": counter_no,
+                "name": vendor.name
             }
-            try:
-                send_push_notification(subscription_info, payload)
-            except Exception as e:
-                push_errors.append(str(e))
 
-        # Decide the response based on whether push notifications succeeded.
-        if push_errors:
-            return Response(
-                {
-                    "message": "Order updated, but push notifications encountered errors.",
-                    "push_errors": push_errors
-                },
-                status=status.HTTP_207_MULTI_STATUS
-            )
-        else:
-            return Response(
-                {"message": "Order updated and notifications sent.", "token_no": token_no},
-                status=status.HTTP_200_OK
-            )
+            push_errors = []
+
+            for subscription in subscriptions:
+                subscription_info = {
+                    "endpoint": subscription.endpoint,
+                    "keys": {
+                        "p256dh": subscription.p256dh,
+                        "auth": subscription.auth
+                    }
+                }
+                try:
+                    send_push_notification(subscription_info, payload)
+                except Exception as e:
+                    push_errors.append(str(e))
+
+            order.notified_at = timezone.now()
+            order.save(update_fields=['notified_at'])
+
+            if push_errors:
+                return Response(
+                    {
+                        "message": "Order updated, but push notifications encountered errors.",
+                        "push_errors": push_errors
+                    },
+                    status=status.HTTP_207_MULTI_STATUS
+                )
+        return Response(
+            {"message": "Order updated and notifications sent.", "token_no": token_no},
+            status=status.HTTP_200_OK
+        )
 
     except Exception as e:
         return Response(
