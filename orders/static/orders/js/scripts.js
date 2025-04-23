@@ -4,6 +4,7 @@ import { MenuModalService } from './services/menuModalService.js';
 import { FeedbackService } from "./services/feedBackService.js";
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
+import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     setViewportHeightVar();
@@ -266,14 +267,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (braveDetected) {
         alert("It looks like you're using Brave. Please ensure:\n\n1. Brave Settings > Privacy and Security > Site and Shields Settings > Notifications > 'Sites can ask to send notifications' is ON.\n2. Enable 'Use Google Services for Push Messaging' if shown.\n\nOtherwise, push notifications may fail.");
     }
-    // Buttons for notification modal
-    document.getElementById('ok-notification').addEventListener('click', function() {
-        notificationModal.hide();
-    });
-    document.getElementById('disable-notifications').addEventListener('click', function() {
-        notificationModal.hide();
-        notificationsEnabled = false;
-    });
+    // // Buttons for notification modal
+    // document.getElementById('ok-notification').addEventListener('click', function() {
+    //     notificationModal.hide();
+    // });
+    // document.getElementById('disable-notifications').addEventListener('click', function() {
+    //     notificationModal.hide();
+    //     notificationsEnabled = false;
+    // });
+    initNotificationModal(notificationModal);
     // 1. Register the Service Worker at the root scope
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("/service-worker.js", { scope: '/' })
@@ -462,14 +464,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     playNotificationSound();
                     const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
                     speechSynthesis.speak(orderReadyMessage);
-                    notificationModal.show();
                     if (navigator.vibrate) {
                         navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
                     }
                 }
-                const modalHeader = document.querySelector('#notificationModal .modal-body h5');
-                modalHeader.innerHTML = `Order <strong>${pushData.token_no}</strong> is <strong>${pushData.status}</strong> at Counter <strong>${pushData.counter_no}</strong>!`;
-                
+                showNotificationModal(pushData);
             }
         });
     }
