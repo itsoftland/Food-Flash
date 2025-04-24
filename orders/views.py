@@ -59,6 +59,7 @@ def check_status(request):
             'counter_no': order.counter_no,
             'message': 'Order retrieved successfully.'
         }
+        
         return Response(data, status=status.HTTP_200_OK)
 
     except Order.DoesNotExist:

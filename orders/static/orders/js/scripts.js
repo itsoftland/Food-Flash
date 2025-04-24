@@ -555,6 +555,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
     
                 const data = responseData;
+                console.log(data);
                 const messageHTML = `
                     <strong>${data.name || "Unknown"}</strong><br>
                     <strong>Status:</strong> ${data.status || "Unknown"}<br>

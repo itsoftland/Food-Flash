@@ -60,7 +60,7 @@ LOGGING = {
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # ALLOWED_HOSTS = ['webtest.softlandindia.co.in','192.168.0.197','192.168.0.33', 'feline-clever-mutually.ngrok-free.app', 'random-id.ngrok-free.app','0.0.0.0','127.0.0.1','localhost']
 ALLOWED_HOSTS = ['*']

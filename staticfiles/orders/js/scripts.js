@@ -267,14 +267,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (braveDetected) {
         alert("It looks like you're using Brave. Please ensure:\n\n1. Brave Settings > Privacy and Security > Site and Shields Settings > Notifications > 'Sites can ask to send notifications' is ON.\n2. Enable 'Use Google Services for Push Messaging' if shown.\n\nOtherwise, push notifications may fail.");
     }
-    // // Buttons for notification modal
-    // document.getElementById('ok-notification').addEventListener('click', function() {
-    //     notificationModal.hide();
-    // });
-    // document.getElementById('disable-notifications').addEventListener('click', function() {
-    //     notificationModal.hide();
-    //     notificationsEnabled = false;
-    // });
     initNotificationModal(notificationModal);
     // 1. Register the Service Worker at the root scope
     if ("serviceWorker" in navigator) {
@@ -563,6 +555,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
     
                 const data = responseData;
+                console.log(data);
                 const messageHTML = `
                     <strong>${data.name || "Unknown"}</strong><br>
                     <strong>Status:</strong> ${data.status || "Unknown"}<br>
