@@ -104,6 +104,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                             localStorage.setItem("activeVendorLogo",vendor.logo_url);
                             const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
                             showWelcomeMessage(outletName)
+                            // NEW: Restore chat history automatically
+                            handleOutletSelection(vendor.vendor_id, vendor.logo_url);
                             // Scroll into view after render
                             setTimeout(() => {
                                 wrapper.scrollIntoView({

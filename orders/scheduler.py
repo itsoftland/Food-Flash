@@ -6,7 +6,7 @@ from django.db import models
 
 def auto_clear_orders():
     now = timezone.now()
-    one_hour_ago = now - timedelta(hours=1)
+    one_hour_ago = now - timedelta(hours=2)
     two_hours_ago = now - timedelta(hours=2)
 
     # Find orders that are older than 1 hour (since status update) OR older than 2 hours (since creation)
@@ -35,5 +35,5 @@ def auto_clear_orders():
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(auto_clear_orders, 'interval', minutes=5)  # Run every 5 minutes
+    scheduler.add_job(auto_clear_orders, 'interval', minutes=1)  # Run every 5 minutes
     scheduler.start()

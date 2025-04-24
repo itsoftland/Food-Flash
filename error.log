@@ -2797,3 +2797,4 @@ Traceback (most recent call last):
   File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/template/base.py", line 573, in invalid_block_tag
     raise self.error(
 django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 12: 'static'. Did you forget to register or load this tag?
+Internal Server Error: /vendors/api/update-order/
