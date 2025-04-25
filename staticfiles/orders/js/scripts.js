@@ -472,10 +472,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     function updateChatOnPush(vendorId,logo_url,name) {
         document.querySelectorAll(".vendor-logo-wrapper").forEach(wrapper => {
             const logo = wrapper.querySelector("img");
-            console.log(logo.dataset.vendorId);
-            console.log(vendorId);
             if (logo.dataset.vendorId == vendorId) {
-                console.log("true****************************")
                 // Clear all active states
                 document.querySelectorAll(".vendor-logo-wrapper").forEach(w => w.classList.remove("active"));
                 // Activate matching one

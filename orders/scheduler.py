@@ -35,5 +35,5 @@ def auto_clear_orders():
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(auto_clear_orders, 'interval', minutes=1)  # Run every 5 minutes
+    scheduler.add_job(auto_clear_orders, 'interval', minutes=5)  # Run every 5 minutes
     scheduler.start()

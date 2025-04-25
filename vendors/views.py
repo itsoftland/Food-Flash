@@ -90,7 +90,7 @@ def update_order(request):
         should_notify = (
             status_to_update.lower() == "ready" and (
                 order.notified_at is None or
-                (timezone.now() - order.notified_at) > timedelta(seconds=2)
+                (timezone.now() - order.notified_at) > timedelta(minutes=1)
             )
         )
 
