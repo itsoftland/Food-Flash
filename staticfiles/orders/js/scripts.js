@@ -5,6 +5,7 @@ import { FeedbackService } from "./services/feedBackService.js";
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
+import { ChatHistoryService } from './services/chatHistoryService.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.setViewportHeightVar();
@@ -104,6 +105,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                             localStorage.setItem("activeVendorLogo",vendor.logo_url);
                             const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
                             showWelcomeMessage(outletName)
+                            // NEW: Restore chat history automatically
+                            handleOutletSelection(vendor.vendor_id, vendor.logo_url);
                             // Scroll into view after render
                             setTimeout(() => {
                                 wrapper.scrollIntoView({
@@ -162,8 +165,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Flag to prevent history messages from being re-saved
         window.isRestoringHistory = true;
     
-        const historyKey = `chat_history_${vendorId}`;
-        const cachedMessages = JSON.parse(localStorage.getItem(historyKey)) || [];
+       // 🔄 Load messages using the service (handles expiry + fallback)
+        const cachedMessages = ChatHistoryService.load(vendorId) || [];
     
         cachedMessages.forEach(msg => {
             appendMessage(msg.text, msg.sender, msg.timestamp); // Pass the saved timestamp
@@ -507,14 +510,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         chatContainer.appendChild(messageRow);
         chatContainer.scrollTop = chatContainer.scrollHeight;
         
-        // ✅ Save only if not restoring history
+        // ✅ Save to localStorage through the ChatHistoryService
         if (!window.isRestoringHistory) {
             const activeVendorId = localStorage.getItem("activeVendor");
             if (activeVendorId) {
-                const historyKey = `chat_history_${activeVendorId}`;
-                const existing = JSON.parse(localStorage.getItem(historyKey)) || [];
-                existing.push({ text, sender, timestamp: timeStamp }); // Save the timestamp
-                localStorage.setItem(historyKey, JSON.stringify(existing));
+                const existingMessages = ChatHistoryService.load(activeVendorId) || [];
+                existingMessages.push({ text, sender, timestamp: timeStamp });
+                ChatHistoryService.save(activeVendorId, existingMessages);
+
             }
         }
     }

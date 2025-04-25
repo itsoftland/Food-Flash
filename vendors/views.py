@@ -84,12 +84,11 @@ def update_order(request):
                     {"message": serializer.errors},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-        # Cooldown check (only send if last sent > 5 seconds ago)
+        # Cooldown check (only send if last sent > 1 minute ago)
         should_notify = (
             status_to_update.lower() == "ready" and (
                 order.notified_at is None or
-                (timezone.now() - order.notified_at) > timedelta(seconds=5)
+                (timezone.now() - order.notified_at) > timedelta(minutes=1)
             )
         )
 
