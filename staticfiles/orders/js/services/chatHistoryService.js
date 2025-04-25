@@ -1,5 +1,5 @@
 export const ChatHistoryService = (() => {
-    const MAX_AGE_MINUTES = 1; // 2 hours
+    const MAX_AGE_MINUTES = 120; // 2 hours
 
     const getKey = (vendorId) => `chat_history_${vendorId}`;
 
@@ -13,7 +13,7 @@ export const ChatHistoryService = (() => {
                 timestamp: msg.timestamp || Date.now()
             }))
         };
-        localStorage.setItem(key, JSON.stringify(data));
+        localStorage.setItem(key, JSON.stringify(data));  
     };
 
     const load = (vendorId) => {

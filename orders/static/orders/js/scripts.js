@@ -374,6 +374,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const newSubscriptionJSON = JSON.stringify(subscription);
             const storedSubscription = localStorage.getItem("pushSubscription");
             if (storedSubscription !== newSubscriptionJSON) {
+                console.log("true............................")
                 // Convert the subscription to JSON to ensure we have plain objects.
                 const sub = subscription.toJSON();
 
@@ -384,7 +385,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     token_number: token,
                     vendor:vendor_id
                 };
-                                
+                console.log("payload data",payload)              
                 const response = await fetch('/vendors/api/save-subscription/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' ,
