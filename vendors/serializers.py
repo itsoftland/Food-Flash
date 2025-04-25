@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Order
+from vendors.models import Order
 
 class OrdersSerializer(serializers.ModelSerializer):
     vendor_name = serializers.CharField(source='vendor.name', read_only=True)

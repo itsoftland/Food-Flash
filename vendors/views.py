@@ -33,6 +33,8 @@ def list_order(request):
     serializer = OrdersSerializer(orders, many=True)
     return Response(serializer.data)
 
+from orders.serializers import VendorLogoSerializer  # adjust import if needed
+
 @api_view(['PATCH'])
 @permission_classes([AllowAny])
 def update_order(request):
@@ -88,11 +90,14 @@ def update_order(request):
         should_notify = (
             status_to_update.lower() == "ready" and (
                 order.notified_at is None or
-                (timezone.now() - order.notified_at) > timedelta(minutes=1)
+                (timezone.now() - order.notified_at) > timedelta(seconds=2)
             )
         )
 
         if should_notify:
+            vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
+            logo_url = vendor_serializer.data.get('logo_url', '')
+            print(logo_url)
             subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no)
             payload = {
                 "title": "Order Update",
@@ -100,7 +105,10 @@ def update_order(request):
                 "token_no": token_no,
                 "status": status_to_update,
                 "counter_no": counter_no,
-                "name": vendor.name
+                "name": vendor.name,
+                "vendor_id":vendor.vendor_id,
+                "location_id":vendor.location_id,
+                "logo_url":logo_url
             }
 
             push_errors = []

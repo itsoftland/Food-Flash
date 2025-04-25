@@ -447,7 +447,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (event.data && event.data.type === 'PUSH_STATUS_UPDATE') {
                 const pushData = event.data.payload;
                 console.log('Received push update via postMessage:', pushData);
-                
+                // localStorage.setItem("selectedOutletName", pushData.name);
+                updateChatOnPush(pushData.vendor_id,pushData.logo_url,pushData.name);
+                // handleOutletSelection(pushData.vendor_id, pushData.logo_url);
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
                 const messageHTML = `
                     <strong>${pushData.name || "Unknown"}</strong><br>
@@ -467,6 +469,23 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
+    function updateChatOnPush(vendorId,logo_url,name) {
+        document.querySelectorAll(".vendor-logo-wrapper").forEach(wrapper => {
+            const logo = wrapper.querySelector("img");
+            console.log(logo.dataset.vendorId);
+            console.log(vendorId);
+            if (logo.dataset.vendorId == vendorId) {
+                console.log("true****************************")
+                // Clear all active states
+                document.querySelectorAll(".vendor-logo-wrapper").forEach(w => w.classList.remove("active"));
+                // Activate matching one
+                wrapper.classList.add("active");
+                localStorage.setItem("selectedOutletName", name);
+                handleOutletSelection(vendorId,logo_url);
+            }
+        });
+    }
+    
     // Menu button logic
     if (menuButton) {
         menuButton.addEventListener('click', function() {

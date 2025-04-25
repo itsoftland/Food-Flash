@@ -93,6 +93,7 @@ export const AddOutletService = (() => {
 
             // ✅ Get the last selected outlet's vendor ID
             const lastVendorId = vendorIdArray[vendorIdArray.length - 1];
+            console.log("last vendor_id",)
 
             // ✅ Find that tile and get its name
             const selectedTile = document.querySelector(`.outlet-tile[data-vendor-id="${lastVendorId}"]`);

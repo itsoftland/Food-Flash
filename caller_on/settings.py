@@ -190,10 +190,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-from django.utils import timezone
-import pytz
-
-utc_now = timezone.now()
-ist_now = utc_now.astimezone(pytz.timezone('Asia/Kolkata'))
-print("UTC:", utc_now)
-print("IST:", ist_now)
