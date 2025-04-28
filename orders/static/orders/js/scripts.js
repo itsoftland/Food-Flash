@@ -450,27 +450,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
                 
                 const messageHTML = `
-                    <strong>${pushData.name || "Unknown"}</strong><br>
-                    <strong>Status:</strong> ${pushData.status || "Unknown"}<br>
-                    <strong>Counter No:</strong> ${pushData.counter_no || ""}<br>
-                    <strong>Token No:</strong> ${pushData.token_no || ""}
+                    <div class="response-title">${pushData.name || "Unknown"}</div>
+                    <div class="status">Status: <span>${pushData.status || "Unknown"}</span></div>
+                    <div class="badge">Counter No: ${pushData.counter_no || ""}</div>
+                    <div class="badge">Token No: ${pushData.token_no || ""}</div>
                 `;
                 const offerMessageHTML = `
-                    <div style="
-                        background: #fff9f0;
-                        border-left: 4px solid #f0a934;
-                        padding: 12px 16px;
-                        margin: 8px 0;
-                        border-radius: 12px;
-                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-                        max-width: 80%;
-                        font-family: 'Segoe UI', sans-serif;
-                    ">
-                        <div style="font-weight: bold; color: #d63b23; margin-bottom: 6px;">🔥 Exclusive KFC Offer!</div>
+                        <div class="response-title">🔥 Exclusive KFC Offer!</div>
                         <div style="color: #333; font-size: 15px;">
                             ${pushData.body || "Delicious deals await. Come grab your favorite combo now!"}
                         </div>
-                    </div>
+                    
                 `;
 
                 if (pushData.type =="offers"){
@@ -599,10 +589,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const data = responseData;
                 console.log(data);
                 const messageHTML = `
-                    <strong>${data.name || "Unknown"}</strong><br>
-                    <strong>Status:</strong> ${data.status || "Unknown"}<br>
-                    <strong>Counter No:</strong> ${data.counter_no || "N/A"}<br>
-                    <strong>Token No:</strong> ${token}
+                    <div class="response-title">${data.name || "Unknown"}</div>
+                    <div class="status">Status: <span>${data.status || "Unknown"}</span></div>
+                    <div class="badge">Counter No: ${data.counter_no || ""}</div>
+                    <div class="badge">Token No: ${data.token_no || ""}</div>
                 `;
                 appendMessage(messageHTML, 'server');
     
