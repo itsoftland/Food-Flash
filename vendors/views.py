@@ -93,12 +93,11 @@ def update_order(request):
                 (timezone.now() - order.notified_at) > timedelta(minutes=1)
             )
         )
-
         if should_notify:
             vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
             logo_url = vendor_serializer.data.get('logo_url', '')
-            print(logo_url)
-            subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no)
+            subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no).distinct()
+            print(subscriptions)
             payload = {
                 "title": "Order Update",
                 "body": f"Your order {token_no} is now ready.",
@@ -106,28 +105,31 @@ def update_order(request):
                 "status": status_to_update,
                 "counter_no": counter_no,
                 "name": vendor.name,
-                "vendor_id":vendor.vendor_id,
-                "location_id":vendor.location_id,
-                "logo_url":logo_url
+                "vendor_id": vendor.vendor_id,
+                "location_id": vendor.location_id,
+                "logo_url": logo_url,
+                "type": "foodstatus"
             }
-
             push_errors = []
 
-            for subscription in subscriptions:
-                subscription_info = {
-                    "endpoint": subscription.endpoint,
-                    "keys": {
-                        "p256dh": subscription.p256dh,
-                        "auth": subscription.auth
+            if subscriptions.exists():  # Only proceed if subscriptions are found
+                for subscription in subscriptions:
+                    subscription_info = {
+                        "endpoint": subscription.endpoint,
+                        "keys": {
+                            "p256dh": subscription.p256dh,
+                            "auth": subscription.auth
+                        }
                     }
-                }
-                try:
-                    send_push_notification(subscription_info, payload)
-                except Exception as e:
-                    push_errors.append(str(e))
+                    try:
+                        print("send notifications")
+                        send_push_notification(subscription_info, payload)
+                    except Exception as e:
+                        push_errors.append(str(e))
 
-            order.notified_at = timezone.now()
-            order.save(update_fields=['notified_at'])
+                order.notified_at = timezone.now()
+                order.save(update_fields=['notified_at'])
+
 
             if push_errors:
                 return Response(
@@ -215,7 +217,8 @@ def test_push_notification(request):
     }
     payload = {
         "title": "Test Notification",
-        "body": "This is a test push from the API.",
+        "body": "Bucket of 5 Hot & Crispy + 2 Pepsi for just ₹499! Only today. 🍗🥤",
+        "type":"offers",
     }
     success = send_push_notification(subscription_info, payload)
     if success:

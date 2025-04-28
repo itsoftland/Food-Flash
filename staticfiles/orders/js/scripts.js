@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             })
             .then(response => response.json())
             .then(data => {
+                console.log("data",data)
                 const logoContainer = document.getElementById("vendor-logo-bar");
                 const activeVendorId = AppUtils.getActiveVendor();
                 if (logoContainer) {
@@ -106,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                             const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
                             showWelcomeMessage(outletName)
                             // NEW: Restore chat history automatically
-                            handleOutletSelection(vendor.vendor_id, vendor.logo_url);
+                            handleOutletSelection(vendor.vendor_id, vendor.logo_url,vendor.place_id);
                             // Scroll into view after render
                             setTimeout(() => {
                                 wrapper.scrollIntoView({
@@ -122,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                             // Add active to clicked one
                             wrapper.classList.add("active");
                             localStorage.setItem("selectedOutletName", vendor.name);
-                            handleOutletSelection(vendor.vendor_id, vendor.logo_url);
+                            handleOutletSelection(vendor.vendor_id, vendor.logo_url,vendor.place_id);
                         });
                     
                         wrapper.appendChild(logo);
@@ -152,9 +153,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
     
-    function handleOutletSelection(vendorId, vendor_logo) {
+    function handleOutletSelection(vendorId, vendor_logo,placeId) {
         localStorage.setItem("activeVendor", vendorId);
         localStorage.setItem("activeVendorLogo", vendor_logo);
+        localStorage.setItem("activeVendorRatingLink",placeId);
     
         const chatContainer = document.getElementById("chat-container");
         chatContainer.innerHTML = "";
@@ -214,12 +216,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (ratingButton) {
         ratingButton.addEventListener('click', function () {
             console.log("Rating button clicked");
-
-            // Define the Google Place ID for Softland India Ltd
-            const placeId = "ChIJQ94r10S-BTsRDtOmYzIplto"; // Softland India Ltd
-
+            let ratingLink = localStorage.getItem("activeVendorRatingLink") || "https://default-rating-link.com";
             // Construct the Google Review URL
-            const googleReviewUrl = `https://search.google.com/local/writereview?placeid=${placeId}`;
+            const googleReviewUrl = `https://search.google.com/local/writereview?placeid=${ratingLink}`;
 
             // Open the review page in a new browser tab
             window.open(googleReviewUrl, "_blank");
@@ -447,25 +446,47 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (event.data && event.data.type === 'PUSH_STATUS_UPDATE') {
                 const pushData = event.data.payload;
                 console.log('Received push update via postMessage:', pushData);
-                // localStorage.setItem("selectedOutletName", pushData.name);
                 updateChatOnPush(pushData.vendor_id,pushData.logo_url,pushData.name);
-                // handleOutletSelection(pushData.vendor_id, pushData.logo_url);
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
+                
                 const messageHTML = `
                     <strong>${pushData.name || "Unknown"}</strong><br>
                     <strong>Status:</strong> ${pushData.status || "Unknown"}<br>
                     <strong>Counter No:</strong> ${pushData.counter_no || ""}<br>
                     <strong>Token No:</strong> ${pushData.token_no || ""}
                 `;
-                appendMessage(messageHTML, 'server');
-                if (pushData.status === "ready") {
-                    const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
-                    speechSynthesis.speak(orderReadyMessage);
-                    if (navigator.vibrate) {
-                        navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
+                const offerMessageHTML = `
+                    <div style="
+                        background: #fff9f0;
+                        border-left: 4px solid #f0a934;
+                        padding: 12px 16px;
+                        margin: 8px 0;
+                        border-radius: 12px;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                        max-width: 80%;
+                        font-family: 'Segoe UI', sans-serif;
+                    ">
+                        <div style="font-weight: bold; color: #d63b23; margin-bottom: 6px;">🔥 Exclusive KFC Offer!</div>
+                        <div style="color: #333; font-size: 15px;">
+                            ${pushData.body || "Delicious deals await. Come grab your favorite combo now!"}
+                        </div>
+                    </div>
+                `;
+
+                if (pushData.type =="offers"){
+                    appendMessage(offerMessageHTML, 'server');
+                }else{
+                    if (pushData.status === "ready") {
+                        const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
+                        speechSynthesis.speak(orderReadyMessage);
+                        if (navigator.vibrate) {
+                            navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
+                        }
                     }
+                    showNotificationModal(pushData);
+                    appendMessage(messageHTML, 'server');
                 }
-                showNotificationModal(pushData);
+                
             }
         });
     }
@@ -478,7 +499,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Activate matching one
                 wrapper.classList.add("active");
                 localStorage.setItem("selectedOutletName", name);
-                handleOutletSelection(vendorId,logo_url);
+                let ratingLink = localStorage.getItem("activeVendorRatingLink") || "https://default-rating-link.com";
+                handleOutletSelection(vendorId,logo_url,ratingLink);
             }
         });
     }
