@@ -85,7 +85,7 @@ export const FeedbackService = (() => {
         const comment = document.getElementById("feedback-comment")?.value || '';
 
         if (!vendorId || (!comment.trim() && !name.trim())) {
-            alert("Please provide at least a comment or name.");
+            AppUtils.showToast("Please provide at least a comment or name.");
             return;
         }
 
@@ -106,17 +106,17 @@ export const FeedbackService = (() => {
 
             const data = await response.json();
             if (data.success) {
-                alert("Thank you for your feedback!");
+                AppUtils.showToast("Thank you for your feedback!");
                 container.style.display = 'none';
                 currentStep = 0;
                 formData = {};
             } else {
-                alert(data.message || "Failed to submit feedback.");
+                AppUtils.showToast(data.message || "Failed to submit feedback");
             }
 
         } catch (error) {
             console.error("Error submitting feedback:", error);
-            alert("An error occurred. Please try again later.");
+            AppUtils.showToast("An error occurred. Please try again later");
         }
     };
 

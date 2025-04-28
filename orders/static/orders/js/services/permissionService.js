@@ -42,7 +42,7 @@ export const PermissionService = (() => {
             });
             bsHelpModal.show();
         } else {
-            alert("You won’t receive real-time notifications unless enabled manually from browser settings.");
+            AppUtils.showToast("You won’t receive real-time notifications unless enabled manually from browser settings");
         }
     };
 

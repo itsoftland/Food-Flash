@@ -54,7 +54,7 @@ export const AddOutletService = (() => {
         locationId = AppUtils.getCurrentLocation(); // from utils.js
     
         if (!locationId) {
-            alert("Location ID is missing. Please scan or provide location.");
+            AppUtils.showToast("Location ID is missing. Please scan or provide location");
             return;
         }
     
@@ -84,7 +84,7 @@ export const AddOutletService = (() => {
 
         document.getElementById("continue-btn")?.addEventListener("click", () => {
             if (selectedVendorIds.size === 0) {
-                alert("Please select at least one outlet.");
+                AppUtils.showToast("Please select at least one outlet");
                 return;
             }
 

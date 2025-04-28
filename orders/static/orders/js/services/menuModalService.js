@@ -98,7 +98,7 @@ export const MenuModalService = (() => {
                 const activeVendorId = localStorage.getItem("activeVendor");
     
                 if (!activeVendorId) {
-                    alert("No active vendor selected.");
+                    AppUtils.showToast("No active vendor selected");
                     return;
                 }
     

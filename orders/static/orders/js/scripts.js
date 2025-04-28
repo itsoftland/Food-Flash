@@ -1,5 +1,5 @@
 import { AdSliderService } from './services/adSliderService.js';
-import { AddOutletService } from "./services/addOutletService.js"; // adjust the path if needed
+import { AddOutletService } from "./services/addOutletService.js"; 
 import { MenuModalService } from './services/menuModalService.js';
 import { FeedbackService } from "./services/feedBackService.js";
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
@@ -27,11 +27,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         // 2️⃣ Fallback to localStorage
         locationId = AppUtils.getCurrentLocation();
 
-        if (!locationId) {
+        if (!locationId )  {
             // 3️⃣ Ask for it / show error / redirect
-            alert("No location ID found. Please select a location to proceed.");
+            AppUtils.showToast("No location ID found. Please select a location to proceed");
             // Optionally redirect to a location selection page
-            // window.location.href = "/select-location/";
+            window.location.href = "/";
             throw new Error("Missing location ID");
         }
     }
@@ -40,16 +40,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     if (vendorFromQR) {
         AppUtils.setCurrentVendors(vendorFromQR);
-
         // Optional: Clean the URL
         const newUrl = window.location.origin + window.location.pathname;
         history.replaceState(null, "", newUrl);
+    } else {
+        AddOutletService.init();
     }
     MenuModalService.init();
     FeedbackService.init();
     IosPwaInstallService.init();
     PermissionService.init();
     PermissionService.showModal();
+    
     // Example usage: Get the last active vendor ID
 
     const vendorIdsString = localStorage.getItem("selectedVendors");
@@ -267,7 +269,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 3) If Brave is detected, show instructions
     if (braveDetected) {
-        alert("It looks like you're using Brave. Please ensure:\n\n1. Brave Settings > Privacy and Security > Site and Shields Settings > Notifications > 'Sites can ask to send notifications' is ON.\n2. Enable 'Use Google Services for Push Messaging' if shown.\n\nOtherwise, push notifications may fail.");
+        AppUtils.showToast("It looks like you're using Brave. Please ensure:\n\n1. Brave Settings > Privacy and Security > Site and Shields Settings > Notifications > 'Sites can ask to send notifications' is ON.\n2. Enable 'Use Google Services for Push Messaging' if shown.\n\nOtherwise, push notifications may fail");
     }
     initNotificationModal(notificationModal);
     // 1. Register the Service Worker at the root scope
@@ -557,7 +559,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const granted = await PermissionService.requestPermissions();
 
             if (!granted) {
-                console.warn("Notification not enabled. Proceeding without push alerts.");
+                AppUtils.showToast("Notification not enabled. Proceeding without push alerts");
             }
 
             if (IosPwaInstallService.shouldRePrompt()) {

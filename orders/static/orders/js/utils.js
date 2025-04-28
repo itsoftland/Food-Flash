@@ -97,7 +97,15 @@ window.AppUtils = {
     setViewportHeightVar: function () {
         const vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
-    }
+    },  
+    showToast: function(message) {
+        const toast = document.getElementById('customToast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000); // 3 seconds
+      }      
 };
 
 // Initialize viewport handlers
