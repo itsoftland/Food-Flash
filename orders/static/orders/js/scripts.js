@@ -560,6 +560,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
     }
+    chatInput.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); // Prevents default form submission
+            sendButton.click();     // Triggers click logic
+        }
+    });
+    
     // Send button logic
     sendButton.addEventListener('click', async function () {
         const message = chatInput.value.trim();

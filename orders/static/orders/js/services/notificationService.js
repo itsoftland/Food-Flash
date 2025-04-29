@@ -1,39 +1,68 @@
 // notificationService.js
 let notificationsEnabled = true;
-let modalHasBeenAcknowledged = false;
+let activeNotificationToken = null;
+let snoozeTimers = {};
+let orderStates = {};  // token_no: { acknowledged: boolean, data: pushData }
 let notificationModal;
 
 function initNotificationModal(modalInstance) {
     notificationModal = modalInstance;
 
     document.getElementById('ok-notification').addEventListener('click', () => {
-        modalHasBeenAcknowledged = true;
+        if (activeNotificationToken) {
+            orderStates[activeNotificationToken].acknowledged = true;
+            activeNotificationToken = null;
+        }
         notificationModal.hide();
     });
 
     document.getElementById('disable-notifications').addEventListener('click', () => {
-        notificationModal.hide();
-        if (!modalHasBeenAcknowledged) {
-            setTimeout(() => {
-                if (!modalHasBeenAcknowledged) {
-                    showNotificationModal(lastPushData); // retry with previous data
+        if (activeNotificationToken) {
+            const token = activeNotificationToken;
+            notificationModal.hide();
+
+            if (!orderStates[token].acknowledged) {
+                if (snoozeTimers[token]) {
+                    clearTimeout(snoozeTimers[token]);
                 }
-            }, 30000);
+                snoozeTimers[token] = setTimeout(() => {
+                    if (!orderStates[token].acknowledged) {
+                        showNotificationModal(orderStates[token].data);
+                    }
+                }, 30000);  // 30 sec snooze
+            }
+
+            activeNotificationToken = null;
         }
     });
 }
 
-let lastPushData = null;
-
 function showNotificationModal(pushData) {
-    if (!modalHasBeenAcknowledged && notificationsEnabled && pushData) {
-        lastPushData = pushData;
+    if (!notificationsEnabled || !pushData) return;
 
-        const modalHeader = document.querySelector('#notificationModal .modal-body h5');
-        modalHeader.innerHTML = `Order <strong>${pushData.token_no}</strong> is <strong>${pushData.status}</strong> at Counter <strong>${pushData.counter_no}</strong>!`;
-        AppUtils.playNotificationSound();
-        notificationModal.show();
+    const token = pushData.token_no;
+
+    // Initialize order state if not already present
+    if (!orderStates[token]) {
+        orderStates[token] = {
+            acknowledged: false,
+            data: pushData
+        };
+    } else {
+        // Update latest data
+        orderStates[token].data = pushData;
     }
+
+    // Don't show modal if it's already acknowledged
+    if (orderStates[token].acknowledged) return;
+
+    activeNotificationToken = token;
+    console.log("notification service",pushData)
+    const modalHeader = document.querySelector('#notificationModal .modal-body h5');
+    modalHeader.innerHTML = `Order <strong>${token}</strong> is <strong>${pushData.status}</strong> at Counter <strong>${pushData.counter_no}</strong>!`;
+
+    AppUtils.playNotificationSound();
+    notificationModal.show();
 }
 
 // Expose methods
