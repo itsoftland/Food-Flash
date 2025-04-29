@@ -237,7 +237,7 @@ body.fixed-body {
     display: flex;
     width: 100%;
     justify-content: space-between;
-    align-items:last baseline;
+    align-items:flex-end;
 }
 
 /* Align user messages to right */
@@ -279,6 +279,10 @@ body.fixed-body {
     color: #d63b23; 
     margin-bottom: 10px;
 }
+.ready-color {
+    background-color:#1c7c54 !important;;
+    font-weight: 600;
+}
 .message-content .status{
       font-size: 1rem;
       margin-bottom: 0.8rem;
@@ -294,6 +298,14 @@ body.fixed-body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+.info-badges {
+    display: flex;
+    flex-direction: column; /* Stack vertically */
+    gap: 10px; /* Space between badges */
+    width: 100%; /* Take full width of parent */
+    max-width: 400px; /* Optional: limit width for large screens */
+    margin-top: 12px;
 }
 .message-content .badge {
       background-color: #fdbf50;

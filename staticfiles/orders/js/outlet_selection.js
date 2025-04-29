@@ -33,9 +33,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!locationId) {
             // 3️⃣ Ask for it / show error / redirect
             AppUtils.showToast("Location ID is missing. Please scan or provide location");
-           
-            window.location.href = "/";
-            throw new Error("Missing location ID");
+            return;
+            // window.location.href = "/";
         }
     }
 

@@ -453,9 +453,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 const messageHTML = `
                     <div class="response-title">${pushData.name || "Unknown"}</div>
-                    <div class="status">Status: <span>${pushData.status || "Unknown"}</span></div>
-                    <div class="badge">Counter No: ${pushData.counter_no || ""}</div>
-                    <div class="badge">Token No: ${pushData.token_no || ""}</div>
+                    <div class="status">
+                        Status: 
+                        <span class="${pushData.status?.toLowerCase() === 'ready' ? 'ready-color' : 'preparing-color'}">
+                            ${pushData.status || "Unknown"}
+                        </span>
+                    </div>
+                    <div class="info-badges">
+                        <div class="badge">Counter No: ${pushData.counter_no || ""}</div>
+                        <div class="badge">Token No: ${pushData.token_no || ""}</div>
+                    </div>
                 `;
                 const offerMessageHTML = `
                         <div class="response-title">🔥 Exclusive KFC Offer!</div>
@@ -592,9 +599,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 console.log(data);
                 const messageHTML = `
                     <div class="response-title">${data.name || "Unknown"}</div>
-                    <div class="status">Status: <span>${data.status || "Unknown"}</span></div>
-                    <div class="badge">Counter No: ${data.counter_no || ""}</div>
-                    <div class="badge">Token No: ${data.token_no || ""}</div>
+                    <div class="status">
+                        Status: 
+                        <span class="${data.status?.toLowerCase() === 'ready' ? 'ready-color' : 'preparing-color'}">
+                            ${data.status || "Unknown"}
+                        </span>
+                    </div>
+                    <div class="info-badges">
+                        <div class="badge">Counter No: ${data.counter_no || ""}</div>
+                        <div class="badge">Token No: ${data.token_no || ""}</div>
+                    </div>
                 `;
                 appendMessage(messageHTML, 'server');
     
