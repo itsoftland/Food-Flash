@@ -227,7 +227,7 @@ body.fixed-body {
     display: flex;
     flex-direction: column;
     scroll-behavior: smooth;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--keyboard-offset, 160px));
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--keyboard-offset, 150px));
     margin-left: 10px;
     margin-right: 15px;
 }
@@ -273,15 +273,23 @@ body.fixed-body {
 .message-content {
     font-size: 0.9rem;
 }
-.message-content .response-title{
-    font-weight: bold; 
-    font-size: 1rem;
-    color: #d63b23; 
-    margin-bottom: 10px;
+.message-content .response-title {
+    font-weight: 700;
+    color: #2a2c41;
+    margin-bottom: 0.4rem;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0.1px 0 0 currentColor, -0.1px 0 0 currentColor;
 }
+
 .ready-color {
     background-color:#1c7c54 !important;;
     font-weight: 600;
+    color: #eaeaea !important;
+
+}
+.preparing-color{
+    color: #2a2c41 !important;;
 }
 .message-content .status{
       font-size: 1rem;
@@ -296,8 +304,9 @@ body.fixed-body {
     border-radius: 0.8rem;
     font-size: 0.85rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    text-transform:capitalize;
+    letter-spacing: 1.5px;
+    text-shadow: 0.5px 0 0 currentColor, -0.5px 0 0 currentColor;
 }
 .info-badges {
     display: flex;
@@ -351,6 +360,7 @@ body.fixed-body {
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
     background-color: #fff;
     align-self: flex-start;
+    border: 2px solid #fdbf50;
 }
 
 /* === FOOTER === */

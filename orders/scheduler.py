@@ -1,15 +1,15 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.utils import timezone
-from vendors.models import Order
+from vendors.models import Order, PushSubscription
 from datetime import timedelta
 from django.db import models
 
 def auto_clear_orders():
     now = timezone.now()
-    one_hour_ago = now - timedelta(hours=2)
+    one_hour_ago = now - timedelta(hours=1)
     two_hours_ago = now - timedelta(hours=2)
 
-    # Find orders that are older than 1 hour (since status update) OR older than 2 hours (since creation)
+    # Find orders to delete
     orders_to_delete = Order.objects.filter(
         models.Q(updated_at__lt=one_hour_ago) | models.Q(created_at__lt=two_hours_ago)
     )
@@ -19,19 +19,24 @@ def auto_clear_orders():
         print(f"Deleting {count} expired orders...")
 
         for order in orders_to_delete:
-            print(f"Deleting Order {order.token_no} and related PushSubscription data...")
+            print(f"Clearing relations for Order {order.token_no}...")
 
-            # Delete related PushSubscription tokens (clear the Many-to-Many relationship)
-            order.pushsubscription_set.clear()
+            # Remove relations from PushSubscription
+            for sub in order.pushsubscription_set.all():
+                sub.tokens.remove(order)  # Remove specific relation
 
-            # Delete the related PushSubscription itself
-            order.pushsubscription_set.all().delete()  # Deletes all related PushSubscriptions
-
-            # Now delete the order itself
+            # Delete the order
             order.delete()
-    else:
-        print("No expired orders found.")
 
+    # Delete orphaned PushSubscription entries
+    orphaned_subs = PushSubscription.objects.annotate(token_count=models.Count('tokens')).filter(token_count=0)
+    orphaned_count = orphaned_subs.count()
+    if orphaned_count > 0:
+        print(f"Deleting {orphaned_count} orphaned PushSubscriptions...")
+        orphaned_subs.delete()
+
+    else:
+        print("No orphaned PushSubscriptions found.")
 
 def start_scheduler():
     scheduler = BackgroundScheduler()

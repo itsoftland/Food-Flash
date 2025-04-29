@@ -7,6 +7,6 @@ urlpatterns = [
     path('api/get-current-time/', views.get_current_time, name='get-current-time'),
     path('api/list-order/', views.list_order, name='list-order'),
     path('api/save-subscription/', views.save_subscription, name='save-subscription'),
-    path('test-push/', views.test_push_notification, name='test-push'),
+    path('api/send-offers/', views.send_offers, name='send-offers'),
     
 ]

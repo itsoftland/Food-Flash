@@ -97,7 +97,6 @@ def update_order(request):
             vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
             logo_url = vendor_serializer.data.get('logo_url', '')
             subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no).distinct()
-            print(subscriptions)
             payload = {
                 "title": "Order Update",
                 "body": f"Your order {token_no} is now ready.",
@@ -122,7 +121,6 @@ def update_order(request):
                         }
                     }
                     try:
-                        print("send notifications")
                         send_push_notification(subscription_info, payload)
                     except Exception as e:
                         push_errors.append(str(e))
@@ -206,7 +204,7 @@ logger = logging.getLogger(__name__)
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
-def test_push_notification(request):
+def send_offers(request):
     logger.info("Received test push request with data: %s", request.data)
     subscription_info = {
         "endpoint": request.data.get("endpoint"),

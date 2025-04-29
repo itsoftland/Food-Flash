@@ -9,6 +9,7 @@ import { ChatHistoryService } from './services/chatHistoryService.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.setViewportHeightVar();
+    adjustKeyboardOffset();
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
     const chatContainer = document.getElementById('chat-container');
     const chatInput = document.getElementById('chat-input');
@@ -234,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log("Android device:", isAndroid);
     function adjustKeyboardOffset() {
         const isAndroid = /Android/i.test(navigator.userAgent);
-        document.documentElement.style.setProperty('--keyboard-offset', isAndroid ? '210px' : '150px');
+        document.documentElement.style.setProperty('--keyboard-offset', isAndroid ? '210px' : '170px');
         console.log("Keyboard offset set for", isAndroid ? "Android" : "Other");
     }
     
