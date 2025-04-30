@@ -105,7 +105,30 @@ window.AppUtils = {
         setTimeout(() => {
           toast.classList.remove('show');
         }, 3000); // 3 seconds
-      }      
+    },
+    // ─────────────────────────────────────
+    // Notification State (Persistent)
+    // ─────────────────────────────────────
+    notificationStorageKey: "notification_order_states",
+
+    saveOrderStates: function (orderStates) {
+        try {
+            localStorage.setItem(this.notificationStorageKey, JSON.stringify(orderStates));
+        } catch (e) {
+            console.error("Failed to save orderStates to storage", e);
+        }
+    },
+
+    loadOrderStates: function () {
+        try {
+            const stored = localStorage.getItem(this.notificationStorageKey);
+            return stored ? JSON.parse(stored) : {};
+        } catch (e) {
+            console.error("Failed to load orderStates from storage", e);
+            return {};
+        }
+    }
+      
 };
 
 // Initialize viewport handlers
