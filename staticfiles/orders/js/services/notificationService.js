@@ -31,7 +31,7 @@ function initNotificationModal(modalInstance) {
                     if (!orderStates[token].acknowledged) {
                         showNotificationModal(orderStates[token].data);
                     }
-                }, 10000);  // 30 sec snooze
+                }, 30000);  // 30 sec snooze
             }
 
             activeNotificationToken = null;

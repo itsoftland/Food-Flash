@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
 from vendors.serializers import OrdersSerializer
+from .serializers import VendorLogoSerializer
 from vendors.models import Order,Vendor
 from django.core.cache import cache
 
@@ -51,13 +52,19 @@ def check_status(request):
     try:
         # Try to fetch the existing order by token_no
         order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id)
+        vendor_serializer = VendorLogoSerializer(order.vendor, context={'request': request})
+        logo_url = vendor_serializer.data.get('logo_url', '')
         data = {
             'name': order.vendor.name,
             'vendor': order.vendor.id,
             'token_no': order.token_no,
             'status': order.status,
             'counter_no': order.counter_no,
-            'message': 'Order retrieved successfully.'
+            'message': 'Order retrieved successfully.',
+            "vendor_id": order.vendor.vendor_id,
+            "location_id": order.vendor.location_id,
+            "logo_url": logo_url,
+            "type": "foodstatus"
         }
         
         return Response(data, status=status.HTTP_200_OK)
