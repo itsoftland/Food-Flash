@@ -1,4 +1,6 @@
 // notificationService.js
+import { updateChatOnPush } from './chatService.js';
+
 let notificationsEnabled = true;
 let activeNotificationToken = null;
 let snoozeTimers = {};
@@ -39,7 +41,7 @@ function initNotificationModal(modalInstance) {
 
 function showNotificationModal(pushData) {
     if (!notificationsEnabled || !pushData) return;
-
+    console.log("shownotification",pushData)
     const token = pushData.token_no;
 
     // Initialize order state if not already present
@@ -63,6 +65,10 @@ function showNotificationModal(pushData) {
 
     AppUtils.playNotificationSound();
     notificationModal.show();
+    // 🧠 Also update chat view (if needed)
+    const { vendor_id, logo_url, vendor_name } = pushData;
+    console.log("notificatin update",vendor_id)
+    updateChatOnPush(vendor_id, logo_url, vendor_name)
 }
 
 // Expose methods

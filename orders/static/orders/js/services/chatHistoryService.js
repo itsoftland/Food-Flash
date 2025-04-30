@@ -1,5 +1,7 @@
+// static/js/chatHistoryService.js
+
 export const ChatHistoryService = (() => {
-    const MAX_AGE_MINUTES = 120; // 2 hours
+    const MAX_AGE_MINUTES = 120;
 
     const getKey = (vendorId) => `chat_history_${vendorId}`;
 
@@ -13,25 +15,25 @@ export const ChatHistoryService = (() => {
                 timestamp: msg.timestamp || Date.now()
             }))
         };
-        localStorage.setItem(key, JSON.stringify(data));  
+        localStorage.setItem(key, JSON.stringify(data));
     };
 
     const load = (vendorId) => {
         const key = getKey(vendorId);
         const rawData = localStorage.getItem(key);
-    
+
         if (!rawData) return [];
-    
+
         try {
             const data = JSON.parse(rawData);
             const ageInMinutes = (Date.now() - data.savedAt) / 60000;
-    
+
             if (ageInMinutes > MAX_AGE_MINUTES) {
                 localStorage.removeItem(key);
                 showSessionExpiredMessage();
                 return [];
             }
-    
+
             return Array.isArray(data.messages) ? data.messages : [];
         } catch (err) {
             console.error("Failed to parse chat history:", err);
@@ -39,7 +41,6 @@ export const ChatHistoryService = (() => {
             return [];
         }
     };
-    
 
     const clearExpired = () => {
         const keysToRemove = [];
@@ -54,7 +55,7 @@ export const ChatHistoryService = (() => {
                         keysToRemove.push(key);
                     }
                 } catch {
-                    keysToRemove.push(key); // corrupted or invalid JSON
+                    keysToRemove.push(key);
                 }
             }
         });
@@ -71,38 +72,34 @@ export const ChatHistoryService = (() => {
     const showSessionExpiredMessage = () => {
         const chatContainer = document.getElementById("chat-container");
         if (!chatContainer) return;
-    
-        // // Clear the chat UI first
-        // chatContainer.innerHTML = "";
-    
+
         const message = `Hi! It looks like your previous <strong>session expired</strong>. Please select an outlet again.`;
-    
+
         const messageRow = document.createElement("div");
         messageRow.classList.add("message-row", "server");
-    
+
         const logoImg = document.createElement("img");
         logoImg.src = localStorage.getItem("activeVendorLogo") || "/static/images/default-logo.png";
         logoImg.alt = "Vendor Logo";
         logoImg.className = "server-logo";
-    
+
         const messageBubble = document.createElement("div");
         messageBubble.classList.add("message-bubble", "server");
-        messageBubble.innerHTML = message;  // Use innerHTML to render <strong>
-    
+        messageBubble.innerHTML = message;
+
         messageRow.appendChild(logoImg);
         messageRow.appendChild(messageBubble);
         chatContainer.appendChild(messageRow);
-    
+
         chatContainer.scrollTop = chatContainer.scrollHeight;
     };
-    
+
     const registerAutoCleanup = () => {
         const clear = () => clearExpired();
         document.addEventListener("DOMContentLoaded", clear);
         window.addEventListener("focus", clear);
     };
 
-    // Run cleanup listeners on load
     registerAutoCleanup();
 
     return {
