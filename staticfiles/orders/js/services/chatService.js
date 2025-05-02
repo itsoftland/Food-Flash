@@ -77,14 +77,15 @@ export function appendMessage(text, sender, timestamp = null) {
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('message-bubble', sender);
     messageBubble.innerHTML = `
-        <div class="message-row">
-            <div class="message-content">${text}</div>
-            <div class="message-timestamp">
-                ${timeStamp}
-                <span class="message-check">&#10003;</span>
-            </div>
-        </div>
+    <div class="message-content">
+        ${text}
+        <span class="message-timestamp">
+            ${timeStamp}
+            <span class="message-check">&#10003;</span>
+        </span>
+    </div>
     `;
+
 
     if (sender === 'server') {
         const activeLogo = localStorage.getItem("activeVendorLogo") || '/static/images/default-logo.png';

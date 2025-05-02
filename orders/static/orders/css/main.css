@@ -307,14 +307,7 @@ body.fixed-body {
     text-transform:capitalize;
     letter-spacing: 1.5px;
 }
-.info-badges {
-    display: flex;
-    flex-direction: column; /* Stack vertically */
-    gap: 10px; /* Space between badges */
-    width: 100%; /* Take full width of parent */
-    max-width: 400px; /* Optional: limit width for large screens */
-    margin-top: 12px;
-}
+
 .message-content .badge {
       background-color: #fdbf50;
       color: #2a2c41;
@@ -334,6 +327,10 @@ body.fixed-body {
     text-align: right;
     padding-left:10px;
 }
+.message-row.server .message-timestamp {
+   padding-left:160px;
+}
+
 
 /* Server message bubble */
 .message-bubble.server {
