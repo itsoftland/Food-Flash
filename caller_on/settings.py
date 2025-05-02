@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,10 +23,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!+-6$-a)3#hoe=#bf0^2(al(-is(we3!rok7oi23n0xlr&vozv'
 
-# settings.py
-import os
-from dotenv import load_dotenv
-
 load_dotenv()  # Load environment variables
 
 VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY")
@@ -34,7 +31,6 @@ VAPID_CLAIMS = {
     "sub": "mailto:sanju.softland@gmail.com"
 }
 
-import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -61,8 +57,6 @@ LOGGING = {
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-
-# ALLOWED_HOSTS = ['webtest.softlandindia.co.in','192.168.0.197','192.168.0.33', 'feline-clever-mutually.ngrok-free.app', 'random-id.ngrok-free.app','0.0.0.0','127.0.0.1','localhost']
 ALLOWED_HOSTS = ['*']
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -180,7 +174,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
+
 
 
 # Media files (Uploaded Images, Vendor Logos, etc.)

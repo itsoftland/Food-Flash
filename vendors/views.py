@@ -214,7 +214,7 @@ def send_offers(request):
         },
     }
     payload = {
-        "title": "Test Notification",
+        "title": "Limited Time Offers",
         "body": "Bucket of 5 Hot & Crispy + 2 Pepsi for just ₹499! Only today. 🍗🥤",
         "type":"offers",
     }

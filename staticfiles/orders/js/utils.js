@@ -154,7 +154,36 @@ window.AppUtils = {
         } catch (e) {
             console.error("Failed to notify order readiness", e);
         }
-    }     
+    },
+    /**
+         * Convert a base64 VAPID public key to a Uint8Array
+         * for use with the PushManager.subscribe() method.
+         */
+    urlBase64ToUint8Array: function (base64String) {
+        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+        const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    },
+
+    /**
+     * Get or generate a unique browser identifier.
+     * Stores and retrieves it from localStorage.
+     */
+    getBrowserId: function () {
+        let browserId = localStorage.getItem('browser_id');
+        if (!browserId) {
+            browserId = crypto.randomUUID();
+            localStorage.setItem('browser_id', browserId);
+        }
+        return browserId;
+    }   
 };
 
 // Initialize viewport handlers

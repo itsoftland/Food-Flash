@@ -1,12 +1,12 @@
-import { AdSliderService } from './services/adSliderService.js';
 import { AddOutletService } from "./services/addOutletService.js"; 
 import { MenuModalService } from './services/menuModalService.js';
 import { FeedbackService } from "./services/feedBackService.js";
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
-import { ChatHistoryService } from './services/chatHistoryService.js';
 import { VendorUIService } from "./services/vendorUIService.js";
+import { handleOutletSelection,appendMessage } from "./services/chatService.js";
+import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
 
 document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.setViewportHeightVar();
@@ -16,11 +16,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
     const menuButton = document.getElementById('menu-button');
-    const ratingButton = document.getElementById('rating-button');
-
-    
+    const ratingButton = document.getElementById('rating-button');  
     const urlParams = new URLSearchParams(window.location.search);
     let locationId = urlParams.get("location_id");
+    const vendorFromQR = urlParams.get('vendor_id');
 
     // 1️⃣ Check URL param first
     if (locationId) {
@@ -37,8 +36,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             throw new Error("Missing location ID");
         }
     }
-
-    const vendorFromQR = urlParams.get('vendor_id');
 
     if (vendorFromQR) {
         AppUtils.setCurrentVendors(vendorFromQR);
@@ -64,159 +61,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         const vendorIds = vendorIdsArray
             .map(id => parseInt(id))
             .filter(id => Number.isInteger(id) && !isNaN(id));
-    
-        if (vendorIds.length > 0) {
-            try {
-                const adsData = await AdSliderService.fetchAds(vendorIds);
-                const vendorAdsArray = adsData.map(vendor => vendor.ads);
-                const interleavedAds = AdSliderService.interleaveAds(vendorAdsArray);
-                AdSliderService.renderAds(interleavedAds);
-                AdSliderService.init();
-            } catch (err) {
-                console.error("Failed to load ads:", err);
-            }
-    
-            fetch("/api/get_vendor_logos/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": AppUtils.getCSRFToken(),
-                },
-                credentials: "same-origin",
-                body: JSON.stringify({ vendor_ids: vendorIds }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("data",data)
-                const logoContainer = document.getElementById("vendor-logo-bar");
-                const activeVendorId = AppUtils.getActiveVendor();
-                if (logoContainer) {
-                    logoContainer.innerHTML = "";
-    
-                    data.forEach(vendor => {
-                        const wrapper = document.createElement("div");
-                        wrapper.classList.add("vendor-logo-wrapper");
-                    
-                        const logo = document.createElement("img");
-                        logo.src = vendor.logo_url;
-                        logo.alt = vendor.name;
-                        logo.classList.add("vendor-logo");
-                        logo.dataset.vendorId = vendor.vendor_id;
-                    
-                        // Add highlight if active
-                        if (vendor.vendor_id === activeVendorId) {
-                            wrapper.classList.add("active");
-                            localStorage.setItem("selectedOutletName", vendor.name);
-                            localStorage.setItem("activeVendorLogo",vendor.logo_url);
-                            const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
-                            showWelcomeMessage(outletName)
-                            // NEW: Restore chat history automatically
-                            handleOutletSelection(vendor.vendor_id, vendor.logo_url,vendor.place_id);
-                            // Scroll into view after render
-                            setTimeout(() => {
-                                wrapper.scrollIntoView({
-                                    behavior: "smooth",
-                                    inline: "center",
-                                    block: "nearest"
-                                });
-                            }, 100);
-                        }
-                    
-                        logo.addEventListener("click", () => {
-                            document.querySelectorAll('.vendor-logo-wrapper').forEach(el => el.classList.remove('active'));
-                            // Add active to clicked one
-                            wrapper.classList.add("active");
-                            localStorage.setItem("selectedOutletName", vendor.name);
-                            handleOutletSelection(vendor.vendor_id, vendor.logo_url,vendor.place_id);
-                        });
-                    
-                        wrapper.appendChild(logo);
-                        logoContainer.appendChild(wrapper);
-                    });
-                    
-    
-                    // Add spacer and "+" button
-                    const spacer = document.createElement("div");
-                    spacer.style.flex = "1";
-    
-                    const addBtnWrapper = document.createElement("div");
-                    addBtnWrapper.className = "add-btn-wrapper flex-shrink-0 ms-2";
-                    addBtnWrapper.innerHTML = `
-                        <button id="add-outlet-btn" class="btn add-outlet-btn">+</button>
-                    `;
-    
-                    logoContainer.appendChild(spacer);
-                    logoContainer.appendChild(addBtnWrapper);
-    
-                    AddOutletService.init();
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching vendor logos:", error);
-            });
-        }
+        VendorUIService.init(vendorIds);
     }
-    
-    function handleOutletSelection(vendorId, vendor_logo,placeId) {
-        localStorage.setItem("activeVendor", vendorId);
-        localStorage.setItem("activeVendorLogo", vendor_logo);
-        localStorage.setItem("activeVendorRatingLink",placeId);
-    
-        const chatContainer = document.getElementById("chat-container");
-        chatContainer.innerHTML = "";
-    
-        const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
-        showWelcomeMessage(outletName);
-    
-        // Flag to prevent history messages from being re-saved
-        window.isRestoringHistory = true;
-    
-       // 🔄 Load messages using the service (handles expiry + fallback)
-        const cachedMessages = ChatHistoryService.load(vendorId) || [];
-    
-        cachedMessages.forEach(msg => {
-            appendMessage(msg.text, msg.sender, msg.timestamp); // Pass the saved timestamp
-        });
-    
-        // Done restoring history
-        window.isRestoringHistory = false;
-    
-        // fetchVendorData(vendorId); // Optional fresh fetch
-    }   
-    
-    function showWelcomeMessage(outletName) {
-        const chatContainer = document.getElementById("chat-container");
-        if (!chatContainer) return;
-    
-        const messages = [
-            `Hi, Good Day! Welcome to ${outletName}.`,
-            "Kindly enter the Bill Number and Send so that we can track your order."
-        ];
-    
-        messages.forEach(msg => {
-            const messageRow = document.createElement("div");
-            messageRow.classList.add("message-row", "server");
-    
-            const logoImg = document.createElement("img");
-            logoImg.src = localStorage.getItem("activeVendorLogo") || "/static/images/default-logo.png";
-            logoImg.alt = "Vendor Logo";
-            logoImg.className = "server-logo";
-    
-            const messageBubble = document.createElement("div");
-            messageBubble.classList.add("message-bubble", "server");
-            messageBubble.textContent = msg;
-    
-            messageRow.appendChild(logoImg);
-            messageRow.appendChild(messageBubble);
-            chatContainer.appendChild(messageRow);
-        });
-    
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-    
-    
-
-
     if (ratingButton) {
         ratingButton.addEventListener('click', function () {
             console.log("Rating button clicked");
@@ -290,126 +136,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log("No active service worker controller. Reloading...");
         // You can uncomment this if you want an automatic reload:
         // window.location.reload();
-    }
-
-
-
-    // Helper to convert your public key
-    function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-        const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
-            .replace(/_/g, '/');
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-        
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
-    }
-
-    // Function to get or generate a unique browser ID stored in localStorage
-    function getBrowserId() {
-        let browserId = localStorage.getItem('browser_id');
-        if (!browserId) {
-            browserId = crypto.randomUUID();
-            localStorage.setItem('browser_id', browserId);
-        }
-        return browserId;
-    }
-
-    // Subscribe to push notifications (called after user enters a token)
-    async function subscribeToPushNotifications(token,vendor_id) {
-        try {
-            if (!token) {
-                console.error("Token not provided. Cannot subscribe.");
-                return;
-            }
-            
-            if (Notification.permission !== "granted") {
-                console.error("Notification permission is not granted.");
-                return;
-            }
-            
-            // Wait for the service worker registration.
-            let registration = await navigator.serviceWorker.getRegistration();
-            if (!registration) {
-                console.error("No service worker found. Registering...");
-                registration = await navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
-            }
-            console.log(navigator.serviceWorker.ready)
-
-            // Check if the page is controlled by the service worker.
-            if (!navigator.serviceWorker.controller) {
-                console.warn("No active service worker controller. The page may need a reload.");
-                // Optionally reload to let SW take control:
-                window.location.reload();
-            }
-
-            // Try to retrieve an existing push subscription.
-            let subscription = await registration.pushManager.getSubscription();
-            if (subscription) {
-                console.log("Existing subscription found:", subscription);
-                // Unsubscribe the existing subscription if you suspect corruption
-                try {
-                    await subscription.unsubscribe();
-                    console.log("Unsubscribed from existing subscription.");
-                    subscription = null;
-                } catch (unsubError) {
-                    console.error("Error unsubscribing:", unsubError);
-                }
-            }
-
-            // Create a new push subscription
-            if (!subscription) {
-                const vapidKey = "BAv_HFvgMBKxx3Jnse3fLMjzUEn3n3zS76GwEGQ_oOPR_40U1e7O4AiezuOReRTK4ULx2EaGC9kGAz-lzV791Tw".trim();
-                subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(vapidKey)
-                });
-                console.log("New subscription created:", subscription);
-                console.log("Subscription JSON string:", JSON.stringify(subscription));
-
-            }
-            
-            // Save subscription to server if changed.
-            const newSubscriptionJSON = JSON.stringify(subscription);
-            const storedSubscription = localStorage.getItem("pushSubscription");
-            if (storedSubscription !== newSubscriptionJSON) {
-                console.log("true............................")
-                // Convert the subscription to JSON to ensure we have plain objects.
-                const sub = subscription.toJSON();
-
-                const payload = {
-                    endpoint: sub.endpoint,       
-                    keys: sub.keys,               
-                    browser_id: getBrowserId(),   
-                    token_number: token,
-                    vendor:vendor_id
-                };
-                console.log("payload data",payload)              
-                const response = await fetch('/vendors/api/save-subscription/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' ,
-                        'X-CSRFToken': AppUtils.getCSRFToken()
-                    },
-                    credentials: "same-origin",
-                    body: JSON.stringify(payload)
-                });
-                
-                if (response.ok) {
-                    localStorage.setItem("pushSubscription", newSubscriptionJSON);
-                    console.log("Push subscription updated successfully.");
-                } else {
-                    console.error("Failed to update push subscription on the server.");
-                }
-            } else {
-                console.log("Subscription unchanged. No need to update.");
-            }
-        } catch (error) {
-            console.error("Error in subscribeToPushNotifications:", error);
-        }
     }
 
     console.log("Notification API supported:", "Notification" in window);
@@ -487,6 +213,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }else{
                 if (pushData.status === "ready") {
                     AppUtils.notifyOrderReady(pushData); 
+                    AppUtils.playNotificationSound();
                     showNotificationModal(pushData);
                     appendMessage(messageHTML, 'server');
                     }
@@ -519,53 +246,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    function appendMessage(text, sender, timestamp = null) {
-        const messageRow = document.createElement('div');
-        messageRow.classList.add('message-row', sender);
-        
-        // Use the passed timestamp if available, else generate the current time
-        const timeStamp = timestamp || new Date().toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            hour12: true 
-        });
-    
-        const messageBubble = document.createElement('div');
-        messageBubble.classList.add('message-bubble', sender);
-        messageBubble.innerHTML = `
-            <div class="message-row">
-                <div class="message-content">${text}</div>
-                <div class="message-timestamp">
-                    ${timeStamp}
-                    <span class="message-check">&#10003;</span>
-                </div>
-            </div>
-        `;
-        
-        if (sender === 'server') {
-            const activeLogo = localStorage.getItem("activeVendorLogo") || '/static/images/default-logo.png';
-            const logoImg = document.createElement('img');
-            logoImg.src = activeLogo;
-            logoImg.alt = 'Vendor Logo';
-            logoImg.className = 'server-logo';
-            messageRow.appendChild(logoImg);
-        }
-        
-        messageRow.appendChild(messageBubble);
-        chatContainer.appendChild(messageRow);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-        
-        // ✅ Save to localStorage through the ChatHistoryService
-        if (!window.isRestoringHistory) {
-            const activeVendorId = localStorage.getItem("activeVendor");
-            if (activeVendorId) {
-                const existingMessages = ChatHistoryService.load(activeVendorId) || [];
-                existingMessages.push({ text, sender, timestamp: timeStamp });
-                ChatHistoryService.save(activeVendorId, existingMessages);
-
-            }
-        }
-    }
     chatInput.addEventListener("keydown", function(event) {
         if (event.key === "Enter") {
             event.preventDefault(); // Prevents default form submission
@@ -627,12 +307,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     
                 // If status is ready, notify user
                 if (data.status === "ready") {
+                    AppUtils.playNotificationSound();
                     showNotificationModal(data);
                     AppUtils.notifyOrderReady(data);
                 }
     
                 // Subscribe for push notifications
-                subscribeToPushNotifications(token, data.vendor);
+                PushSubscriptionService.subscribe(token, data.vendor);
+                // subscribeToPushNotifications(token, data.vendor);
             })
             .catch(error => {
                 console.error("Error fetching order status:", error);
