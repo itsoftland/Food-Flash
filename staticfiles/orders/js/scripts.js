@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.setViewportHeightVar();
     adjustKeyboardOffset();
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-    const chatContainer = document.getElementById('chat-container');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
     const menuButton = document.getElementById('menu-button');
@@ -247,11 +246,31 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     chatInput.addEventListener("keydown", function(event) {
+        let inputValue = event.target.value;
+        const originalValue = inputValue; // Save original for comparison
+        // Remove non-numeric characters
+        inputValue = inputValue.replace(/[^0-9]/g, '');
+    
+        // Restrict to 4 digits
+        if (inputValue.length > 4) {
+            inputValue = inputValue.substring(0, 4);
+        }
+    
+        // Update the input value
+        event.target.value = inputValue;
+    
+        // If invalid characters were typed
+        if (originalValue !== inputValue) {
+            appendMessage("Please Enter a valid Order No.", "server"); // or "left" if you use sides
+        }
+    
+        // Handle Enter key
         if (event.key === "Enter") {
-            event.preventDefault(); // Prevents default form submission
-            sendButton.click();     // Triggers click logic
+            event.preventDefault();
+            sendButton.click();
         }
     });
+    
     
     // Send button logic
     sendButton.addEventListener('click', async function () {
