@@ -372,6 +372,11 @@ body.fixed-body {
     z-index: 999;
     padding: 10px 16px 12px;
 }
+#chat-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: #fdbf50; /* Optional: your custom golden border */
+}
 
 #chat-input {
     height: 42px;
@@ -380,7 +385,7 @@ body.fixed-body {
     border: 1px solid #ccc;
     width: 100%;
     border-radius: 999px;
-    background-color: #f4f4f8;
+    background-color: #ffffff;
     outline: none;
 }
 
