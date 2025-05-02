@@ -255,7 +255,7 @@ body.fixed-body {
 .message-bubble {
     background: #fff9f0;
     font-size: 0.9rem;
-    max-width: 80%;
+    max-width: 84%;
     word-wrap: break-word;
     display: inline-block;
     clear: both;
