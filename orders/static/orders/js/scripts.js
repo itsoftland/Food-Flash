@@ -6,6 +6,7 @@ import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
 import { ChatHistoryService } from './services/chatHistoryService.js';
+import { VendorUIService } from "./services/vendorUIService.js";
 
 document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.setViewportHeightVar();
@@ -449,6 +450,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (event.data && event.data.type === 'PUSH_STATUS_UPDATE') {
                 const pushData = event.data.payload;
                 console.log('Received push update via postMessage:', pushData);
+                let selectedVendors = JSON.parse(localStorage.getItem('selectedVendors')) || [];
+                // Check if the vendor is already in the list
+                if (!selectedVendors.includes(pushData.vendor_id)) {
+                    AppUtils.appendVendorIfNotExists(pushData.vendor_id);
+                    const vendorIds = AppUtils.getStoredVendors();
+                    VendorUIService.init(vendorIds);
+                }
+                // window.location.href = `/home/?location_id=${pushData.location_id}&vendor_id=${AppUtils.getStoredVendors()}`;
                 updateChatOnPush(pushData.vendor_id,pushData.logo_url,pushData.name);
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
                 
@@ -476,15 +485,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (pushData.type =="offers"){
                     appendMessage(offerMessageHTML, 'server');
                 }else{
-                    if (pushData.status === "ready") {
-                        const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
-                        speechSynthesis.speak(orderReadyMessage);
-                        if (navigator.vibrate) {
-                            navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
-                        }
-                    }
+                if (pushData.status === "ready") {
+                    AppUtils.notifyOrderReady(pushData); 
                     showNotificationModal(pushData);
                     appendMessage(messageHTML, 'server');
+                    }
+                    
                 }
                 
             }
@@ -602,7 +608,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     appendMessage(`❌ ${errorMessage}`, 'server');
                     throw new Error(`Server responded with error: ${errorMessage}`);
                 }
-    
                 const data = responseData;
                 console.log(data);
                 const messageHTML = `
@@ -623,13 +628,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // If status is ready, notify user
                 if (data.status === "ready") {
                     showNotificationModal(data);
-                    const orderReadyMessage = new SpeechSynthesisUtterance(
-                        `Your Order ${token} is ${data.status} at the counter ${data.counter_no}.`
-                    );
-                    speechSynthesis.speak(orderReadyMessage);
-                    if (navigator.vibrate) {
-                        navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
-                    }
+                    AppUtils.notifyOrderReady(data);
                 }
     
                 // Subscribe for push notifications

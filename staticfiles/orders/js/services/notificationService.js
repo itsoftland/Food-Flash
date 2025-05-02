@@ -9,7 +9,7 @@ let notificationModal = null;
 
 function initNotificationModal(modalInstance) {
     notificationModal = modalInstance;
-
+    
     document.getElementById('ok-notification').addEventListener('click', () => {
         if (activeNotificationToken && orderStates[activeNotificationToken]) {
             orderStates[activeNotificationToken].acknowledged = true;
@@ -29,11 +29,12 @@ function initNotificationModal(modalInstance) {
 
                 snoozeTimers[token] = setTimeout(() => {
                     if (!orderStates[token].acknowledged) {
+                        AppUtils.playNotificationSound();
                         showNotificationModal(orderStates[token].data);
+                        AppUtils.notifyOrderReady(orderStates[token].data);
                     }
-                }, 30000); // Snooze for 30s
+                }, 3000); // Snooze for 30s
             }
-
             activeNotificationToken = null;
         }
     });
@@ -42,8 +43,10 @@ function initNotificationModal(modalInstance) {
     for (const [token, state] of Object.entries(orderStates)) {
         if (!state.acknowledged) {
             snoozeTimers[token] = setTimeout(() => {
+                AppUtils.playNotificationSound();
                 showNotificationModal(state.data);
-            }, 3000); // Delay after reload to avoid instant spam
+                AppUtils.notifyOrderReady(state.data);   
+            }, 30000); // Delay after reload to avoid instant spam
         }
     }
 }
@@ -66,7 +69,7 @@ function showNotificationModal(pushData) {
 
     activeNotificationToken = token;
     AppUtils.saveOrderStates(orderStates);  // 💾 Save to storage
-
+    console.log("order states",orderStates)
     const modalHeader = document.querySelector('#notificationModal .modal-body h5');
     modalHeader.innerHTML = `Order <strong>${token}</strong> is <strong>${pushData.status}</strong> at Counter <strong>${pushData.counter_no}</strong>!`;
 

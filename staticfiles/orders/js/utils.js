@@ -75,7 +75,18 @@ window.AppUtils = {
             localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
         }
     },
+    appendVendorIfNotExists: function (vendorId) {
+        // Append the vendorId to the list
+        let selectedVendors = JSON.parse(localStorage.getItem('selectedVendors')) || [];
+        selectedVendors.push(vendorId);
 
+        // Update localStorage with the new list (ensure uniqueness)
+        const updatedList = Array.from(new Set(selectedVendors));
+        localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
+
+        // Optionally update activeVendor to the new vendorId
+        localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
+    },    
     getActiveVendor: function () {
         return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
     },
@@ -90,7 +101,6 @@ window.AppUtils = {
             console.error('Error playing notification sound:', err)
         );
     },
-
     // ─────────────────────────────────────
     // Viewport Utility
     // ─────────────────────────────────────
@@ -127,8 +137,24 @@ window.AppUtils = {
             console.error("Failed to load orderStates from storage", e);
             return {};
         }
-    }
-      
+    },
+    // ─────────────────────────────────────
+    // Order Ready Notification (Persistent)
+    // ─────────────────────────────────────
+    notifyOrderReady: function(pushData) {
+        try {
+            // Speech synthesis
+            const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
+            speechSynthesis.speak(orderReadyMessage);
+
+            // Vibration if supported
+            if (navigator.vibrate) {
+                navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
+            }
+        } catch (e) {
+            console.error("Failed to notify order readiness", e);
+        }
+    }     
 };
 
 // Initialize viewport handlers
