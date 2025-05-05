@@ -219,6 +219,12 @@ body {
     text-align: center;
     width: 100%;
 }
+.left-column .order-number{
+    font-size: 5rem;
+}
+.right-column .order-number{
+    font-size: 2rem;
+}
 
 .order-details {
     display: none;
@@ -249,13 +255,13 @@ body {
 /* Responsive adjustments */
 @media (min-width: 1920px) {
     .order-number {
-        font-size: 4rem;
+        font-size: 5rem;
     }
 }
 
 @media (max-width: 1200px) {
     .order-number {
-        font-size: 2.8rem;
+        font-size: 4rem;
     }
 }
 
@@ -269,7 +275,7 @@ body {
     }
 }
 
-@media (max-width: 576px) {
+/* @media (max-width: 576px) {
     .dashboard {
         padding-top: 200px;
     }
@@ -306,7 +312,7 @@ body {
         margin-right: 0;
     }
 }
-
+ */
 @media (max-width: 400px) {
     .order-number {
         font-size: 1.8rem;
