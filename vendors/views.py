@@ -10,6 +10,8 @@ import pytz
 from .models import Order, Vendor, Device, PushSubscription
 from .serializers import OrdersSerializer 
 from .utils import send_push_notification
+import logging
+logger = logging.getLogger(__name__)
 
 def get_current_ist_time():
     ist = pytz.timezone('Asia/Kolkata')
@@ -194,34 +196,55 @@ def save_subscription(request):
 
     return Response({"message": "Subscription updated successfully."})
 
-# In orders/views.py
-
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from .utils import send_push_notification
-import logging
-logger = logging.getLogger(__name__)
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def send_offers(request):
-    logger.info("Received test push request with data: %s", request.data)
-    subscription_info = {
-        "endpoint": request.data.get("endpoint"),
-        "keys": {
-            "p256dh": request.data.get("p256dh"),
-            "auth": request.data.get("auth"),
-        },
-    }
+    vendor_id = request.data.get("vendor_id")
+    offer = request.data.get("offer")
+    title = request.data.get("title")
+    if not vendor_id:
+        return Response({"message": "Vendor ID is required."}, status=400)
+
+    try:
+        vendor = Vendor.objects.get(vendor_id=vendor_id)
+    except Vendor.DoesNotExist:
+        return Response({"message": "Invalid vendor ID."}, status=404)
+
+    # Serialize logo after vendor is confirmed
+    vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
+    logo_url = vendor_serializer.data.get('logo_url', '')
+
     payload = {
-        "title": "Limited Time Offers",
-        "body": "Bucket of 5 Hot & Crispy + 2 Pepsi for just ₹499! Only today. 🍗🥤",
-        "type":"offers",
+        "title": title,
+        "body": offer,
+        "name": vendor.name,
+        "vendor_id": vendor.vendor_id,
+        "location_id": vendor.location_id,
+        "logo_url": logo_url,
+        "type": "offers",
     }
-    success = send_push_notification(subscription_info, payload)
-    if success:
-        logger.info("Test push sent successfully for subscription: %s", subscription_info)
-        return Response({"message": "Test push sent successfully."}, status=200)
-    else:
-        logger.error("Failed to send test push for subscription: %s", subscription_info)
-        return Response({"message": "Failed to send test push."}, status=400)
+
+    # Step 1: Get active orders
+    active_orders = Order.objects.filter(vendor=vendor).exclude(status="ready")
+
+    # Step 2: Get distinct subscriptions tied to active orders
+    active_subscriptions = PushSubscription.objects.filter(tokens__in=active_orders).distinct()
+
+    logger.info(f"Found {active_subscriptions.count()} subscriptions to notify for vendor {vendor.name}")
+
+    sent_count = 0
+    for sub in active_subscriptions:
+        subscription_info = {
+            "endpoint": sub.endpoint,
+            "keys": {
+                "p256dh": sub.p256dh,
+                "auth": sub.auth,
+            },
+        }
+        success = send_push_notification(subscription_info, payload)
+        if success:
+            sent_count += 1
+
+    return Response({"message": f"Offer sent to {sent_count} active customers."}, status=200)
+
+

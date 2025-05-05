@@ -182,7 +182,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const vendorIds = AppUtils.getStoredVendors();
                     VendorUIService.init(vendorIds);
                 }
-                // window.location.href = `/home/?location_id=${pushData.location_id}&vendor_id=${AppUtils.getStoredVendors()}`;
                 updateChatOnPush(pushData.vendor_id,pushData.logo_url,pushData.name);
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
                 
@@ -200,7 +199,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                     </div>
                 `;
                 const offerMessageHTML = `
-                        <div class="response-title">🔥 Exclusive KFC Offer!</div>
+                        <div class="response-title">${pushData.name}</div>
+                        <div class="response-title">🔥 ${pushData.title}</div>
                         <div style="color: #333; font-size: 15px;">
                             ${pushData.body || "Delicious deals await. Come grab your favorite combo now!"}
                         </div>
