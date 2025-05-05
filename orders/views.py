@@ -225,3 +225,15 @@ def submit_feedback(request):
         return Response({'success': True, 'message': 'Feedback submitted successfully'}, status=201)
     else:
         return Response({'success': False, 'errors': serializer.errors}, status=400)
+
+from vendors.serializers import OrdersSerializer
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_recent_ready_orders(request):
+    try:
+        # Fetch the most recent 8 ready orders, sorted by updated_at
+        recent_orders = Order.objects.filter(status='ready').order_by('-updated_at')[:8]
+        serializer = OrdersSerializer(recent_orders, many=True, context={'request': request})
+        return Response(serializer.data, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)

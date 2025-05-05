@@ -1,0 +1,314 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 0.8rem 1rem; 
+    background-color: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.header-title {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: 'Playfair Display';
+    color: #f9aa33;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #f9aa33 0%, #ff8a00 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 10px rgba(249, 170, 51, 0.15);
+    position: relative;
+}
+
+.header-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #f9aa33 0%, rgba(249, 170, 51, 0) 80%);
+    transform-origin: left;
+    transform: scaleX(0.8);
+}
+
+@media (max-width: 768px) {
+    .custom-header {
+        padding: 0.6rem 2rem;
+    }
+    .header-title {
+        font-size: 2.2rem;
+        letter-spacing: 1px;
+    }
+    .nav-links {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .custom-header {
+        padding: 0.5rem 1.5rem; 
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .header-title {
+        font-size: 1.8rem;
+    }
+    .nav-links {
+        gap: 1rem;
+    }
+}
+.custom-footer {
+     position: fixed;
+     bottom: 0;
+     width: 100%;
+     background-color: #ffffff;
+     color: #f9aa33;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     height: 50px;
+     z-index: 1030;
+     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+}
+.footer-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #f9aa33;
+}
+.dashboard-header {
+    position: fixed;
+    top: 62px;
+    left: 0;
+    width: 100%;
+    padding: 10px 20px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-bottom: 1px solid rgba(249, 170, 51, 0.1);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.motivational-quote {
+    font-size: 1.8rem; 
+    font-weight: 600;
+    font-family: 'Montserrat';
+    color: #2a2c41;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 20px;
+    letter-spacing: 0.5px;
+    position: relative;
+    padding-bottom: 4px;
+}
+
+.motivational-quote::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, #f9aa33 0%, rgba(249, 170, 51, 0) 90%);
+    transform-origin: left;
+    transform: scaleX(0.9);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .motivational-quote {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-header {
+        padding: 8px 15px;
+    }
+    .motivational-quote {
+        font-size: 1.2rem;
+        white-space: normal;
+    }
+}
+.dashboard {
+    padding-top: 150px;
+    padding-bottom: 60px; 
+    height: 100vh; 
+    overflow: auto;
+    width: 100%;
+}
+.orders-grid {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.left-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+}
+
+.right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+}
+
+.order-slot {
+    flex: 1;
+    min-height: 0;
+}
+
+.order-card {
+    background-color: white;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    border-left: 6px solid #28a745;
+    background-color: #e8f5e9;
+    animation: slideIn 0.4s ease-out, readyPulse 2s infinite;
+}
+
+.order-number {
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: #28a745;
+    text-align: center;
+    width: 100%;
+}
+
+.order-details {
+    display: none;
+    text-align: center;
+    width: 100%;
+}
+
+@keyframes readyPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (min-width: 1920px) {
+    .order-number {
+        font-size: 4rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .order-number {
+        font-size: 2.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .motivational-quote {
+        font-size: 1.5rem;
+    }
+    
+    .order-number {
+        font-size: 2.4rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard {
+        padding-top: 200px;
+    }
+    
+    .orders-grid {
+        flex-direction: column;
+    }
+    
+    .left-column, .right-column {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .order-slot {
+        flex: 0 0 calc(50% - 10px);
+        height: 120px;
+    }
+    
+    .order-number {
+        font-size: 2rem;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+        top: 80px;
+    }
+    
+    .motivational-quote {
+        font-size: 1.2rem;
+        white-space: normal;
+        text-align: center;
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 400px) {
+    .order-number {
+        font-size: 1.8rem;
+    }
+}
