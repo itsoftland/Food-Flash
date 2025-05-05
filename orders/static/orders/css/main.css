@@ -248,14 +248,14 @@ body.fixed-body {
 /* Align server messages to left */
 .message-row.server {
     justify-content: flex-start;
-    align-items: flex-start;
+    position: relative;
 }
 
 /* Message bubble */
 .message-bubble {
     background: #fff9f0;
     font-size: 0.9rem;
-    max-width: 84%;
+    max-width: 90%;
     word-wrap: break-word;
     display: inline-block;
     clear: both;
@@ -323,12 +323,11 @@ body.fixed-body {
     font-size: 0.65rem;
     opacity: 0.6;
     white-space: nowrap;
-    margin-top: 6px;
-    text-align: right;
     padding-left:10px;
+    
 }
 .message-row.server .message-timestamp {
-   padding-left:160px;
+    padding-left: 200px;
 }
 
 
@@ -346,11 +345,11 @@ body.fixed-body {
 
 /* Server logo outside the chat bubble */
 .server-logo {
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     object-fit: contain !important;
-    margin-right: 5px;
+    margin-right:3px;
     margin-top: 5px;
     border: 2px solid #fff;
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);

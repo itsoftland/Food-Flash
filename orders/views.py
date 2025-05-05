@@ -24,6 +24,10 @@ def home(request):
     cache.clear()
     return render(request, 'orders/index2.html')
 
+def token_display(request):
+    cache.clear()
+    return render(request, 'orders/token_display.html')
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def check_status(request):

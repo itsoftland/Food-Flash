@@ -2910,3 +2910,381 @@ Traceback (most recent call last):
     raise e.__class__(
 ValueError: Field 'location_id' expected a number but got 'null'.
 Internal Server Error: /vendors/api/update-order/
+Internal Server Error: /api/outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2123, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: '2001/token_display'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 111, in get_outlets
+    outlets = Vendor.objects.filter(location_id=location_id)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1609, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1641, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1555, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1385, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 369, in get_prep_lookup
+    return super().get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 88, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2125, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'location_id' expected a number but got '2001/token_display'.
+Internal Server Error: /api/outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2123, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: '2001/token_display'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 111, in get_outlets
+    outlets = Vendor.objects.filter(location_id=location_id)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1609, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1641, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1555, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1385, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 369, in get_prep_lookup
+    return super().get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 88, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2125, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'location_id' expected a number but got '2001/token_display'.
+Internal Server Error: /api/outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2123, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: '2001/token_display'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 111, in get_outlets
+    outlets = Vendor.objects.filter(location_id=location_id)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1609, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1641, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1555, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1385, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 369, in get_prep_lookup
+    return super().get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 88, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2125, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'location_id' expected a number but got '2001/token_display'.
+Internal Server Error: /api/outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2123, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: '2001/token_display'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 111, in get_outlets
+    outlets = Vendor.objects.filter(location_id=location_id)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1609, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1641, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1555, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1385, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 369, in get_prep_lookup
+    return super().get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 88, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2125, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'location_id' expected a number but got '2001/token_display'.
+Internal Server Error: /api/outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2123, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: '2001/token_display'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 111, in get_outlets
+    outlets = Vendor.objects.filter(location_id=location_id)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1609, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1641, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1555, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1385, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 369, in get_prep_lookup
+    return super().get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 88, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2125, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'location_id' expected a number but got '2001/token_display'.
+Internal Server Error: /api/outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2123, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: '2001/token_display'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 111, in get_outlets
+    outlets = Vendor.objects.filter(location_id=location_id)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1609, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1641, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1555, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1385, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 369, in get_prep_lookup
+    return super().get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 88, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2125, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'location_id' expected a number but got '2001/token_display'.
+Internal Server Error: /api/outlets/
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2123, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: '2001/token_display'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
+    return func(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/Food-Flash/orders/views.py", line 111, in get_outlets
+    outlets = Vendor.objects.filter(location_id=location_id)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1609, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1641, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1555, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1385, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 369, in get_prep_lookup
+    return super().get_prep_lookup()
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/lookups.py", line 88, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+  File "/home/silpc065/SANJU/Food_Flash/food_flash_env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2125, in get_prep_value
+    raise e.__class__(
+ValueError: Field 'location_id' expected a number but got '2001/token_display'.

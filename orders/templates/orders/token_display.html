@@ -1,0 +1,37 @@
+{% extends "orders/layouts/base.html" %}
+{% load static %}
+{% block body_class %}fixed-body{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'orders/css/token_display.css' %}">
+{% endblock %}
+{% block content %}
+
+<!-- Dashboard header with quote and status indicators -->
+<div class="dashboard-header">
+    <div class="motivational-quote">
+        Deliciousness coming right up! Your food is on its way to perfection
+    </div>
+    <div class="status-indicator">
+        <div class="status-items">
+            <div class="status-item">
+                <div class="status-color preparing-color"></div>
+                <span class="status-label">Preparing</span>
+            </div>
+            <div class="status-item">
+                <div class="status-color ready-color"></div>
+                <span class="status-label">Ready</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard">
+    <div class="orders-container" id="orders-container">
+        <!-- Order cards will be generated here -->
+    </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script type="module" src="{% static 'orders/js/scripts.js' %}"></script>
+{% endblock %}
