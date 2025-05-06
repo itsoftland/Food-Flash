@@ -163,7 +163,7 @@ body {
 }
 .right-column .order-number{
     font-size: 2rem;
-    color: #990000;
+    color: #dc0000;
 }
 .left-column .selected .order-number{
     font-size:8rem;
@@ -172,26 +172,6 @@ body {
     display: none;
     text-align: center;
     width: 100%;
-}
-
-@keyframes readyPulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
-    }
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
 }
 
 /* Responsive adjustments */
