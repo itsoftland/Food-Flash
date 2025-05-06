@@ -12,50 +12,6 @@ body {
     display: flex;
     flex-direction: column;
 }
-
-.custom-header {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    z-index: 1000 !important;
-    padding: 0.8rem 1rem !important; 
-    background-color: rgba(255, 255, 255, 0.96) !important;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3)!important;;
-    transition: all 0.3s ease !important;
-}
-
-.header-title {
-    margin: 0;
-    font-size: 2.5rem !important;
-    font-weight: 700 ;
-    font-family: 'Playfair Display';
-    color: #f9aa33;
-    text-transform: uppercase ;
-    letter-spacing: 2px;
-    background: linear-gradient(135deg, #f9aa33 0%, #ff8a00 100%) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    text-shadow: 0 2px 10px rgba(249, 170, 51, 0.15) !important;
-    position: relative !important;
-}
-
-.header-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, #f9aa33 0%, rgba(249, 170, 51, 0) 80%);
-    transform-origin: left;
-    transform: scaleX(0.8);
-}
-
 @media (max-width: 768px) {
     .custom-header {
         padding: 0.6rem 2rem;
@@ -81,25 +37,6 @@ body {
     .nav-links {
         gap: 1rem;
     }
-}
-.custom-footer {
-     position: fixed;
-     bottom: 0;
-     width: 100%;
-     background-color: #ffffff;
-     color: #f9aa33;
-     display: flex;
-     justify-content: center;
-     align-items: center;
-     height: 50px;
-     z-index: 1030;
-     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
-}
-.footer-title {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #f9aa33;
 }
 .dashboard {
     padding-top: 80px;
@@ -130,6 +67,44 @@ body {
     gap: 10px;
 }
 
+.column-heading {
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 2.5rem;
+    color: #0b0b0b;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+.column-heading span {
+    display: inline-block;
+    position: relative;
+}
+
+.column-heading span::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #d18d00 0%, rgba(160, 90, 0, 0) 80%);
+    transform: scaleX(0.8);
+    transform-origin: left;
+}
+
+.left-column .column-heading {
+    font-size: 1.5rem;
+}
+
+
+.right-column .column-heading {
+    font-size: 1.2rem;
+}
 .order-slot {
     flex: 1;
     min-height: 0;
@@ -174,30 +149,10 @@ body {
     width: 100%;
 }
 
-/* Responsive adjustments */
-@media (min-width: 1920px) {
-    .left-column .order-number{
-    font-size: 8rem;
-    }
-    .right-column .order-number{
-        font-size: 3rem;
-    }
-
-}
-
-@media (max-width: 1200px) {
+/* Responiveness */
+@media (max-width: 400px) {
     .order-number {
-        font-size: 4rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .motivational-quote {
-        font-size: 1.5rem;
-    }
-    
-    .order-number {
-        font-size: 2.4rem;
+        font-size: 1.8rem;
     }
 }
 
@@ -218,9 +173,110 @@ body {
         text-align: center;
         margin-right: 0;
     }
+     .column-heading {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
 }
-@media (max-width: 400px) {
+
+@media (max-width: 768px) {
+    .motivational-quote {
+        font-size: 1.5rem;
+    }
+    
     .order-number {
+        font-size: 2.4rem;
+    }
+    .column-heading {
+        font-size: 1.3rem;
+    }
+    .left-column .column-heading {
+        font-size: 1.3rem;
+    }
+    .right-column .column-heading {
+        font-size: 1.1rem;
+    }
+}
+
+/* XL Screens (1920px and above) */
+@media (min-width: 1920px) {
+    .left-column .selected .order-number{
+        font-size:10rem;
+    }
+    .left-column .order-number {
+        font-size: 8rem;
+    }
+    .right-column .order-number {
+        font-size: 3rem;
+    }
+    .column-heading {
+        font-size: 2rem;
+    }
+    .left-column .column-heading {
+        font-size: 2.2rem;
+    }
+    .right-column .column-heading {
         font-size: 1.8rem;
     }
 }
+
+/* Large Desktop Screens (2560px and above - 2K/QHD) */
+@media (min-width: 2560px) {
+    .left-column .order-number {
+        font-size: 10rem;
+    }
+    .right-column .order-number {
+        font-size: 4rem;
+    }
+    .column-heading {
+        font-size: 2.4rem;
+    }
+    .left-column .column-heading {
+        font-size: 2.6rem;
+    }
+    .right-column .column-heading {
+        font-size: 2.2rem;
+    }
+}
+
+/* 4K Screens (3840px and above) */
+@media (min-width: 3840px) {
+    .left-column .order-number {
+        font-size: 12rem;
+    }
+    .right-column .order-number {
+        font-size: 5rem;
+    }
+    .column-heading {
+        font-size: 3rem;
+    }
+    .left-column .column-heading {
+        font-size: 3.2rem;
+    }
+    .right-column .column-heading {
+        font-size: 2.8rem;
+    }
+}
+
+/* Ultra-wide Screens (5000px and above) */
+@media (min-width: 5000px) {
+    .left-column .order-number {
+        font-size: 14rem;
+    }
+    .right-column .order-number {
+        font-size: 6rem;
+    }
+    .column-heading {
+        font-size: 3.5rem;
+    }
+    .left-column .column-heading {
+        font-size: 3.8rem;
+    }
+    .right-column .column-heading {
+        font-size: 3.2rem;
+    }
+}
+
+
+
+

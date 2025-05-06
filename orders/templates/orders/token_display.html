@@ -5,25 +5,27 @@
 <link rel="stylesheet" href="{% static 'orders/css/token_display.css' %}">
 {% endblock %}
 {% block content %}
-    <div class="dashboard">
-        <div class="orders-grid" id="orders-container">
-            <!-- Left Column - 2 orders -->
-            <div class="left-column">
-                <div class="order-slot selected" id="left-col-1"></div>
-                <div class="order-slot" id="left-col-2"></div>
-            </div>
-            
-            <!-- Right Column - 6 orders -->
-            <div class="right-column">
-                <div class="order-slot" id="right-col-1"></div>
-                <div class="order-slot" id="right-col-2"></div>
-                <div class="order-slot" id="right-col-3"></div>
-                <div class="order-slot" id="right-col-4"></div>
-                <div class="order-slot" id="right-col-5"></div>
-                <div class="order-slot" id="right-col-6"></div>
-            </div>
+<div class="dashboard">
+    <div class="orders-grid" id="orders-container">
+        <!-- Left Column - Current Token -->
+        <div class="left-column">
+            <h2 class="column-heading"><span>Current Token</span></h2>
+            <div class="order-slot selected" id="left-col-1"></div>
+            <div class="order-slot" id="left-col-2"></div>
+        </div>
+        
+        <!-- Right Column - Previous Tokens -->
+        <div class="right-column">
+            <h2 class="column-heading"><span>Previous Tokens</span></h2>
+            <div class="order-slot" id="right-col-1"></div>
+            <div class="order-slot" id="right-col-2"></div>
+            <div class="order-slot" id="right-col-3"></div>
+            <div class="order-slot" id="right-col-4"></div>
+            <div class="order-slot" id="right-col-5"></div>
+            <div class="order-slot" id="right-col-6"></div>
         </div>
     </div>
+</div>
 {% endblock %}
 {% block extra_js %}
 <script type="module" src="{% static 'orders/js/token_display.js' %}"></script>

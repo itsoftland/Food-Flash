@@ -1,26 +1,45 @@
 .custom-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
+    position: fixed !important;
     display: flex;
-    justify-content: flex-end; /* Align title to the right */
-    align-items: center;
-    padding:1rem 1rem;
-    background-color: white;
-    color: #f9aa33;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Thin and subtle shadow */
+    justify-content: flex-end; 
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 1000 !important;
+    padding: 0.8rem 1rem !important; 
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3)!important;;
+    transition: all 0.3s ease !important;
 }
-
 .header-title {
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    padding-right: 0.25rem;
-    letter-spacing: 1px;
+    font-size: 2.5rem !important;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #d18d00 0%, #a05a00 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    text-shadow: 0 2px 14px rgba(160, 90, 0, 0.35) !important;
+    position: relative !important;
 }
 
+.header-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #d18d00 0%, rgba(160, 90, 0, 0) 80%);
+    transform-origin: left;
+    transform: scaleX(0.8);
+}
 .custom-footer {
     position: fixed;
     bottom: 0;
@@ -34,13 +53,24 @@
     z-index: 1030;
     box-sizing: border-box;
     flex-shrink: 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .footer-title {
     margin: 0;
     padding: 0;
     line-height: 1;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #d18d00 0%, #a05a00 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 1px 8px rgba(160, 90, 0, 0.25);
 }
+
 
 .scrollable-body main.flex-fill {
     overflow: auto;
