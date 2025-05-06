@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
         'right-col-5',
         'right-col-6'
     ];
-    
+
+    let lastShownOrderIds = new Set(); // Store previously shown order IDs
+
     function fetchAndDisplayRecentOrders() {
         fetch('/api/get_recent_orders/')
             .then(response => {
@@ -25,17 +27,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     const slot = document.getElementById(id);
                     if (slot) slot.innerHTML = '';
                 });
-
-                // Filter only ready orders and sort by most recent
-                const readyOrders = data
+    
+                const newReadyOrders = data
                     .filter(order => order.status === 'ready')
                     .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
                     .slice(0, 8);
-
-                readyOrders.forEach((order, index) => {
+    
+                const displayedOrderIds = [];
+    
+                let hasNewOrder = false; // Flag to detect new entries
+    
+                newReadyOrders.forEach((order, index) => {
                     const slotId = orderSlotIds[index];
                     const slotEl = document.getElementById(slotId);
-
+    
                     if (slotEl) {
                         const orderHTML = `
                             <div class="order-card" style="animation-delay: ${index * 0.05}s">
@@ -47,21 +52,34 @@ document.addEventListener("DOMContentLoaded", function () {
                             </div>
                         `;
                         slotEl.innerHTML = orderHTML;
+                        displayedOrderIds.push(order.id);
+    
+                        if (!lastShownOrderIds.has(order.id)) {
+                            hasNewOrder = true; // Found at least one new
+                        }
                     }
                 });
-
-                // Hide any unused slots
-                for (let i = readyOrders.length; i < orderSlotIds.length; i++) {
+    
+                // Hide unused slots
+                for (let i = newReadyOrders.length; i < orderSlotIds.length; i++) {
                     const slot = document.getElementById(orderSlotIds[i]);
                     if (slot) slot.innerHTML = '';
                 }
+    
+                // 🔔 Only play sound if there's at least one new unseen order
+                if (hasNewOrder) {
+                    AppUtils.playNotificationSound();
+                }
+    
+                // Update memory with current shown order IDs
+                lastShownOrderIds = new Set(displayedOrderIds);
             })
             .catch(error => {
                 console.error("Error fetching recent orders:", error);
-                // Optional: Display error to user
             });
     }
     
+
     // Enhanced auto-refresh with error handling
     let refreshInterval = setInterval(() => {
         try {
