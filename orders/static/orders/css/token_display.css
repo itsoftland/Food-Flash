@@ -101,68 +101,8 @@ body {
     font-weight: 600;
     color: #f9aa33;
 }
-.dashboard-header {
-    position: fixed;
-    top: 62px;
-    left: 0;
-    width: 100%;
-    padding: 10px 20px; 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    border-bottom: 1px solid rgba(249, 170, 51, 0.1);
-    z-index: 1000;
-    transition: all 0.3s ease;
-}
-
-.motivational-quote {
-    font-size: 1.8rem; 
-    font-weight: 600;
-    font-family: 'Montserrat';
-    color: #2a2c41;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-right: 20px;
-    letter-spacing: 0.5px;
-    position: relative;
-    padding-bottom: 4px;
-}
-
-.motivational-quote::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, #f9aa33 0%, rgba(249, 170, 51, 0) 90%);
-    transform-origin: left;
-    transform: scaleX(0.9);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .motivational-quote {
-        font-size: 1.5rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .dashboard-header {
-        padding: 8px 15px;
-    }
-    .motivational-quote {
-        font-size: 1.2rem;
-        white-space: normal;
-    }
-}
 .dashboard {
-    padding-top: 150px;
+    padding-top: 80px;
     padding-bottom: 60px; 
     height: 100vh; 
     overflow: auto;
@@ -219,12 +159,15 @@ body {
     width: 100%;
 }
 .left-column .order-number{
-    font-size: 5rem;
+    font-size: 6rem;
 }
 .right-column .order-number{
     font-size: 2rem;
+    color: #990000;
 }
-
+.left-column .selected .order-number{
+    font-size:8rem;
+}
 .order-details {
     display: none;
     text-align: center;
@@ -280,7 +223,7 @@ body {
 
 @media (max-width: 576px) {
     .dashboard {
-        padding-top: 180px;
+        padding-top: 90px;
     }   
     .dashboard-header {
         flex-direction: column;

@@ -5,19 +5,11 @@
 <link rel="stylesheet" href="{% static 'orders/css/token_display.css' %}">
 {% endblock %}
 {% block content %}
-
-     <!-- Dashboard header with quote -->
-     <div class="dashboard-header">
-        <div class="motivational-quote">
-            Deliciousness coming right up! Your food is on its way to perfection
-        </div>
-    </div>
-
     <div class="dashboard">
         <div class="orders-grid" id="orders-container">
             <!-- Left Column - 2 orders -->
             <div class="left-column">
-                <div class="order-slot" id="left-col-1"></div>
+                <div class="order-slot selected" id="left-col-1"></div>
                 <div class="order-slot" id="left-col-2"></div>
             </div>
             
