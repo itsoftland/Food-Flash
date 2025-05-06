@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let refreshInterval = setInterval(() => {
         try {
             fetchAndDisplayRecentOrders();
+            // AppUtils.playNotificationSound();
         } catch (e) {
             console.error("Error in refresh cycle:", e);
         }

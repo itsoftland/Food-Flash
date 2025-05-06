@@ -33,7 +33,7 @@ function initNotificationModal(modalInstance) {
                         showNotificationModal(orderStates[token].data);
                         AppUtils.notifyOrderReady(orderStates[token].data);
                     }
-                }, 3000); // Snooze for 30s
+                }, 30000); // Snooze for 30s
             }
             activeNotificationToken = null;
         }

@@ -123,7 +123,6 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 15px;
     border-left: 6px solid #28a745;
-    animation: slideIn 0.4s ease-out, readyPulse 2s infinite;
 }
 
 .order-number {
@@ -142,11 +141,32 @@ body {
 }
 .left-column .selected .order-number{
     font-size:8rem;
+    animation: slideIn 0.4s ease-out;
 }
 .order-details {
     display: none;
     text-align: center;
     width: 100%;
+}
+
+@keyframes readyPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+}
+        
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Responiveness */
