@@ -196,7 +196,7 @@ body {
 }
 
 .order-card {
-    background-color: white;
+    background-color: #fefcff;
     border-radius: 8px;
     display: flex;
     justify-content: center;
@@ -208,14 +208,13 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 15px;
     border-left: 6px solid #28a745;
-    background-color: #e8f5e9;
     animation: slideIn 0.4s ease-out, readyPulse 2s infinite;
 }
 
 .order-number {
     font-size: 3.2rem;
     font-weight: 700;
-    color: #28a745;
+    color: #0b0b0b;
     text-align: center;
     width: 100%;
 }
@@ -279,34 +278,15 @@ body {
     }
 }
 
-/* @media (max-width: 576px) {
+@media (max-width: 576px) {
     .dashboard {
-        padding-top: 200px;
-    }
-    
-    .orders-grid {
-        flex-direction: column;
-    }
-    
-    .left-column, .right-column {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    
-    .order-slot {
-        flex: 0 0 calc(50% - 10px);
-        height: 120px;
-    }
-    
-    .order-number {
-        font-size: 2rem;
-    }
-    
+        padding-top: 180px;
+    }   
     .dashboard-header {
         flex-direction: column;
         gap: 10px;
         padding: 10px;
-        top: 80px;
+        top: 64px;
     }
     
     .motivational-quote {
@@ -316,7 +296,6 @@ body {
         margin-right: 0;
     }
 }
- */
 @media (max-width: 400px) {
     .order-number {
         font-size: 1.8rem;
