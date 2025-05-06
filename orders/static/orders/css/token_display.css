@@ -54,6 +54,15 @@ body {
         gap: 1rem;
     }
 }
+
+.notification-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #fb8b24;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
 .dashboard {
     padding-top: 80px;
     padding-bottom: 60px; 

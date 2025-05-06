@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
     console.log("Order tracking system initialized");
+    const notifyBtn = document.getElementById('notifyButton');
+   
+    notifyBtn.addEventListener('click', function () {
+        AppUtils.playNotificationSound();
+        });
     const orderSlotIds = [
         'left-col-1',
         'left-col-2',
