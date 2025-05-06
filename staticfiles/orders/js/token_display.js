@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (e) {
             console.error("Error in refresh cycle:", e);
         }
-    }, 5000);
+    }, 1000);
     
     // Initial load with error handling
     try {
