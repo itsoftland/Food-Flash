@@ -1,6 +1,5 @@
 {% extends "orders/layouts/base.html" %}
 {% load static %}
-
 {% block body_class %}fixed-body{% endblock %}
 
 {% block extra_css %}
@@ -9,45 +8,39 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-wrapper mx-auto">
-    <div class="container px-0">
-        <!-- Vendor Logo Bar -->
-        <div id="vendor-logo-bar">
-            <div class="add-btn-wrapper flex-shrink-0">
-                <button id="add-outlet-btn"
-                        class="btn add-outlet-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#addOutletModal">
-                    +
-                </button>
-            </div>
-        </div>
-
-        <!-- Advertisement Slider -->
-        <div id="ad-slider-wrapper">
-            <div id="ad-slider"></div>
-        </div>
-
-        <!-- Chat Response -->
-        <div class="chat-response px-1 overflow-auto" id="chat-container">
-            <div class="message-bubble server">Hi, Good Day, Welcome!</div>
-            <div class="message-bubble server">Kindly Enter the Bill Number and Send so that we can Track your Order.</div>
-        </div>
-
-        <!-- Chat Input -->
-        <div class="chat-request px-1">
-            <div class="predefined-buttons d-flex justify-content-between pb-2 pt-2">
-                <button id="menu-button" class="menu-button btn text-white rounded-pill px-4" data-menu-url="">Menu</button>
-                <button id="rating-button" class="menu-button btn text-white rounded-pill px-4">Rating</button>
-                <button id="feedback-button" class="menu-button btn text-white rounded-pill px-4">Feedback</button>
-            </div>
-            <div class="d-flex">
-                <input type="text" id="chat-input" class="form-control rounded-pill" placeholder="Enter your message...">
-                <button id="send-button" class="btn text-white rounded-pill px-8">Send</button>
-            </div>
-        </div>
+<!-- Header and Slider (Fixed) -->
+<div class="header-bar flex-shrink-0">
+    <div id="vendor-logo-bar" class="d-flex justify-content-between align-items-center px-3 pt-2">
+        <div class="add-btn-wrapper flex-shrink-0">
+            <button id="add-outlet-btn" class="btn add-outlet-btn" data-bs-toggle="modal" data-bs-target="#addOutletModal">+</button>
+        </div> 
     </div>
-</div> 
+</div>
+<div id="ad-slider-wrapper" class="ad-slider flex-shrink-0 px-3 pt-2">
+    <div id="ad-slider" class="ad-track"></div>
+</div>
+
+<!-- Page Wrapper with Chat Area -->
+<div class="page-wrapper">
+    <!-- Scrollable Chat Area -->
+    <div class="chat-response px-1" id="chat-container">
+    </div>
+</div>
+
+<!-- Footer (Fixed) -->
+<div class="chat-footer px-3 pt-2 pb-2">
+    <div class="predefined-buttons d-flex justify-content-between pb-2">
+        <button id="menu-button" class="menu-button btn text-white rounded-pill px-4" data-menu-url="">Menu</button>
+        <button id="rating-button" class="menu-button btn text-white rounded-pill px-4">Rating</button>
+        <button id="feedback-button" class="menu-button btn text-white rounded-pill px-4">Feedback</button>
+    </div>
+    <div class="d-flex">
+        <input type="tel" id="chat-input" class="form-control rounded-pill me-2" maxlength="4" placeholder="Enter your Order No...">
+        <button id="send-button" class="btn rounded-pill d-flex align-items-center justify-content-center">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>    
+</div>
 
 <!-- Modals -->
 {% include "orders/partials/index_modals.html" %}

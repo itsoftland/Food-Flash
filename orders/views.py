@@ -22,7 +22,7 @@ def outlet_selection(request):
 
 def home(request):
     cache.clear()
-    return render(request, 'orders/index2.html')
+    return render(request, 'orders/index.html')
 
 def token_display(request):
     cache.clear()
@@ -228,34 +228,13 @@ def submit_feedback(request):
 
 from vendors.serializers import OrdersSerializer
 
-# @api_view(['GET'])
-# @permission_classes([AllowAny])
-# def get_recent_ready_orders(request):
-#     try:
-#         # Fetch most recent 8 ready orders
-#         recent_orders = Order.objects.filter(status='ready').order_by('-updated_at')[:8]
-        
-#         # Add 'is_new' to each order (based on shown_on_tv flag)
-#         data = []
-#         for order in recent_orders:
-#             serialized = OrdersSerializer(order, context={'request': request}).data
-#             serialized['is_new'] = not order.shown_on_tv  # Add is_new flag
-#             data.append(serialized)
-
-#         # Update shown_on_tv to True for those 8 orders (optional, only if you want them to count as "shown")
-#         Order.objects.filter(id__in=[order.id for order in recent_orders], shown_on_tv=False).update(shown_on_tv=True)
-
-#         return Response(data, status=200)
-#     except Exception as e:
-#         return Response({"error": str(e)}, status=500)
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_recent_ready_orders(request):
     try:
         vendor_id = request.GET.get('vendor_id')
         if not vendor_id:
-            return Response({"error": "vendor_id is required"}, status=400)
+            return Response({"error": "vendor_id required"}, status=400)
 
         # Filter recent 'ready' orders for the given vendor
         recent_orders = Order.objects.filter(
