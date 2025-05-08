@@ -227,33 +227,53 @@ def submit_feedback(request):
         return Response({'success': False, 'errors': serializer.errors}, status=400)
 
 from vendors.serializers import OrdersSerializer
+
 # @api_view(['GET'])
 # @permission_classes([AllowAny])
 # def get_recent_ready_orders(request):
 #     try:
-#         # Fetch the most recent 8 ready orders, sorted by updated_at
+#         # Fetch most recent 8 ready orders
 #         recent_orders = Order.objects.filter(status='ready').order_by('-updated_at')[:8]
-#         serializer = OrdersSerializer(recent_orders, many=True, context={'request': request})
-#         return Response(serializer.data, status=200)
+        
+#         # Add 'is_new' to each order (based on shown_on_tv flag)
+#         data = []
+#         for order in recent_orders:
+#             serialized = OrdersSerializer(order, context={'request': request}).data
+#             serialized['is_new'] = not order.shown_on_tv  # Add is_new flag
+#             data.append(serialized)
+
+#         # Update shown_on_tv to True for those 8 orders (optional, only if you want them to count as "shown")
+#         Order.objects.filter(id__in=[order.id for order in recent_orders], shown_on_tv=False).update(shown_on_tv=True)
+
+#         return Response(data, status=200)
 #     except Exception as e:
 #         return Response({"error": str(e)}, status=500)
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_recent_ready_orders(request):
     try:
-        # Fetch most recent 8 ready orders
-        recent_orders = Order.objects.filter(status='ready').order_by('-updated_at')[:8]
-        
-        # Add 'is_new' to each order (based on shown_on_tv flag)
+        vendor_id = request.GET.get('vendor_id')
+        if not vendor_id:
+            return Response({"error": "vendor_id is required"}, status=400)
+
+        # Filter recent 'ready' orders for the given vendor
+        recent_orders = Order.objects.filter(
+            vendor__vendor_id=vendor_id,
+            status='ready'
+        ).order_by('-updated_at')[:8]
+
+        # Serialize and add 'is_new' field
         data = []
         for order in recent_orders:
             serialized = OrdersSerializer(order, context={'request': request}).data
-            serialized['is_new'] = not order.shown_on_tv  # Add is_new flag
+            serialized['is_new'] = not order.shown_on_tv
             data.append(serialized)
 
-        # Update shown_on_tv to True for those 8 orders (optional, only if you want them to count as "shown")
+        # Mark these orders as shown
         Order.objects.filter(id__in=[order.id for order in recent_orders], shown_on_tv=False).update(shown_on_tv=True)
 
         return Response(data, status=200)
+
     except Exception as e:
         return Response({"error": str(e)}, status=500)

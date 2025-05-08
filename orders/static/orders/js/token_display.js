@@ -1,7 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("Order tracking system initialized");
+    const urlParams = new URLSearchParams(window.location.search);
+    const vendorId = urlParams.get('vendor_id');
+
+    // Clean the URL by removing the query parameters
+    window.history.replaceState({}, document.title, window.location.pathname);
     const notifyBtn = document.getElementById('notifyButton');
-   
     notifyBtn.addEventListener('click', function () {
         AppUtils.playNotificationSound();
         });
@@ -19,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let lastShownOrderIds = new Set(); // Store previously shown order IDs
 
     function fetchAndDisplayRecentOrders() {
-        fetch('/api/get_recent_orders/')
+        fetch(`/api/get_recent_orders/?vendor_id=${vendorId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error("Failed to fetch orders");
