@@ -61,9 +61,11 @@
     </main>
 
     <!-- Footer -->
+     {% block footer %}
     <footer class="custom-footer">
         <p class="footer-title">&copy; 2025 Softland India Ltd</p>
     </footer>
+    {% endblock %}
     <div id="customToast" class="toast"></div>
     <!-- Core JS -->
     <script src="{% static 'orders/js/utils.js' %}"></script>

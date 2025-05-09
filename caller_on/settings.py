@@ -37,11 +37,24 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name} {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "file": {
             "level": "ERROR",
             "class": "logging.FileHandler",
             "filename": os.path.join(BASE_DIR, "error.log"),
+            "formatter": "verbose",
+        },
+        "requests_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "requests.log"),
+            "formatter": "verbose",
         },
     },
     "loggers": {
@@ -49,6 +62,11 @@ LOGGING = {
             "handlers": ["file"],
             "level": "ERROR",
             "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["requests_file"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
 }
@@ -70,6 +88,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'rest_framework',
     'django_extensions',
+    'corsheaders',
     'orders',
     'vendors',
     'adminlte3',
@@ -92,6 +111,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'caller_on.middlewares.RequestLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

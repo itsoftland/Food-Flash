@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'orders/css/styles.css' %}">
+<link rel="stylesheet" href="{% static 'orders/css/home_footer.css' %}">
 <link rel="stylesheet" href="{% static 'orders/css/outlet_selection.css' %}">
 {% endblock %}
 
@@ -29,11 +30,6 @@
 
 <!-- Footer (Fixed) -->
 <div class="chat-footer px-3 pt-2 pb-2">
-    <div class="predefined-buttons d-flex justify-content-between pb-2">
-        <button id="menu-button" class="menu-button btn text-white rounded-pill px-4" data-menu-url="">Menu</button>
-        <button id="rating-button" class="menu-button btn text-white rounded-pill px-4">Rating</button>
-        <button id="feedback-button" class="menu-button btn text-white rounded-pill px-4">Feedback</button>
-    </div>
     <div class="d-flex">
         <input type="tel" id="chat-input" class="form-control rounded-pill me-2" maxlength="4" placeholder="Enter your Order No...">
         <button id="send-button" class="btn rounded-pill d-flex align-items-center justify-content-center">
@@ -41,7 +37,35 @@
         </button>
     </div>    
 </div>
-
+{% block footer %}
+<footer class="premium-footer">
+    <div class="footer-content">
+        <div class="footer-button menu-btn">
+            <div class="btn-icon-wrapper">
+                <div class="icon-bg"></div>
+                <i class="fas fa-utensils footer-icon"></i>
+            </div>
+            <span class="footer-text">Menu</span>
+        </div>
+        
+        <div class="footer-button rating-btn active">
+            <div class="btn-icon-wrapper">
+                <div class="icon-bg"></div>
+                <i class="fas fa-star footer-icon"></i>
+            </div>
+            <span class="footer-text">Rating</span>
+        </div>
+        
+        <div class="footer-button feedback-btn">
+            <div class="btn-icon-wrapper">
+                <div class="icon-bg"></div>
+                <i class="fas fa-comment-alt footer-icon"></i>
+            </div>
+            <span class="footer-text">Feedback</span>
+        </div>
+    </div>
+</footer>
+{% endblock %}
 <!-- Modals -->
 {% include "orders/partials/index_modals.html" %}
 {% endblock %}
