@@ -9,13 +9,11 @@ import { handleOutletSelection,appendMessage } from "./services/chatService.js";
 import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
 
 document.addEventListener('DOMContentLoaded', async function() {
-    AppUtils.setViewportHeightVar();
-    adjustKeyboardOffset();
+    AppUtils.initPaddingAdjustmentListeners();
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
-    const menuButton = document.getElementById('menu-button');
-    const ratingButton = document.getElementById('rating-button');  
+    const ratingButton = document.getElementById('rating-button');
     const urlParams = new URLSearchParams(window.location.search);
     let locationId = urlParams.get("location_id");
     const vendorFromQR = urlParams.get('vendor_id');
@@ -78,16 +76,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     let notificationsEnabled = true;
     const isAndroid = /Android/i.test(navigator.userAgent);
-    console.log("Android device:", isAndroid);
-    function adjustKeyboardOffset() {
-        const isAndroid = /Android/i.test(navigator.userAgent);
-        document.documentElement.style.setProperty('--keyboard-offset', isAndroid ? '210px' : '170px');
-        console.log("Keyboard offset set for", isAndroid ? "Android" : "Other");
-    }
-    
-    window.addEventListener('load', adjustKeyboardOffset);
-    window.addEventListener('resize', adjustKeyboardOffset);
-    
+    console.log("Android device:", isAndroid);    
     // Adjust viewport for mobile devices
     function setDynamicVH() {
         let vh = window.innerHeight * 0.01;
@@ -237,14 +226,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    // Menu button logic
-    if (menuButton) {
-        menuButton.addEventListener('click', function() {
-            let menuImageModal = new bootstrap.Modal(document.getElementById('menuImageModal'));
-            menuImageModal.show();
-        });
-    }
-
     chatInput.addEventListener("keydown", function(event) {
         let inputValue = event.target.value;
         const originalValue = inputValue; // Save original for comparison

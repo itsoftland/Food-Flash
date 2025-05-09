@@ -131,7 +131,7 @@ export const FeedbackService = (() => {
     };
 
     const bindEvents = () => {
-        document.getElementById("feedback-button")?.addEventListener("click", openForm);
+        document.querySelector(".feedback-button")?.addEventListener("click", openForm);
         nextBtn?.addEventListener("click", goToNextStep);
         prevBtn?.addEventListener("click", goToPrevStep);
     };

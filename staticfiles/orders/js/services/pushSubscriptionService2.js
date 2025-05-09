@@ -1,6 +1,20 @@
 export const PushSubscriptionService = (() => {
     const VAPID_PUBLIC_KEY = "BAv_HFvgMBKxx3Jnse3fLMjzUEn3n3zS76GwEGQ_oOPR_40U1e7O4AiezuOReRTK4ULx2EaGC9kGAz-lzV791Tw".trim();
 
+    const getIOSVersion = () => {
+        const match = navigator.userAgent.match(/OS (\d+)_?(\d+)?/);
+        if (match) {
+            return parseFloat(`${match[1]}.${match[2] || 0}`);
+        }
+        return null;
+    };
+
+    const isIOS17Buggy = () => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const iosVersion = getIOSVersion();
+        return isIOS && iosVersion && iosVersion < 18;
+    };
+
     const subscribe = async (token, vendor_id) => {
         try {
             if (!token) {
@@ -26,27 +40,41 @@ export const PushSubscriptionService = (() => {
             }
 
             let subscription = await registration.pushManager.getSubscription();
-            if (subscription) {
+            const storedSubscription = localStorage.getItem("pushSubscription");
+            const convertedKey = AppUtils.urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+
+            const shouldUnsubscribe = subscription && !isIOS17Buggy() && JSON.stringify(subscription.toJSON()) !== storedSubscription;
+
+            if (shouldUnsubscribe) {
                 try {
                     await subscription.unsubscribe();
-                    console.log("Unsubscribed existing subscription.");
+                    console.log("Unsubscribed outdated push subscription.");
+                    subscription = null;
                 } catch (err) {
                     console.error("Failed to unsubscribe:", err);
                 }
+            } else if (subscription && isIOS17Buggy()) {
+                console.warn("iOS < 18 detected — skipping unsubscribe to avoid bug.");
             }
 
-            const convertedKey = AppUtils.urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-            subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: convertedKey
-            });
+            if (!subscription) {
+                try {
+                    subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: convertedKey
+                    });
+                    console.log("Successfully created new push subscription:", subscription);
+                } catch (subErr) {
+                    console.error("Failed to subscribe for push:", subErr);
+                    return;
+                }
+            } else {
+                console.log("Using existing push subscription.");
+            }
 
-            console.log("New push subscription:", subscription);
-
+            // Send to server
             const newSubscriptionJSON = JSON.stringify(subscription);
-            const storedSubscription = localStorage.getItem("pushSubscription");
-
-            if (storedSubscription !== newSubscriptionJSON) {
+            if (newSubscriptionJSON !== storedSubscription) {
                 const browserId = AppUtils.getBrowserId();
                 const sub = subscription.toJSON();
 
@@ -70,12 +98,12 @@ export const PushSubscriptionService = (() => {
 
                 if (response.ok) {
                     localStorage.setItem("pushSubscription", newSubscriptionJSON);
-                    console.log("Push subscription updated successfully.");
+                    console.log("Push subscription saved to server.");
                 } else {
                     console.error("Failed to save subscription to server.");
                 }
             } else {
-                console.log("Push subscription unchanged.");
+                console.log("Push subscription unchanged. Skipping server update.");
             }
 
         } catch (err) {

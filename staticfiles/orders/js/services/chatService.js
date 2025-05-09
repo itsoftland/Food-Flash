@@ -108,4 +108,5 @@ export function appendMessage(text, sender, timestamp = null) {
             ChatHistoryService.save(activeVendorId, existingMessages);
         }
     }
+    AppUtils.adjustChatResponsePadding();
 }

@@ -104,10 +104,39 @@ window.AppUtils = {
     // ─────────────────────────────────────
     // Viewport Utility
     // ─────────────────────────────────────
-    setViewportHeightVar: function () {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-    },  
+    adjustChatResponsePadding: function () {
+        const chatResponse = document.querySelector('.chat-response');
+        const chatFooter = document.querySelector('.chat-footer');
+        const premiumFooter = document.querySelector('.premium-footer');
+    
+        if (!chatResponse) return;
+    
+        const chatFooterHeight = chatFooter?.offsetHeight || 0;
+        const premiumFooterHeight = premiumFooter?.offsetHeight || 0;
+    
+        const viewportHeight = window.visualViewport?.height || window.innerHeight;
+        const keyboardOffset = window.innerHeight - viewportHeight;
+    
+        const totalBottomOffset = chatFooterHeight + premiumFooterHeight + keyboardOffset;
+    
+        chatResponse.style.paddingBottom = `${totalBottomOffset}px`; // Add safe spacing
+    
+        // Optional: Dynamically limit height if needed
+        const topOffset = 120; // Same as your padding-top
+        const calculatedHeight = viewportHeight - chatFooterHeight - premiumFooterHeight - 20;
+        chatResponse.style.maxHeight = `${calculatedHeight}px`;
+    },
+    initPaddingAdjustmentListeners: function () {
+        const self = this;
+        const adjust = () => self.adjustChatResponsePadding();
+    
+        window.addEventListener('load', adjust);
+        window.addEventListener('resize', adjust);
+        window.visualViewport?.addEventListener('resize', adjust);
+        window.addEventListener('focusin', adjust);
+        window.addEventListener('focusout', adjust);
+    },
+
     showToast: function(message) {
         const toast = document.getElementById('customToast');
         toast.textContent = message;
@@ -186,17 +215,3 @@ window.AppUtils = {
     }   
 };
 
-// Initialize viewport handlers
-window.addEventListener('resize', AppUtils.setViewportHeightVar);
-window.addEventListener('orientationchange', AppUtils.setViewportHeightVar);
-document.addEventListener('DOMContentLoaded', AppUtils.setViewportHeightVar);
-window.addEventListener('load', AppUtils.setViewportHeightVar);
-window.addEventListener('focusin', AppUtils.setViewportHeightVar);
-window.addEventListener('focusout', AppUtils.setViewportHeightVar);
-
-if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-        const isKeyboardOpen = window.visualViewport.height < window.innerHeight;
-        document.body.classList.toggle('keyboard-open', isKeyboardOpen);
-    });
-}

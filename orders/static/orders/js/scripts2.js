@@ -1,6 +1,6 @@
 import { AddOutletService } from "./services/addOutletService.js"; 
-import { MenuModalService } from './services/menuModalService.js';
-import { FeedbackService } from "./services/feedBackService.js";
+import { MenuModalService } from './services/menuModalService2.js';
+import { FeedbackService } from "./services/feedBackService2.js";
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
@@ -226,6 +226,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
+    // Menu button logic
     chatInput.addEventListener("keydown", function(event) {
         let inputValue = event.target.value;
         const originalValue = inputValue; // Save original for comparison
