@@ -98,7 +98,6 @@ export const MenuModalService = (() => {
 
                 // Check if clicked button is for opening the menu modal
                 if (this.classList.contains('menu-btn')) {
-                    console.log("clickeddddd")
                     const activeVendorId = localStorage.getItem("activeVendor");
 
                     if (!activeVendorId) {

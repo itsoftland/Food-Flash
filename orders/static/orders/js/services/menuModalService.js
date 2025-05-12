@@ -13,7 +13,6 @@ export const MenuModalService = (() => {
         menuContent.innerHTML = ""; // Clear previous content
 
         if (pdfFiles.length > 0 && imageFiles.length === 0) {
-            // Single PDF shown in iframe
             menuContent.innerHTML = `
                 <iframe src="${pdfFiles[0]}" width="100%" height="500px" frameborder="0"></iframe>
             `;
@@ -59,7 +58,6 @@ export const MenuModalService = (() => {
                     </ol>
                 </div>
             `;
-
             return;
         }
 
@@ -81,9 +79,8 @@ export const MenuModalService = (() => {
         modalInstance.show();
     };
 
-
     const bindEvents = () => {
-        const menuButton = document.getElementById("menu-button");
+        const buttons = document.querySelectorAll(".footer-button"); 
         const menuModal = document.getElementById("menuImageModal");
     
         // 🧹 Cleanup any leftover backdrops if modal is closed
@@ -92,54 +89,68 @@ export const MenuModalService = (() => {
             backdrops.forEach(b => b.remove());
             document.body.classList.remove('modal-open');
         });
-    
-        if (menuButton) {
-            menuButton.addEventListener("click", async function () {
-                const activeVendorId = localStorage.getItem("activeVendor");
-    
-                if (!activeVendorId) {
-                    AppUtils.showToast("No active vendor selected");
-                    return;
-                }
-    
-                try {
-                    const res = await fetch(`/api/menus/`, {
+
+        buttons.forEach(button => {
+            button.addEventListener('click', function () {
+                buttons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                console.log(this.classList.contains('menu-button'))
+
+                // Check if clicked button is for opening the menu modal
+                if (this.classList.contains('menu-btn')) {
+                    const activeVendorId = localStorage.getItem("activeVendor");
+
+                    if (!activeVendorId) {
+                        AppUtils.showToast("No active vendor selected");
+                        return;
+                    }
+
+                    fetch(`/api/menus/`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
                             "X-CSRFToken": AppUtils.getCSRFToken(),
                         },
                         body: JSON.stringify({ vendor_ids: [parseInt(activeVendorId)] })
-                    });
-    
-                    if (!res.ok) throw new Error("Menu not found");
-    
-                    const data = await res.json();
-    
-                    if (!Array.isArray(data) || data.length === 0) {
-                        throw new Error("No menu data");
-                    }
-    
-                    const vendorMenu = data[0];
-                    const menuFiles = vendorMenu.menus || [];
-    
-                    openModalWithFiles(menuFiles);
-                } catch (err) {
-                    console.error("Menu fetch failed:", err);
-                    menuContent.innerHTML = `<p class="text-danger">Failed to load menu.</p>`;
-    
-                    if (!modalInstance) {
-                        modalInstance = new bootstrap.Modal(menuModal, {
-                            backdrop: 'static',
-                            keyboard: false
+                    })
+                        .then(res => {
+                            if (!res.ok) throw new Error("Menu not found");
+                            return res.json();
+                        })
+                        .then(data => {
+                            if (!Array.isArray(data) || data.length === 0) {
+                                throw new Error("No menu data");
+                            }
+                            const vendorMenu = data[0];
+                            const menuFiles = vendorMenu.menus || [];
+                            openModalWithFiles(menuFiles);
+                        })
+                        .catch(err => {
+                            console.error("Menu fetch failed:", err);
+                            menuContent.innerHTML = `<p class="text-danger">Failed to load menu.</p>`;
+
+                            if (!modalInstance) {
+                                modalInstance = new bootstrap.Modal(menuModal, {
+                                    backdrop: 'static',
+                                    keyboard: false
+                                });
+                            }
+
+                            modalInstance.show();
                         });
-                    }
-    
-                    modalInstance.show();
                 }
+                else if (this.classList.contains('rating-btn')) {
+                    console.log('Rating button clicked');
+                    let ratingLink = localStorage.getItem("activeVendorRatingLink") || "https://default-rating-link.com";
+                    // Construct the Google Review URL
+                    const googleReviewUrl = `https://search.google.com/local/writereview?placeid=${ratingLink}`;
+
+                    // Open the review page in a new browser tab
+                    window.open(googleReviewUrl, "_blank");
+                } 
             });
-        }
-    };    
+        });
+    };
 
     return {
         init: bindEvents,

@@ -131,10 +131,27 @@ export const FeedbackService = (() => {
     };
 
     const bindEvents = () => {
-        document.querySelector(".feedback-button")?.addEventListener("click", openForm);
-        nextBtn?.addEventListener("click", goToNextStep);
-        prevBtn?.addEventListener("click", goToPrevStep);
+        const buttons = document.querySelectorAll(".footer-button");
+    
+        buttons.forEach(button => {
+            button.addEventListener("click", function () {
+                buttons.forEach(btn => btn.classList.remove("active"));
+                this.classList.add("active");
+    
+                // 📝 Feedback button logic
+                if (this.classList.contains("feedback-btn")) {
+                    openForm(); // Call your feedback form opener
+                }
+    
+                // 🔄 Add more logic for other button types if needed
+            });
+        });
+    
+        // Ensure next/prev feedback steps still work if those buttons are present
+        document.querySelector(".next-btn")?.addEventListener("click", goToNextStep);
+        document.querySelector(".prev-btn")?.addEventListener("click", goToPrevStep);
     };
+    
 
     return {
         init: bindEvents

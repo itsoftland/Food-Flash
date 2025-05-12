@@ -11,8 +11,8 @@ import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
 document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.initPaddingAdjustmentListeners();
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'), {
-        backdrop: 'static',  // Prevent closing on outside click
-        keyboard: false      // Prevent closing on ESC key
+        backdrop: 'static',
+        keyboard: false      
     });    
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
