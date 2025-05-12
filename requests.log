@@ -1061,3 +1061,14 @@
 [2025-05-12 11:58:26,532] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
 [2025-05-12 11:58:33,247] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
 [2025-05-12 11:58:38,391] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
+[2025-05-12 12:06:54,961] INFO django.request GET /check-status/?token_no=1&vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-12 12:06:55,465] INFO django.request POST /vendors/api/save-subscription/ from 127.0.0.1 -> 200
+[2025-05-12 12:22:49,549] INFO django.request GET /check-status/?token_no=1&vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-12 12:22:50,058] INFO django.request POST /vendors/api/save-subscription/ from 127.0.0.1 -> 200
+[2025-05-12 12:22:51,035] INFO django.request GET /check-status/?token_no=1&vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-12 12:22:51,630] INFO django.request POST /vendors/api/save-subscription/ from 127.0.0.1 -> 200
+[2025-05-12 12:22:56,457] INFO django.request GET /check-status/?token_no=1&vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-12 12:22:57,039] INFO django.request POST /vendors/api/save-subscription/ from 127.0.0.1 -> 200
+[2025-05-12 12:23:01,774] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
+[2025-05-12 12:23:10,792] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
+[2025-05-12 12:23:14,259] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
