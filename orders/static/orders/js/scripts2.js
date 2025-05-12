@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (pushData.status === "ready") {
                     AppUtils.notifyOrderReady(pushData); 
                     AppUtils.playNotificationSound();
-                    showNotificationModal(pushData);
+                    showNotificationModal(pushData,'push');
                     appendMessage(messageHTML, 'server');
                     }
                     
@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // If status is ready, notify user
                 if (data.status === "ready") {
                     AppUtils.playNotificationSound();
-                    showNotificationModal(data);
+                    showNotificationModal(data,'usercheck');
                     AppUtils.notifyOrderReady(data);
                 }
     

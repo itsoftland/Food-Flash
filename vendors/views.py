@@ -36,7 +36,6 @@ def list_order(request):
     return Response(serializer.data)
 
 from orders.serializers import VendorLogoSerializer  # adjust import if needed
-
 @api_view(['PATCH'])
 @permission_classes([AllowAny])
 def update_order(request):

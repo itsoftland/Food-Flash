@@ -22,7 +22,7 @@ def outlet_selection(request):
 
 def home(request):
     cache.clear()
-    return render(request, 'orders/index2.html')
+    return render(request, 'orders/index.html')
 
 def token_display(request):
     cache.clear()
