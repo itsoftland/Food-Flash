@@ -10,10 +10,12 @@ import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
 
 document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.initPaddingAdjustmentListeners();
-    const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+    const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'), {
+        backdrop: 'static',  // Prevent closing on outside click
+        keyboard: false      // Prevent closing on ESC key
+    });    
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
-    const ratingButton = document.getElementById('rating-button');
     const urlParams = new URLSearchParams(window.location.search);
     let locationId = urlParams.get("location_id");
     const vendorFromQR = urlParams.get('vendor_id');
@@ -59,19 +61,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             .map(id => parseInt(id))
             .filter(id => Number.isInteger(id) && !isNaN(id));
         VendorUIService.init(vendorIds);
-    }
-    if (ratingButton) {
-        ratingButton.addEventListener('click', function () {
-            console.log("Rating button clicked");
-            let ratingLink = localStorage.getItem("activeVendorRatingLink") || "https://default-rating-link.com";
-            // Construct the Google Review URL
-            const googleReviewUrl = `https://search.google.com/local/writereview?placeid=${ratingLink}`;
-
-            // Open the review page in a new browser tab
-            window.open(googleReviewUrl, "_blank");
-        });
-    } else {
-        console.error("Rating button not found.");
     }
 
     let notificationsEnabled = true;
@@ -225,34 +214,39 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
-    
-    // Menu button logic
+
     chatInput.addEventListener("keydown", function(event) {
-        let inputValue = event.target.value;
-        const originalValue = inputValue; // Save original for comparison
-        // Remove non-numeric characters
-        inputValue = inputValue.replace(/[^0-9]/g, '');
+        const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"];
+        
+        // Allow digits (0-9) and allowed control keys
+        if (
+            (event.key >= "0" && event.key <= "9") ||
+            allowedKeys.includes(event.key)
+        ) {
+            // If 4 digits already present, block further input (except control keys)
+            if (chatInput.value.length >= 4 && event.key >= "0" && event.key <= "9") {
+                event.preventDefault();
+            }
     
-        // Restrict to 4 digits
-        if (inputValue.length > 4) {
-            inputValue = inputValue.substring(0, 4);
-        }
-    
-        // Update the input value
-        event.target.value = inputValue;
-    
-        // If invalid characters were typed
-        if (originalValue !== inputValue) {
-            appendMessage("Please Enter a valid Order No.", "server"); // or "left" if you use sides
-        }
-    
-        // Handle Enter key
-        if (event.key === "Enter") {
-            event.preventDefault();
-            sendButton.click();
+            // Handle Enter key
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendButton.click();
+            }
+        } else {
+            event.preventDefault(); // Block any other key
+            appendMessage("Please enter a valid 4-digit Order No.", "server");
         }
     });
     
+    // Sanitize input on any indirect changes (e.g. autocomplete)
+    chatInput.addEventListener("input", function(event) {
+        let cleanValue = chatInput.value.replace(/[^0-9]/g, "").substring(0, 4);
+        if (chatInput.value !== cleanValue) {
+            appendMessage("Only digits (0-9) are allowed.", "server");
+        }
+        chatInput.value = cleanValue;
+    });
     
     // Send button logic
     sendButton.addEventListener('click', async function () {
