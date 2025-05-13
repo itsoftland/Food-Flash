@@ -22,7 +22,7 @@ def outlet_selection(request):
 
 def home(request):
     cache.clear()
-    return render(request, 'orders/index.html')
+    return render(request, 'orders/index2.html')
 
 def token_display(request):
     cache.clear()
@@ -213,10 +213,13 @@ def submit_feedback(request):
     except Vendor.DoesNotExist:
         return Response({'success': False, 'message': 'Vendor not found'}, status=404)
 
-    # Add vendor manually to data for serializer
+    # Prepare the complete data dictionary
     data = {
-        'vendor': vendor.id,  # use actual Vendor model primary key (id)
-        'comment': request.data.get('comment')
+        'vendor': vendor.id,  # actual primary key
+        'feedback_type': request.data.get('feedback_type'),
+        'category': request.data.get('category'),
+        'name': request.data.get('name'),
+        'comment': request.data.get('comment'),
     }
 
     serializer = FeedbackSerializer(data=data)
@@ -225,6 +228,7 @@ def submit_feedback(request):
         return Response({'success': True, 'message': 'Feedback submitted successfully'}, status=201)
     else:
         return Response({'success': False, 'errors': serializer.errors}, status=400)
+
 
 from vendors.serializers import OrdersSerializer
 

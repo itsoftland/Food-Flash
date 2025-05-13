@@ -76,12 +76,12 @@ export function appendMessage(text, sender, timestamp = null) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('message-bubble', sender);
+    // <span class="message-check">&#10003;</span>
     messageBubble.innerHTML = `
     <div class="message-content">
         ${text}
         <span class="message-timestamp">
-            ${timeStamp}
-            <span class="message-check">&#10003;</span>
+            ${timeStamp} 
         </span>
     </div>
     `;

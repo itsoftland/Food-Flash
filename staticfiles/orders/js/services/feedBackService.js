@@ -1,91 +1,108 @@
+import { appendMessage } from './chatService.js';
+
 export const FeedbackService = (() => {
     const steps = [
         { key: 'feedback_type', question: 'Select Feedback Type', options: ['Complaint', 'Suggestion', 'Compliment'] },
         { key: 'category', question: 'Is it about Dish or Service?', options: ['Dish', 'Service'] },
-        { key: 'final', question: 'Leave your comment (optional)', input: true }
+        { key: 'final', question: 'Leave your comment', input: true }
     ];
 
-    let currentStep = 0;
     let formData = {};
+    let isCooldown = false;
 
-    const container = document.getElementById('multi-step-feedback');
-    const stepContainer = document.getElementById('feedback-step-container');
-    const nextBtn = document.getElementById('feedback-next');
-    const prevBtn = document.getElementById('feedback-prev');
+    const clearFromStep = (stepIndex) => {
+        // Remove buttons and inputs from DOM starting from the affected step
+        const chatContainer = document.getElementById("chat-container");
+        const allInteractive = chatContainer.querySelectorAll('button, input, textarea');
+        allInteractive.forEach(el => el.remove());
 
-    const renderStep = () => {
-        console.log("Rendering step:", currentStep);
-        const step = steps[currentStep];
-        console.log("Current step object:", step);
-        stepContainer.innerHTML = '';
-    
-        if (!step) {
-            stepContainer.innerHTML = '<p>Error: Step not found</p>';
-            return;
+        // Clear data from all steps after stepIndex
+        for (let i = stepIndex + 1; i < steps.length; i++) {
+            delete formData[steps[i].key];
         }
-    
-        const title = document.createElement('h5');
-        title.textContent = step.question;
-        stepContainer.appendChild(title);
-    
-        if (step.input) {
-            console.log("Rendering input fields...");
-    
-            const nameInput = document.createElement('input');
-            nameInput.className = 'form-control mt-2';
-            nameInput.placeholder = 'Your name (optional)';
-            nameInput.id = 'feedback-name';
-            stepContainer.appendChild(nameInput);
-    
-            const commentBox = document.createElement('textarea');
-            commentBox.className = 'form-control mt-2';
-            commentBox.placeholder = 'Your comment...';
-            commentBox.id = 'feedback-comment';
-            stepContainer.appendChild(commentBox);
-        } else {
-            console.log("Rendering options...", step.options);
-    
+    };
+
+    const renderStep = (fromStep = 0) => {
+        const step = steps[fromStep];
+        if (!step) return;
+
+        const chatContainer = document.getElementById("chat-container");
+        appendMessage(step.question, "server");
+
+        if (step.options) {
+            clearFromStep(fromStep);
+
             step.options.forEach(option => {
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-outline-primary m-1';
                 btn.textContent = option;
+
                 btn.onclick = () => {
-                    formData[step.key] = option.toLowerCase();
-                    goToNextStep();
+                    const selectedValue = option.toLowerCase();
+
+                    // Save or update selection
+                    const previous = formData[step.key];
+                    if (previous !== selectedValue) {
+                        appendMessage(option, "user");
+                        formData[step.key] = selectedValue;
+
+                        // Clear next steps & rerender
+                        renderStep(fromStep + 1);
+                    }
                 };
-                stepContainer.appendChild(btn);
+
+                chatContainer.appendChild(btn);
             });
         }
-    
-        // Show/hide navigation buttons
-        prevBtn.style.display = currentStep > 0 ? 'inline-block' : 'none';
-        nextBtn.style.display = step.input ? 'inline-block' : 'none';
-    };
-    
 
-    const goToNextStep = () => {
-        if (currentStep < steps.length - 1) {
-            currentStep++;
-            renderStep();
-        } else {
-            submitFeedback();
+        if (step.input) {
+            clearFromStep(fromStep);
+
+            const nameInput = document.createElement('input');
+            nameInput.className = 'form-control my-2';
+            nameInput.placeholder = 'Your name (optional)';
+            nameInput.id = 'feedback-name';
+
+            const commentBox = document.createElement('textarea');
+            commentBox.className = 'form-control my-2';
+            commentBox.placeholder = 'Your comment...';
+            commentBox.id = 'feedback-comment';
+
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'btn btn-outline-primary mt-2';
+            submitBtn.textContent = 'Submit';
+
+            submitBtn.onclick = () => {
+                const name = nameInput.value.trim();
+                const comment = commentBox.value.trim();
+                if (!name && !comment) {
+                    appendMessage("⚠️ Please provide at least a comment or name.", "server");
+                    return;
+                }
+                formData['name'] = name;
+                formData['comment'] = comment;
+                submitBtn.disabled = true;
+                console.log("Feedback form submitted:", formData);
+                submitFeedback(submitBtn);
+            };
+
+            chatContainer.appendChild(nameInput);
+            chatContainer.appendChild(commentBox);
+            chatContainer.appendChild(submitBtn);
         }
+
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     };
 
-    const goToPrevStep = () => {
-        if (currentStep > 0) {
-            currentStep--;
-            renderStep();
+    const submitFeedback = async (submitBtn) => {
+        if (isCooldown) {
+            appendMessage("⏳ Please wait before submitting again.", "server");
+            return;
         }
-    };
 
-    const submitFeedback = async () => {
         const vendorId = AppUtils.getActiveVendor();
-        const name = document.getElementById("feedback-name")?.value || '';
-        const comment = document.getElementById("feedback-comment")?.value || '';
-
-        if (!vendorId || (!comment.trim() && !name.trim())) {
-            AppUtils.showToast("Please provide at least a comment or name.");
+        if (!vendorId) {
+            appendMessage("⚠️ Vendor not found. Please try again later.", "server");
             return;
         }
 
@@ -98,62 +115,57 @@ export const FeedbackService = (() => {
                 },
                 body: JSON.stringify({
                     vendor_id: vendorId,
-                    ...formData,
-                    name,
-                    comment
+                    ...formData
                 })
             });
 
             const data = await response.json();
             if (data.success) {
-                AppUtils.showToast("Thank you for your feedback!");
-                container.style.display = 'none';
-                currentStep = 0;
+                appendMessage("✅ Thank you for your feedback!", "server");
+                clearFromStep(0);
                 formData = {};
-            } else {
-                AppUtils.showToast(data.message || "Failed to submit feedback");
-            }
+                isCooldown = true;
 
+                setTimeout(() => {
+                    isCooldown = false;
+                }, 60000);
+            } else {
+                appendMessage(data.message || "❌ Failed to submit feedback.", "server");
+                if (submitBtn) submitBtn.disabled = false;
+            }
         } catch (error) {
             console.error("Error submitting feedback:", error);
-            AppUtils.showToast("An error occurred. Please try again later");
+            appendMessage("❌ An error occurred. Please try again later.", "server");
+            if (submitBtn) submitBtn.disabled = false;
         }
     };
 
-    const openForm = () => {
-        console.log("button clicked")
-        console.log(container); // add this inside openForm
-        console.log("stepContainer is", stepContainer);
-        container.style.display = 'block';
-        currentStep = 0;
+    const startFeedback = () => {
+        if (isCooldown) {
+            appendMessage("⏳ Please wait before submitting again.", "server");
+            return;
+        }
+
         formData = {};
-        renderStep();
+        renderStep(0);
     };
 
     const bindEvents = () => {
         const buttons = document.querySelectorAll(".footer-button");
-    
         buttons.forEach(button => {
             button.addEventListener("click", function () {
                 buttons.forEach(btn => btn.classList.remove("active"));
                 this.classList.add("active");
-    
-                // 📝 Feedback button logic
+
                 if (this.classList.contains("feedback-btn")) {
-                    openForm(); // Call your feedback form opener
+                    startFeedback();
                 }
-    
-                // 🔄 Add more logic for other button types if needed
             });
         });
-    
-        // Ensure next/prev feedback steps still work if those buttons are present
-        document.querySelector(".next-btn")?.addEventListener("click", goToNextStep);
-        document.querySelector(".prev-btn")?.addEventListener("click", goToPrevStep);
     };
-    
 
     return {
-        init: bindEvents
+        init: bindEvents,
+        startFeedback
     };
 })();

@@ -79,6 +79,15 @@ class VendorMenuSerializer(serializers.ModelSerializer):
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        fields = ['id', 'vendor', 'comment', 'created_at']
+        fields = [
+            'id',
+            'vendor',
+            'feedback_type',
+            'category',
+            'name',
+            'comment',
+            'created_at',
+        ]
         read_only_fields = ['id', 'created_at']
+
 

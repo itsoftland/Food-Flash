@@ -81,6 +81,8 @@
 .fixed-body main.flex-fill {
     overflow: hidden;
     padding: 0;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch; /* iOS-specific */
 }
 /* Hide bootstrap’s default btn-secondary/primary backgrounds */
 .btn.btn-secondary,
