@@ -11,14 +11,34 @@ import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
 document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.initPaddingAdjustmentListeners();
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'), {
-        backdrop: 'static',  // Prevent closing on outside click
-        keyboard: false      // Prevent closing on ESC key
+        backdrop: 'static',
+        keyboard: false      
     });    
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
     const urlParams = new URLSearchParams(window.location.search);
     let locationId = urlParams.get("location_id");
     const vendorFromQR = urlParams.get('vendor_id');
+    const toggleBtn = document.getElementById("toggleArrowBtn");
+    const adSlider = document.querySelector(".ad-slider");
+    const pageWrapper = document.querySelector(".page-wrapper");
+
+    let isAdVisible = true;
+
+    toggleBtn.addEventListener("click", function () {
+        if (isAdVisible) {
+            adSlider.style.display = "none";
+            pageWrapper.style.top = "119px"; 
+            pageWrapper.style.borderTop = "1px solid #fdbf50";
+            toggleBtn.classList.add("rotated");
+        } else {
+            adSlider.style.display = "block";
+            pageWrapper.style.top = "240px";
+            toggleBtn.classList.remove("rotated");
+            pageWrapper.style.borderTop ="none";
+        }
+        isAdVisible = !isAdVisible;
+    });
 
     // 1️⃣ Check URL param first
     if (locationId) {

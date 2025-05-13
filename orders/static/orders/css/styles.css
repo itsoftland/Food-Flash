@@ -48,10 +48,6 @@ body.fixed-body {
     height: 60px; 
 }
 
-.ad-slider {
-    top: 120px;
-    height: 50px; 
-}
 /* === VENDOR LOGO BAR === */
 #vendor-logo-bar {
     margin-top:5px;
@@ -123,6 +119,10 @@ body.fixed-body {
 }
 
 /* === AD SLIDER === */
+.ad-slider {
+    top: 120px;
+    height: 50px; 
+}
 #ad-slider-wrapper {
     background-color: #f4f4f8;
     border-bottom: 1px solid #e0e0e0;
@@ -138,7 +138,7 @@ body.fixed-body {
 #ad-slider {
     height: 100%;
     overflow: hidden;
-    position: relative;
+/*     position: relative; */
 }
 
 .ad-slider-track {
@@ -220,36 +220,61 @@ body.fixed-body {
 }
 
 .page-wrapper {
+    position: absolute;
+    top: 240px; 
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-    flex-shrink: 1;
-    height: 100%;
-    width: 100%;
+    background-color: #f4f4f8;
     overflow: hidden;
-    padding-top: 120px;
-    padding-bottom: 0;
 }
 
-/* Chat Response Area (Scrollable) */
+.chat-header {
+    height: 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 10px;
+    background-color: #f4f4f8;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+
+
+.toggle-arrow {
+    height: 40px;
+    width: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transform: rotate(180deg);
+}
+
+.toggle-arrow img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Premium easing */
+    transform-origin: center;
+}
+
+.toggle-arrow.rotated img {
+    transform: rotate(180deg);
+}
+
 .chat-response {
     flex: 1 1 auto;
-    min-height: 0;
-    padding-top: 120px;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: #f4f4f8;
-    border-bottom: 2px solid #dee2e6;
     display: flex;
     flex-direction: column;
     scroll-behavior: smooth;
-    margin-left: 10px;
-    margin-right: 15px;
-
-    /* NEW default bottom padding to prevent overlap */
-    padding-bottom: 140px; /* Base fallback */
+    background-color: #f4f4f8;
 }
-
 
 /* Message Styles */
 .message-row {

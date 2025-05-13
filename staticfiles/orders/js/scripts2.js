@@ -19,6 +19,26 @@ document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     let locationId = urlParams.get("location_id");
     const vendorFromQR = urlParams.get('vendor_id');
+    const toggleBtn = document.getElementById("toggleArrowBtn");
+    const adSlider = document.querySelector(".ad-slider");
+    const pageWrapper = document.querySelector(".page-wrapper");
+
+    let isAdVisible = true;
+
+    toggleBtn.addEventListener("click", function () {
+        if (isAdVisible) {
+            adSlider.style.display = "none";
+            pageWrapper.style.top = "119px"; 
+            pageWrapper.style.borderTop = "1px solid #fdbf50";
+            toggleBtn.classList.add("rotated");
+        } else {
+            adSlider.style.display = "block";
+            pageWrapper.style.top = "240px";
+            toggleBtn.classList.remove("rotated");
+            pageWrapper.style.borderTop ="none";
+        }
+        isAdVisible = !isAdVisible;
+    });
 
     // 1️⃣ Check URL param first
     if (locationId) {
