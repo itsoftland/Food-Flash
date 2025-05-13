@@ -2141,3 +2141,9 @@
 [2025-05-13 17:32:50,579] INFO django.request POST /api/get_vendor_ads/ from 127.0.0.1 -> 200
 [2025-05-13 17:32:50,714] INFO django.request POST /api/get_vendor_logos/ from 127.0.0.1 -> 200
 [2025-05-13 17:32:51,179] INFO django.request GET /service-worker.js from 127.0.0.1 -> 200
+[2025-05-13 17:48:02,666] INFO django.request GET /home/ from 127.0.0.1 -> 200
+[2025-05-13 17:48:03,046] INFO django.request POST /api/get_vendor_ads/ from 127.0.0.1 -> 200
+[2025-05-13 17:48:03,138] INFO django.request POST /api/get_vendor_logos/ from 127.0.0.1 -> 200
+[2025-05-13 17:48:03,432] INFO django.request GET /service-worker.js from 127.0.0.1 -> 200
+[2025-05-13 17:48:07,567] INFO django.request GET /check-status/?token_no=1&vendor_id=107 from 127.0.0.1 -> 201
+[2025-05-13 17:48:08,111] INFO django.request POST /vendors/api/save-subscription/ from 127.0.0.1 -> 200

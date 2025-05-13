@@ -39,12 +39,6 @@ input[type="text"] {
 }
 
 /* === PAGE STRUCTURE === */
-/* body.fixed-body {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-} */
 .header-bar,.ad-slider {
     position: fixed;
     left: 0;

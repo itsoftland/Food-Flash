@@ -7,57 +7,78 @@ export const FeedbackService = (() => {
         { key: 'final', question: 'Leave your comment', input: true }
     ];
 
+    let currentStep = 0;
     let formData = {};
-    let isCooldown = false;
+    let cooldownActive = false;
 
-    const clearFromStep = (stepIndex) => {
-        // Remove buttons and inputs from DOM starting from the affected step
-        const chatContainer = document.getElementById("chat-container");
-        const allInteractive = chatContainer.querySelectorAll('button, input, textarea');
-        allInteractive.forEach(el => el.remove());
+    // Validate comment
+    const validateInput = (comment) => {
+        const trimmedComment = comment.trim();
 
-        // Clear data from all steps after stepIndex
-        for (let i = stepIndex + 1; i < steps.length; i++) {
-            delete formData[steps[i].key];
+        // Regex for allowed characters (letters, numbers, whitespace, and selected special characters)
+        const allowedCharacters = /^[a-zA-Z0-9\s.,!?"/\u00A9-\u1FFF\u2000-\u3300]+$/;
+
+        // Check if the comment contains only allowed characters
+        if (!allowedCharacters.test(trimmedComment)) {
+            // appendMessage("⚠️ Only letters, numbers, emojis, and basic punctuation (.,!?\"/) are allowed.", "server");
+            return { valid: false, message: "⚠️ Only letters, numbers, emojis, and basic punctuation (.,!?\"/) are allowed." };
         }
+
+        // Check if comment is not empty
+        if (!trimmedComment) {
+            return { valid: false, message: "⚠️ Please provide at least a comment or your name." };
+        }
+
+        // Check if comment is too short
+        if (trimmedComment.length < 5) {
+            return { valid: false, message: "⚠️ Comment is too short. Please elaborate." };
+        }
+
+        // Check for only special characters (e.g., `; ^ & % # @`)
+        const onlySpecialChars = /^[^a-zA-Z0-9]+$/.test(trimmedComment);
+        if (onlySpecialChars) {
+            return { valid: false, message: "⚠️ Comment must include readable content." };
+        }
+
+        // If all checks pass, comment is valid
+        return { valid: true };
     };
 
-    const renderStep = (fromStep = 0) => {
-        const step = steps[fromStep];
-        if (!step) return;
-
+    const clearChatButtons = () => {
         const chatContainer = document.getElementById("chat-container");
+        chatContainer.querySelectorAll("button").forEach(btn => btn.remove());
+    };
+
+    const renderStep = () => {
+        clearChatButtons();
+        const step = steps[currentStep];
+        if (!step) return;
         appendMessage(step.question, "server");
 
-        if (step.options) {
-            clearFromStep(fromStep);
+        const chatContainer = document.getElementById("chat-container");
 
+        if (step.options) {
             step.options.forEach(option => {
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-outline-primary m-1';
                 btn.textContent = option;
-
                 btn.onclick = () => {
-                    const selectedValue = option.toLowerCase();
+                    if (formData[step.key] === option.toLowerCase()) return; // prevent re-click
 
-                    // Save or update selection
-                    const previous = formData[step.key];
-                    if (previous !== selectedValue) {
-                        appendMessage(option, "user");
-                        formData[step.key] = selectedValue;
+                    appendMessage(option, "user");
+                    formData[step.key] = option.toLowerCase();
 
-                        // Clear next steps & rerender
-                        renderStep(fromStep + 1);
-                    }
+                    // Remove next steps if user changes path
+                    if (step.key === 'feedback_type') delete formData['category'];
+                    if (step.key !== 'final') currentStep = steps.findIndex(s => s.key === step.key) + 1;
+
+                    setTimeout(renderStep, 300);
                 };
-
                 chatContainer.appendChild(btn);
             });
         }
 
         if (step.input) {
-            clearFromStep(fromStep);
-
             const nameInput = document.createElement('input');
             nameInput.className = 'form-control my-2';
             nameInput.placeholder = 'Your name (optional)';
@@ -73,16 +94,18 @@ export const FeedbackService = (() => {
             submitBtn.textContent = 'Submit';
 
             submitBtn.onclick = () => {
-                const name = nameInput.value.trim();
-                const comment = commentBox.value.trim();
-                if (!name && !comment) {
-                    appendMessage("⚠️ Please provide at least a comment or name.", "server");
+                const name = nameInput.value;
+                const comment = commentBox.value;
+
+                const { valid, message } = validateInput(comment);
+                if (!valid) {
+                    appendMessage(message, "server");
                     return;
                 }
-                formData['name'] = name;
-                formData['comment'] = comment;
-                submitBtn.disabled = true;
-                console.log("Feedback form submitted:", formData);
+
+                formData['name'] = name.trim();
+                formData['comment'] = comment.trim();
+
                 submitFeedback(submitBtn);
             };
 
@@ -95,16 +118,13 @@ export const FeedbackService = (() => {
     };
 
     const submitFeedback = async (submitBtn) => {
-        if (isCooldown) {
-            appendMessage("⏳ Please wait before submitting again.", "server");
+        if (cooldownActive) {
+            appendMessage("⏳ Please wait a moment before sending more feedback.", "server");
             return;
         }
 
         const vendorId = AppUtils.getActiveVendor();
-        if (!vendorId) {
-            appendMessage("⚠️ Vendor not found. Please try again later.", "server");
-            return;
-        }
+        submitBtn.disabled = true;
 
         try {
             const response = await fetch("/api/submit_feedback/", {
@@ -113,45 +133,39 @@ export const FeedbackService = (() => {
                     "Content-Type": "application/json",
                     "X-CSRFToken": AppUtils.getCSRFToken()
                 },
-                body: JSON.stringify({
-                    vendor_id: vendorId,
-                    ...formData
-                })
+                body: JSON.stringify({ vendor_id: vendorId, ...formData })
             });
 
             const data = await response.json();
+
             if (data.success) {
                 appendMessage("✅ Thank you for your feedback!", "server");
-                clearFromStep(0);
+                currentStep = 0;
                 formData = {};
-                isCooldown = true;
+                cooldownActive = true;
 
                 setTimeout(() => {
-                    isCooldown = false;
-                }, 60000);
+                    cooldownActive = false;
+                }, 60000); // 1-minute cooldown
             } else {
-                appendMessage(data.message || "❌ Failed to submit feedback.", "server");
-                if (submitBtn) submitBtn.disabled = false;
+                appendMessage(data.message || "❌ Failed to submit feedback. Try again.", "server");
             }
+
         } catch (error) {
             console.error("Error submitting feedback:", error);
             appendMessage("❌ An error occurred. Please try again later.", "server");
-            if (submitBtn) submitBtn.disabled = false;
         }
     };
 
     const startFeedback = () => {
-        if (isCooldown) {
-            appendMessage("⏳ Please wait before submitting again.", "server");
-            return;
-        }
-
+        currentStep = 0;
         formData = {};
-        renderStep(0);
+        renderStep();
     };
 
     const bindEvents = () => {
         const buttons = document.querySelectorAll(".footer-button");
+
         buttons.forEach(button => {
             button.addEventListener("click", function () {
                 buttons.forEach(btn => btn.classList.remove("active"));
