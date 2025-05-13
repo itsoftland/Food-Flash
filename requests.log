@@ -2137,3 +2137,7 @@
 [2025-05-13 17:22:12,626] INFO django.request POST /api/get_vendor_ads/ from 127.0.0.1 -> 200
 [2025-05-13 17:22:12,776] INFO django.request POST /api/get_vendor_logos/ from 127.0.0.1 -> 200
 [2025-05-13 17:22:13,176] INFO django.request GET /service-worker.js from 127.0.0.1 -> 200
+[2025-05-13 17:32:50,158] INFO django.request GET /home/ from 127.0.0.1 -> 200
+[2025-05-13 17:32:50,579] INFO django.request POST /api/get_vendor_ads/ from 127.0.0.1 -> 200
+[2025-05-13 17:32:50,714] INFO django.request POST /api/get_vendor_logos/ from 127.0.0.1 -> 200
+[2025-05-13 17:32:51,179] INFO django.request GET /service-worker.js from 127.0.0.1 -> 200
