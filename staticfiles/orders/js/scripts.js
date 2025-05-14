@@ -1,6 +1,6 @@
 import { AddOutletService } from "./services/addOutletService.js"; 
-import { MenuModalService } from './services/menuModalService.js';
-import { FeedbackService } from "./services/feedBackService.js";
+import { MenuModalService } from './services/menuModalService2.js';
+import { FeedbackService } from "./services/feedBackService2.js";
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             toggleBtn.classList.add("rotated");
         } else {
             adSlider.style.display = "block";
-            pageWrapper.style.top = "240px";
+            pageWrapper.style.top = "270px";
             toggleBtn.classList.remove("rotated");
             pageWrapper.style.borderTop ="none";
         }

@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             toggleBtn.classList.add("rotated");
         } else {
             adSlider.style.display = "block";
-            pageWrapper.style.top = "240px";
+            pageWrapper.style.top = "270px";
             toggleBtn.classList.remove("rotated");
             pageWrapper.style.borderTop ="none";
         }
