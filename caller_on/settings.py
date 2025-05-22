@@ -15,7 +15,8 @@ from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+FIREBASE_SERVICE_ACCOUNT_FILE = os.path.join(BASE_DIR, 'firebase', 'service-account.json')
+FIREBASE_PROJECT_ID = 'food-flash-711f9'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -74,7 +75,7 @@ LOGGING = {
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['*']
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -91,8 +92,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'orders',
     'vendors',
-    'adminlte3',
-    'adminlte3_theme',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -157,6 +156,33 @@ DATABASES = {
         },
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',     # ✅ Correct for MariaDB.
+#         'NAME': 'caller_on',                      # ✅ Your database name.
+#         'USER': 'caller_on_user',                 # ✅ Your DB username.
+#         'PASSWORD': 'S@1j!g23ULIoi',              # ✅ Your DB password.
+#         'HOST': '108.181.63.26',                  # ✅ IP of the database server.
+#         'PORT': '3308',                           # ✅ Port, custom in this case.
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',  # Use MySQL backend which is compatible with MariaDB.
+#         'NAME': 'food_flashdemo',               # The database name you created.
+#         'USER': 'food_flashuser',                # The database user you created.
+#         'PASSWORD': 'sil@2025',          # The password for the user.
+#         'HOST': 'localhost',                  # Set to empty string for localhost.
+#         'PORT': '3306',                       # Default MariaDB port.
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

@@ -90,4 +90,42 @@ class FeedbackSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at']
 
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from vendors.models import AdminOutlet
+
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'password']
+
+    def create(self, validated_data):
+        user = User(
+            username=validated_data['username']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Username already exists.")
+        return value
+
+class AdminOutletSerializer(serializers.ModelSerializer):
+    user = UserSerializer()  # nested user serializer
+
+    class Meta:
+        model = AdminOutlet
+        fields = '__all__'
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user_serializer = UserSerializer(data=user_data)
+        user_serializer.is_valid(raise_exception=True)
+        user = user_serializer.save()
+        admin_outlet = AdminOutlet.objects.create(user=user, **validated_data)
+        return admin_outlet
 

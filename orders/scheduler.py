@@ -1,44 +1,108 @@
-from apscheduler.schedulers.background import BackgroundScheduler
-from django.utils import timezone
-from vendors.models import Order, PushSubscription
+# from apscheduler.schedulers.background import BackgroundScheduler
+# from django.utils import timezone
+# from vendors.models import Order, PushSubscription
+# from datetime import timedelta
+# from django.db import models
+
+# def auto_clear_orders():
+#     now = timezone.now()
+#     one_hour_ago = now - timedelta(hours=1)
+#     two_hours_ago = now - timedelta(hours=2)
+
+#     # Find orders to delete
+#     orders_to_delete = Order.objects.filter(
+#         models.Q(updated_at__lt=one_hour_ago) | models.Q(created_at__lt=two_hours_ago)
+#     )
+
+#     count = orders_to_delete.count()
+#     if count > 0:
+#         print(f"Deleting {count} expired orders...")
+
+#         for order in orders_to_delete:
+#             print(f"Clearing relations for Order {order.token_no}...")
+
+#             # Remove relations from PushSubscription
+#             for sub in order.pushsubscription_set.all():
+#                 sub.tokens.remove(order)  # Remove specific relation
+
+#             # Delete the order
+#             order.delete()
+
+#     # Delete orphaned PushSubscription entries
+#     orphaned_subs = PushSubscription.objects.annotate(token_count=models.Count('tokens')).filter(token_count=0)
+#     orphaned_count = orphaned_subs.count()
+#     if orphaned_count > 0:
+#         print(f"Deleting {orphaned_count} orphaned PushSubscriptions...")
+#         orphaned_subs.delete()
+
+#     else:
+#         print("No orphaned PushSubscriptions found.")
+
+# def start_scheduler():
+#     scheduler = BackgroundScheduler()
+#     scheduler.add_job(auto_clear_orders, 'interval', minutes=5)  # Run every 5 minutes
+#     scheduler.start()
+
+import logging
 from datetime import timedelta
-from django.db import models
+from django.db import connection, models
+from django.utils import timezone
+from apscheduler.schedulers.background import BackgroundScheduler
+from vendors.models import Order, PushSubscription
+
+# Setup logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def auto_clear_orders():
-    now = timezone.now()
-    one_hour_ago = now - timedelta(hours=1)
-    two_hours_ago = now - timedelta(hours=2)
+    try:
+        # Ensure DB connection is active
+        connection.ensure_connection()
+        if not connection.is_usable():
+            logger.warning("Database connection is not usable.")
+            return
+        logger.info("Database connection is active.")
 
-    # Find orders to delete
-    orders_to_delete = Order.objects.filter(
-        models.Q(updated_at__lt=one_hour_ago) | models.Q(created_at__lt=two_hours_ago)
-    )
+        # Run a lightweight query to confirm connection
+        _ = Order.objects.first()
 
-    count = orders_to_delete.count()
-    if count > 0:
-        print(f"Deleting {count} expired orders...")
+        now = timezone.now()
+        one_hour_ago = now - timedelta(hours=1)
+        two_hours_ago = now - timedelta(hours=2)
 
-        for order in orders_to_delete:
-            print(f"Clearing relations for Order {order.token_no}...")
+        orders_to_delete = Order.objects.filter(
+            models.Q(updated_at__lt=one_hour_ago) | models.Q(created_at__lt=two_hours_ago)
+        )
 
-            # Remove relations from PushSubscription
-            for sub in order.pushsubscription_set.all():
-                sub.tokens.remove(order)  # Remove specific relation
+        count = orders_to_delete.count()
+        if count > 0:
+            logger.info(f"Deleting {count} expired orders...")
 
-            # Delete the order
-            order.delete()
+            for order in orders_to_delete:
+                logger.info(f"Clearing relations for Order {order.token_no}...")
 
-    # Delete orphaned PushSubscription entries
-    orphaned_subs = PushSubscription.objects.annotate(token_count=models.Count('tokens')).filter(token_count=0)
-    orphaned_count = orphaned_subs.count()
-    if orphaned_count > 0:
-        print(f"Deleting {orphaned_count} orphaned PushSubscriptions...")
-        orphaned_subs.delete()
+                # Remove relations from PushSubscription
+                for sub in order.pushsubscription_set.all():
+                    sub.tokens.remove(order)  # Remove specific relation
 
-    else:
-        print("No orphaned PushSubscriptions found.")
+                # Delete the order
+                order.delete()
+
+        # Delete orphaned PushSubscription entries
+        orphaned_subs = PushSubscription.objects.annotate(token_count=models.Count('tokens')).filter(token_count=0)
+        orphaned_count = orphaned_subs.count()
+        if orphaned_count > 0:
+            logger.info(f"Deleting {orphaned_count} orphaned PushSubscriptions...")
+            orphaned_subs.delete()
+        else:
+            logger.info("No orphaned PushSubscriptions found.")
+
+    except Exception as e:
+        logger.error(f"Error during auto_clear_orders: {e}")
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
     scheduler.add_job(auto_clear_orders, 'interval', minutes=5)  # Run every 5 minutes
     scheduler.start()
+    logger.info("Scheduler started, running auto_clear_orders every 5 minutes.")
+

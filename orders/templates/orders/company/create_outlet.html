@@ -1,0 +1,91 @@
+{% extends 'orders/layouts/company_base.html' %}
+{% load static %}
+{% block title %}Create New Outlet{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <form id="create-outlet-form" class="card mt-5 p-3 mx-auto" style="max-width: 800px;">
+    
+    <!-- Header -->
+    <h4 class="text-center">Create a New Outlet</h4>
+
+    <div class="row">
+      <!-- Outlet Name -->
+      <div class="form-group col-md-6 mb-3">
+        <label for="name" class="mb-1">Outlet Name</label>
+        <input type="text" id="name" name="name" class="form-control form-control-sm" required />
+      </div>
+
+      <!-- Location -->
+      <div class="form-group col-md-6 mb-3">
+        <label for="location" class="mb-1">Location</label>
+        <select name="location" id="location" class="form-control form-control-sm" required>
+          {% for loc in locations %}
+            <option value="{{ loc.value }}">{{ loc.key }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Place ID -->
+      <div class="form-group col-md-6 mb-3">
+        <label for="place_id" class="mb-1">Place ID</label>
+        <input type="text" id="place_id" name="place_id" class="form-control form-control-sm" />
+      </div>
+
+      <!-- Device Mapping -->
+      <div class="form-group col-md-6 mb-3">
+        <label for="device_mapping" class="mb-1">Device Mapping</label>
+        <select id="device_mapping" name="device_mapping" class="form-control form-control-sm">
+          <option value="">-- Optional --</option>
+          {% for device in devices %}
+            <option value="{{ device.id }}">{{ device.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Logo -->
+      <div class="form-group col-md-6 mb-4">
+        <label for="logo" class="mb-1">Logo</label>
+        <small class="form-text text-muted mb-2">
+          Recommended: 1080×1080 resolution | Format: PNG or SVG
+        </small>
+        <input type="file" id="logo" name="logo" accept=".png,.svg" class="form-control-file" />
+      </div>
+          <!-- Android TV Mapping -->
+    <div class="form-group col-md-6 mb-3">
+      <label for="tv_mapping" class="mb-1">Android TV Screen Mapping</label>
+      <select id="tv_mapping" name="tv_mapping" class="form-control form-control-sm">
+        <option value="">-- Optional --</option>
+        {% for tv in android_tvs %}
+          <option value="{{ tv.id }}">{{ tv.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+      <!-- Menu Files -->
+      <div class="form-group col-md-6 mb-4">
+        <label for="menu_files" class="mb-1">Menu Files</label>
+        <small class="form-text text-muted mb-2">
+          Upload multiple files | PDF, JPG, PNG, SVG | Max 5MB each
+        </small>
+        <input type="file" id="menu_files" name="menu_files" accept=".pdf,.jpg,.jpeg,.png,.svg" multiple class="form-control-file" />
+      </div>
+    </div>
+
+
+    <!-- Submit -->
+    <div class="text-center mt-2">
+      <button type="submit" class="btn btn-outline-primary px-4 py-1">Create Outlet</button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Optional JS can go here -->
+{% endblock %}

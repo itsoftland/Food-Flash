@@ -8,5 +8,8 @@ urlpatterns = [
     path('api/list-order/', views.list_order, name='list-order'),
     path('api/save-subscription/', views.save_subscription, name='save-subscription'),
     path('api/send-offers/', views.send_offers, name='send-offers'),
+    path('dashboard/', views.company_dashboard, name='company_dashboard'), 
+    path('loginview/', views.login_view, name='loginview'), 
     
+    path('api/register_android_device/', views.register_android_device, name='register-android-device'),
 ]

@@ -3,7 +3,7 @@ from .models import Vendor, Order, Device, PushSubscription, AdminOutlet
 
 @admin.register(AdminOutlet)
 class AdminOutletAdmin(admin.ModelAdmin):
-    list_display = ('id','name', 'email', 'phone', 'created_at')
+    list_display = ('customer_name', 'customer_email', 'customer_contact', 'phone_number')
 
 @admin.register(Order)
 class OrdersAdmin(admin.ModelAdmin):

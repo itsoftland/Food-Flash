@@ -1,0 +1,28 @@
+{% extends 'orders/layouts/company_base.html' %}
+{% load static %}
+{% block title %}Company Dashboard{% endblock %}
+
+{% block content %}
+<section class="content-header">
+  <div class="container-fluid">
+    <h1>Company Dashboard</h1>
+  </div>
+</section>
+
+<section class="content">
+  <div class="container-fluid">
+    <p>Welcome, {{ request.user.username }}! This is your company dashboard.</p>
+    <!-- Additional content here -->
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% comment %} <script>
+  window.APP_CONTEXT = {
+      customerId: {{ admin_outlet.customer_id|default:'null' }},
+      username: "{{ request.user.username }}"
+  };
+</script>
+<script src="{% static 'orders/js/authCheck.js' %}"></script> {% endcomment %}
+{% endblock %}
