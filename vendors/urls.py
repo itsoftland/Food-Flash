@@ -12,4 +12,5 @@ urlpatterns = [
     path('loginview/', views.login_view, name='loginview'), 
     
     path('api/register_android_device/', views.register_android_device, name='register-android-device'),
+    path('api/create_vendor/', views.create_vendor, name='create_vendor'),
 ]

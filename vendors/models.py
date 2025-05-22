@@ -1,6 +1,7 @@
 from django.db import models
 import json
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class AdminOutlet(models.Model):  
     user = models.OneToOneField(
@@ -81,7 +82,10 @@ class Order(models.Model):
 
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="orders")
     device = models.ForeignKey(Device, on_delete=models.CASCADE,null=True, blank=True, related_name="orders")
-    token_no = models.IntegerField()
+    token_no = models.IntegerField(validators=[
+            MinValueValidator(1),
+            MaxValueValidator(9999)
+        ])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='preparing')
     counter_no = models.IntegerField(default=1)
     shown_on_tv = models.BooleanField(default=False)
