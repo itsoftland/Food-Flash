@@ -320,21 +320,31 @@ from .models import AndroidDevice, AdminOutlet, Vendor
 @permission_classes([AllowAny])
 def register_android_device(request):
     token = request.data.get('token')
-    mac_address = request.data.get('mac_address')
+    customer_id = request.data.get('customer_id') 
+    mac_address = request.data.get('mac_address')  
 
-    if not token or not mac_address:
-        return Response({"error": "Both 'token' and 'mac_address' are required."}, status=400)
+    if not token or not customer_id or not mac_address: 
+        return Response({"error": "Fields 'token', 'customer_id', and 'mac_address' are required."}, status=400)
 
     try:
-        # Step 1: Look for device by mac_address
-        device = AndroidDevice.objects.get(mac_address=mac_address)
+        customer = AdminOutlet.objects.get(customer_id=customer_id)
 
-        # Step 2: If token is different, update it
-        if device.token != token:
+        # Check if a device with the mac_address exists
+        try:
+            device = AndroidDevice.objects.get(mac_address=mac_address)
+            # If exists, update the token and customer
             device.token = token
+            device.customer = customer
             device.save()
+        except AndroidDevice.DoesNotExist:
+            # If not exists, create a new device entry
+            device = AndroidDevice.objects.create(
+                token=token,
+                customer=customer,
+                mac_address=mac_address
+            )
 
-        # Step 3: Return mapping info
+        # Check if the device is mapped to a vendor
         if hasattr(device, 'vendor') and device.vendor is not None:
             return Response({
                 "status": "Device is mapped to vendor.",
@@ -350,20 +360,8 @@ def register_android_device(request):
                 "vendor_name": None,
             }, status=200)
 
-    except AndroidDevice.DoesNotExist:
-        # Step 4: If no such mac address exists, create new device
-        device = AndroidDevice.objects.create(
-            token=token,
-            mac_address=mac_address
-        )
-        return Response({
-            "status": "Device is registered but not yet mapped to a vendor.",
-            "mapped": False,
-            "vendor_id": None,
-            "vendor_name": None,
-        }, status=201)
-
-
+    except AdminOutlet.DoesNotExist:
+        return Response({"error": "Customer not found."}, status=404)
 
 
 
