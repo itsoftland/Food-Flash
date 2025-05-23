@@ -14376,3 +14376,13 @@ django.db.utils.IntegrityError: (1062, "Duplicate entry 'cPXhj6hARimTgkLRyVBMRS:
 [2025-05-23 12:30:00,277] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
 [2025-05-23 12:30:01,253] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
 [2025-05-23 12:30:02,276] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:03,276] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:04,243] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:05,241] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:06,253] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:07,253] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:08,237] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:09,256] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:10,279] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:11,266] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 12:30:12,276] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
