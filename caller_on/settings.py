@@ -31,6 +31,9 @@ VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY")
 VAPID_CLAIMS = {
     "sub": "mailto:sanju.softland@gmail.com"
 }
+CSRF_TRUSTED_ORIGINS = [
+    "https://webtest.softlandindia.co.in",
+]
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

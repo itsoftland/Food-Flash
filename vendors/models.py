@@ -45,7 +45,7 @@ class Vendor(models.Model):
     location = models.CharField(max_length=255, blank=True, null=True)
     place_id = models.CharField(max_length=255, blank=True, null=True)
     vendor_id = models.IntegerField(unique=True)
-    location_id = models.IntegerField()  # Unique ID for each location
+    location_id = models.CharField(max_length=20)  # Unique ID for each location
     logo = models.ImageField(upload_to='vendor_logos/', blank=True, null=True)
     ads = models.TextField(blank=True, null=True)    # Stores JSON string of paths
     menus = models.TextField(blank=True, null=True)
@@ -134,7 +134,7 @@ class Feedback(models.Model):
 
 class AndroidDevice(models.Model):
     token = models.CharField(max_length=255, unique=True)
-    mac_address = models.CharField(max_length=255, blank=True, null=True)
+    mac_address = models.CharField(max_length=255, blank=True, null=True,unique=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE,null=True, blank=True)
     customer = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

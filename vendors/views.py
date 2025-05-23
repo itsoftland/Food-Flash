@@ -289,27 +289,82 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def register_android_device(request):
+#     token = request.data.get('token')
+#     customer_id = request.data.get('customer_id') 
+#     mac_address = request.data.get('mac_address')  
+
+#     if not token or not customer_id or not mac_address: 
+#         return Response({"error": "Both 'token' and 'customer_id' are required."}, status=400)
+
+#     try:
+#         customer = AdminOutlet.objects.get(customer_id=customer_id)
+#         AndroidDevice.objects.update_or_create(
+#             token=token,
+#             customer=customer,
+#             defaults={'mac_address': mac_address}
+#         )
+#         return Response({"status": "Device registered successfully"}, status=200)
+
+#     except Vendor.DoesNotExist:
+#         return Response({"error": "Vendor not found"}, status=404)
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from .models import AndroidDevice, AdminOutlet, Vendor
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_android_device(request):
     token = request.data.get('token')
-    customer_id = request.data.get('customer_id') 
-    mac_address = request.data.get('mac_address')  
+    mac_address = request.data.get('mac_address')
 
-    if not token or not customer_id:
-        return Response({"error": "Both 'token' and 'customer_id' are required."}, status=400)
+    if not token or not mac_address:
+        return Response({"error": "Both 'token' and 'mac_address' are required."}, status=400)
 
     try:
-        customer = AdminOutlet.objects.get(customer_id=customer_id)
-        AndroidDevice.objects.update_or_create(
-            token=token,
-            customer=customer,
-            defaults={'mac_address': mac_address}
-        )
-        return Response({"status": "Device registered successfully"}, status=200)
+        # Step 1: Look for device by mac_address
+        device = AndroidDevice.objects.get(mac_address=mac_address)
 
-    except Vendor.DoesNotExist:
-        return Response({"error": "Vendor not found"}, status=404)
+        # Step 2: If token is different, update it
+        if device.token != token:
+            device.token = token
+            device.save()
+
+        # Step 3: Return mapping info
+        if hasattr(device, 'vendor') and device.vendor is not None:
+            return Response({
+                "status": "Device is mapped to vendor.",
+                "mapped": True,
+                "vendor_id": device.vendor.vendor_id,
+                "vendor_name": device.vendor.name,
+            }, status=200)
+        else:
+            return Response({
+                "status": "Device is registered but not yet mapped to a vendor.",
+                "mapped": False,
+                "vendor_id": None,
+                "vendor_name": None,
+            }, status=200)
+
+    except AndroidDevice.DoesNotExist:
+        # Step 4: If no such mac address exists, create new device
+        device = AndroidDevice.objects.create(
+            token=token,
+            mac_address=mac_address
+        )
+        return Response({
+            "status": "Device is registered but not yet mapped to a vendor.",
+            "mapped": False,
+            "vendor_id": None,
+            "vendor_name": None,
+        }, status=201)
+
+
+
 
 
 import json
@@ -384,6 +439,7 @@ def send_fcm_data_message(fcm_token, data_payload):
     }
 
     response = requests.post(url, headers=headers, json=message)
+    print(response.json())
     return response.status_code == 200, response.json()
 
 
@@ -684,6 +740,7 @@ def generate_unique_vendor_id():
             return vendor_id
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser])
 def create_vendor(request):
     try:
@@ -693,13 +750,11 @@ def create_vendor(request):
         name = request.data.get('name')
         location = request.data.get('location')
         place_id = request.data.get('place_id', '')
+        location_id = request.data.get('location_id')
         
         # Generate unique vendor_id
         vendor_id = generate_unique_vendor_id()
-
-        # Random location_id (can customize as per your logic)
-        location_id = random.randint(1000, 9999)
-
+        
         # Handle logo file upload (store filename only)
         logo_file = request.FILES.get('logo')
         logo_path = None
