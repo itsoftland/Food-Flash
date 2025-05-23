@@ -18417,3 +18417,10 @@ django.db.utils.IntegrityError: (1062, "Duplicate entry 'cPXhkdd' for key 'token
 [2025-05-23 14:45:55,786] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
 [2025-05-23 14:45:56,778] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
 [2025-05-23 14:45:57,779] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 14:45:58,771] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 14:45:59,757] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 14:46:00,772] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 14:46:01,770] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 14:46:02,781] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 14:46:03,766] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
+[2025-05-23 14:46:04,783] INFO django.request GET /api/get_recent_orders/?vendor_id=107 from 127.0.0.1 -> 200
