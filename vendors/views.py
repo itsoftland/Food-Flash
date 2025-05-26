@@ -641,7 +641,7 @@ def update_order(request):
                 {"message": "All fields vendor_id, token_no, device_id, counter_no, and status are required."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
+        logger.info(f"Update Order Request Received: token_no={token_no}, vendor_id={vendor_id}, device_id={device_id}, counter_no={counter_no}, status={status_to_update}")
         # Step 1: Fetch vendor and device
         vendor = Vendor.objects.get(vendor_id=vendor_id)
         device = Device.objects.get(serial_no=device_id)
@@ -650,7 +650,6 @@ def update_order(request):
 
         android_devices = AndroidDevice.objects.filter(vendor=vendor)
         for devices in android_devices:
-            print(devices.token)
             send_fcm_data_message(devices.token, data)
 
 

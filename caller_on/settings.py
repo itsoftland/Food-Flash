@@ -60,6 +60,13 @@ LOGGING = {
             "filename": os.path.join(BASE_DIR, "requests.log"),
             "formatter": "verbose",
         },
+        # ✅ Correctly placed vendors_file handler
+        "vendors_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "vendors.log"),
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django": {
@@ -72,8 +79,15 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        # ✅ Correctly placed vendors.views logger
+        "vendors.views": {
+            "handlers": ["vendors_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
+
 
 
 
