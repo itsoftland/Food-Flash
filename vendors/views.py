@@ -384,28 +384,6 @@ def get_access_token():
     credentials.refresh(Request())
     return credentials.token
 
-
-# def get_recent_ready_orders_data(vendor_id, request_context=None):
-#     """
-#     Returns serialized recent ready orders data for a vendor.
-#     """
-#     recent_orders = Order.objects.filter(
-#         vendor__vendor_id=vendor_id,
-#         status='ready'
-#     ).order_by('-updated_at')[:8]
-#     print(recent_orders)
-#     data = []
-#     unseen_ids = []
-#     for order in recent_orders:
-#         serialized = OrdersSerializer(order, context={'request': request_context}).data
-#         serialized['is_new'] = not order.shown_on_tv
-#         if not order.shown_on_tv:
-#             unseen_ids.append(order.id)
-#         data.append(serialized)
-
-#     return data, unseen_ids
-
-
 def send_fcm_data_message(fcm_token, data_payload):
     """
     Sends a Firebase Cloud Messaging (FCM) data message with a given payload.
@@ -439,42 +417,90 @@ def send_fcm_data_message(fcm_token, data_payload):
     response = requests.post(url, headers=headers, json=message)
     print(response.json())
     return response.status_code == 200, response.json()
+# from firebase_admin import messaging
+# import json
+# from firebase_admin.exceptions import FirebaseError
+
+# def send_fcm_multicast_message(fcm_tokens, data_payload):
+
+#     if not fcm_tokens:
+#         return False, {'error': 'No tokens provided'}
+
+#     message = messaging.MulticastMessage(
+#         data={
+#             "type": "ready_orders",
+#             "orders": json.dumps(data_payload)
+#         },
+#         tokens=fcm_tokens,
+#         android=messaging.AndroidConfig(
+#             priority="high",
+#             notification=messaging.AndroidNotification(
+#                 sound="default"
+#             )
+#         ),
+#         notification=messaging.Notification(
+#             title="Order Ready!",
+#             body="Your food is ready for pickup.",
+#         )
+#     )
+
+#     response = messaging.send_multicast(message)
+
+#     invalid_tokens = []
+#     for idx, resp in enumerate(response.responses):
+#         if not resp.success:
+#             error = getattr(resp.exception, 'code', None)
+#             # Catch token errors
+#             if error in ['messaging/registration-token-not-registered', 'messaging/invalid-argument']:
+#                 invalid_tokens.append(fcm_tokens[idx])
+
+#     # Remove invalid tokens from your DB
+#     if invalid_tokens:
+#         from orders.models import PushSubscription  # adjust as per your structure
+#         PushSubscription.objects.filter(token__in=invalid_tokens).delete()
+
+#     return response.success_count > 0, {
+#         "success_count": response.success_count,
+#         "failure_count": response.failure_count,
+#         "invalid_tokens": invalid_tokens,
+#         "responses": [r.__dict__ for r in response.responses]
+#     }
 
 
-from firebase_admin import messaging
-import json
-from caller_on.firebase import ensure_firebase_initialized
+# from firebase_admin import messaging
+# import json
+# from caller_on.firebase import ensure_firebase_initialized
         
-def send_fcm_multicast_message(fcm_tokens, data_payload):
-    ensure_firebase_initialized()
-    if not fcm_tokens:
-        return False, {'error': 'No tokens provided'}
+# def send_fcm_multicast_message(fcm_tokens, data_payload):
+#     ensure_firebase_initialized()
+#     if not fcm_tokens:
+#         return False, {'error': 'No tokens provided'}
 
-    message = messaging.MulticastMessage(
-        data={
-            "type": "ready_orders",
-            "orders": json.dumps(data_payload)
-        },
-        tokens=fcm_tokens,
-        android=messaging.AndroidConfig(
-            priority="high",
-            notification=messaging.AndroidNotification(
-                sound="default"
-            )
-        ),
-        notification=messaging.Notification(
-            title="Order Ready!",
-            body="Your food is ready for pickup.",
-        )
-    )
+#     message = messaging.MulticastMessage(
+#         data={
+#             "type": "ready_orders",
+#             "orders": json.dumps(data_payload)
+#         },
+#         tokens=fcm_tokens,
+#         android=messaging.AndroidConfig(
+#             priority="high",
+#             notification=messaging.AndroidNotification(
+#                 sound="default"
+#             )
+#         ),
+#         notification=messaging.Notification(
+#             title="Order Ready!",
+#             body="Your food is ready for pickup.",
+#         )
+#     )
 
-    response = messaging.send_multicast(message)
+#     response = messaging.send_multicast(message)
 
-    return response.success_count > 0, {
-        "success_count": response.success_count,
-        "failure_count": response.failure_count,
-        "responses": [r.__dict__ for r in response.responses]
-    }
+#     return response.success_count > 0, {
+#         "success_count": response.success_count,
+#         "failure_count": response.failure_count,
+#         "responses": [r.__dict__ for r in response.responses]
+#     }
 
 
 
@@ -679,7 +705,7 @@ def update_order(request):
                 "type": "foodstatus"
             }
 
-            subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no).distinct()
+            subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no,tokens__vendor=vendor).distinct()
             for subscription in subscriptions:
                 try:
                     send_push_notification({
@@ -777,7 +803,6 @@ def create_vendor(request):
             logo=logo_path,
             menus=json.dumps(menu_paths),
         )
-
         # Assign Device by serial_no if provided
         device_mapping_serial = request.data.get('device_mapping')
         if device_mapping_serial:

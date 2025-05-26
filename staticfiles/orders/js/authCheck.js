@@ -9,6 +9,7 @@ function getTodayDateString() {
 async function callProductAuthAPI() {
     try {
         const customerId = window.APP_CONTEXT?.customerId || null;
+        console.log(customerId);
         if (!customerId) {
             console.warn('No customerId found, skipping product auth check.');
             return;

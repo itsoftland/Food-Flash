@@ -52,43 +52,95 @@ function initNotificationModal(modalInstance) {
     }
 }
 
+// function showNotificationModal(pushData, source) {
+//     console.log("notified")
+//     if (!notificationsEnabled || !pushData) return;
+
+//     const token = pushData.token_no;
+
+//     // Check if it's a new push notification (not a user action)
+//     if (source !== 'usercheck') { // Only show modal if it's a push notification
+//         orderStates[token] = {
+//             acknowledged: false,
+//             data: pushData,
+//             receivedAt: new Date().toISOString()
+//         };
+//         console.log(orderStates)
+//         // Save state and trigger modal only on true new push
+//         activeNotificationToken = token;
+//         AppUtils.saveOrderStates(orderStates);  // 💾 Save to storage
+
+//         // Display modal content
+//         const modalHeader = document.querySelector('#notificationModal .modal-body h5');
+//         modalHeader.innerHTML = `Order <strong>${pushData.token_no}</strong> is <strong>${pushData.status}</strong> at Counter <strong>${pushData.counter_no}</strong>!`;
+//         notificationModal.show();
+
+//         // Play notification sound
+//         AppUtils.playNotificationSound();
+
+//         // Update chat UI with new push info
+//         const { vendor_id, logo_url, vendor_name } = pushData;
+//         updateChatOnPush(vendor_id, logo_url, vendor_name);
+
+//         // Set timeout to auto-clear order after 1 hour
+//         if (clearTimers[token]) clearTimeout(clearTimers[token]);
+//         clearTimers[token] = setTimeout(() => {
+//             delete orderStates[token];
+//             AppUtils.saveOrderStates(orderStates);  // 💾 Save updated state
+//         }, 3600000); // 1 hour timeout
+//     }
+// }
 function showNotificationModal(pushData, source) {
+    console.log("notified");
     if (!notificationsEnabled || !pushData) return;
 
     const token = pushData.token_no;
 
-    // Check if it's a new push notification (not a user action)
-    if (source !== 'usercheck') { // Only show modal if it's a push notification
+    // If order state for token does not exist, initialize it
+    if (!orderStates[token]) {
         orderStates[token] = {
             acknowledged: false,
             data: pushData,
             receivedAt: new Date().toISOString()
         };
-
-        // Save state and trigger modal only on true new push
-        activeNotificationToken = token;
-        AppUtils.saveOrderStates(orderStates);  // 💾 Save to storage
-
-        // Display modal content
-        const modalHeader = document.querySelector('#notificationModal .modal-body h5');
-        modalHeader.innerHTML = `Order <strong>${pushData.token_no}</strong> is <strong>${pushData.status}</strong> at Counter <strong>${pushData.counter_no}</strong>!`;
-        notificationModal.show();
-
-        // Play notification sound
-        AppUtils.playNotificationSound();
-
-        // Update chat UI with new push info
-        const { vendor_id, logo_url, vendor_name } = pushData;
-        updateChatOnPush(vendor_id, logo_url, vendor_name);
-
-        // Set timeout to auto-clear order after 1 hour
-        if (clearTimers[token]) clearTimeout(clearTimers[token]);
-        clearTimers[token] = setTimeout(() => {
-            delete orderStates[token];
-            AppUtils.saveOrderStates(orderStates);  // 💾 Save updated state
-        }, 3600000); // 1 hour timeout
     }
+
+    const isPush = source !== 'usercheck';
+
+    // If it's user-initiated and already acknowledged, skip
+    if (!isPush && orderStates[token].acknowledged) {
+        console.log(`Token ${token} already acknowledged. Skipping user modal.`);
+        return;
+    }
+
+    // If it's a push, reset acknowledged to false so modal shows again
+    if (isPush) {
+        orderStates[token].acknowledged = false;
+        orderStates[token].data = pushData;
+        orderStates[token].receivedAt = new Date().toISOString();
+    }
+
+    // Show modal
+    activeNotificationToken = token;
+    AppUtils.saveOrderStates(orderStates);
+
+    const modalHeader = document.querySelector('#notificationModal .modal-body h5');
+    modalHeader.innerHTML = `Order <strong>${pushData.token_no}</strong> is <strong>${pushData.status}</strong> at Counter <strong>${pushData.counter_no}</strong>!`;
+    notificationModal.show();
+
+    AppUtils.playNotificationSound();
+
+    const { vendor_id, logo_url, vendor_name } = pushData;
+    updateChatOnPush(vendor_id, logo_url, vendor_name);
+
+    // Set or reset the 1-hour auto-clear timer
+    if (clearTimers[token]) clearTimeout(clearTimers[token]);
+    clearTimers[token] = setTimeout(() => {
+        delete orderStates[token];
+        AppUtils.saveOrderStates(orderStates);
+    }, 3600000); // 1 hour
 }
+
 
 
 // Export methods
