@@ -357,7 +357,7 @@ def update_order(request):
             new_order_data = {
                 'token_no': token_no,
                 'vendor': vendor.id,
-                'device_id': device.id,
+                'device': device.id,
                 'counter_no': counter_no,
                 'status': "ready"
             }
