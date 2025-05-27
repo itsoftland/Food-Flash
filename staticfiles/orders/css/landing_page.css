@@ -1,0 +1,12 @@
+
+body {
+    font-family: 'Poppins';
+    overflow-x: hidden;
+    background-color: #f8f9fa;
+    text-align: center;
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
