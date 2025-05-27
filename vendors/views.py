@@ -1,16 +1,32 @@
-from django.shortcuts import render
-from rest_framework.decorators import api_view,permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework import status
-from django.core.cache import cache
-from django.utils import timezone
+import logging
+import json
+import random
 from datetime import timedelta
 import pytz
-from .models import Order, Vendor, Device, PushSubscription
-from .serializers import OrdersSerializer 
+import requests
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from .models import Order, Vendor, Device, AndroidDevice, PushSubscription, AdminOutlet
+from .serializers import OrdersSerializer
+from orders.serializers import VendorLogoSerializer
 from .utils import send_push_notification
-import logging
+
+SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
+
 logger = logging.getLogger(__name__)
 
 def get_current_ist_time():
@@ -27,15 +43,12 @@ def manage_order(request):
     cache.clear()
     return render(request, 'order_management.html')
 
-
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def list_order(request):
     orders = Order.objects.all()  
     serializer = OrdersSerializer(orders, many=True)
-    return Response(serializer.data)
-
-from orders.serializers import VendorLogoSerializer 
+    return Response(serializer.data) 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -46,21 +59,20 @@ def save_subscription(request):
     browser_id = data.get("browser_id")
     token_number = data.get("token_number")
     vendor_id = data.get("vendor")  
-
+    
     if not endpoint or not browser_id or not token_number or not vendor_id:
         return Response({"error": "Invalid subscription data"}, status=400)
-
+    
     try:
         vendor = Vendor.objects.get(id=vendor_id)
     except Vendor.DoesNotExist:
         return Response({"error": "Vendor not found."}, status=404)
-
+    
     # Fetch latest order with matching token_no and vendor
     order = Order.objects.filter(token_no=token_number, vendor=vendor).order_by('-created_at').first()
-
     if not order:
         return Response({"error": "Order not found."}, status=404)
-
+    
     # Get or create the subscription
     subscription, _ = PushSubscription.objects.get_or_create(
         browser_id=browser_id,
@@ -70,16 +82,16 @@ def save_subscription(request):
             "auth": keys.get("auth", ""),
         },
     )
-
+    
     # Update subscription fields (if changed)
     subscription.endpoint = endpoint
     subscription.p256dh = keys.get("p256dh", "")
     subscription.auth = keys.get("auth", "")
     subscription.save()
-
+    
     # Link the subscription to the order
     subscription.tokens.add(order)
-
+    
     return Response({"message": "Subscription updated successfully."})
 
 @api_view(["POST"])
@@ -88,6 +100,7 @@ def send_offers(request):
     vendor_id = request.data.get("vendor_id")
     offer = request.data.get("offer")
     title = request.data.get("title")
+    
     if not vendor_id:
         return Response({"message": "Vendor ID is required."}, status=400)
 
@@ -133,11 +146,6 @@ def send_offers(request):
 
     return Response({"message": f"Offer sent to {sent_count} active customers."}, status=200)
 
-
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .models import AdminOutlet
-
 @login_required
 def company_dashboard(request):
     try:
@@ -149,10 +157,6 @@ def company_dashboard(request):
         'admin_outlet': admin_outlet
     }
     return render(request, 'orders/company/company_dashboard.html', context)
-
-
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
 
 def login_view(request):
     if request.method == 'POST':
@@ -167,20 +171,6 @@ def login_view(request):
             return render(request, 'login.html', {'error': 'Invalid credentials'})
     
     return render(request, 'login.html')
-
-
-
-
-from .models import AndroidDevice  
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-
-
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from .models import AndroidDevice, AdminOutlet, Vendor
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -210,7 +200,7 @@ def register_device(request):
                     }, status=200)
                 else:
                     return Response({
-                        "status": "Device is registered but not yet mapped to a vendor.",
+                        "status": "Device is already registered but not yet mapped to a vendor.",
                         "mapped": False,
                         "vendor_id": None,
                         "vendor_name": None,
@@ -286,19 +276,6 @@ def register_android_device(request):
     except AdminOutlet.DoesNotExist:
         return Response({"error": "Customer not found."}, status=404)
 
-
-
-import json
-import requests
-from django.conf import settings
-from google.oauth2 import service_account
-from google.auth.transport.requests import Request
-from .models import Order, AndroidDevice, Vendor
-from .serializers import OrdersSerializer
-
-SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
-
-
 def get_access_token():
     credentials = service_account.Credentials.from_service_account_file(
         settings.FIREBASE_SERVICE_ACCOUNT_FILE,
@@ -331,16 +308,13 @@ def send_fcm_data_message(fcm_token, data_payload):
         }
     }
 
-
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json; UTF-8',
     }
 
     response = requests.post(url, headers=headers, json=message)
-    print(response.json())
     return response.status_code == 200, response.json()
-
 
 #sending payload directly and use firebase cloud messaging
 @api_view(['PATCH'])
@@ -459,19 +433,6 @@ def update_order(request):
             {"message": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-        
-        
-import random
-import json
-from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
-from rest_framework import status
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-
-from .models import Vendor, AdminOutlet, Device, AndroidDevice
 
 def generate_unique_vendor_id():
     while True:
