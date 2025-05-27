@@ -10,7 +10,7 @@ urlpatterns = [
     path('api/send-offers/', views.send_offers, name='send-offers'),
     path('dashboard/', views.company_dashboard, name='company_dashboard'), 
     path('loginview/', views.login_view, name='loginview'), 
-    
+    path('api/register_device/', views.register_device, name='register-device'),
     path('api/register_android_device/', views.register_android_device, name='register-android-device'),
     path('api/create_vendor/', views.create_vendor, name='create_vendor'),
 ]

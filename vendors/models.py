@@ -32,6 +32,7 @@ class AdminOutlet(models.Model):
     led_display_count = models.IntegerField(blank=True, null=True)
     outlet_count = models.IntegerField(blank=True, null=True)
     locations = models.JSONField(blank=True, null=True) 
+    
     customer_email = models.EmailField(blank=True, null=True) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -62,8 +63,9 @@ class Vendor(models.Model):
         return f"{self.name} - {self.admin_outlet.name}"
 
 class Device(models.Model):
-    serial_no = models.CharField(max_length=255)
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="devices")
+    serial_no = models.CharField(max_length=255, unique=True)
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="devices",null=True,blank=True)
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -136,6 +138,6 @@ class AndroidDevice(models.Model):
     token = models.CharField(max_length=255, unique=True)
     mac_address = models.CharField(max_length=255, blank=True, null=True,unique=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE,null=True, blank=True)
-    customer = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE)
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

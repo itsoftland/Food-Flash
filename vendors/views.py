@@ -35,120 +35,7 @@ def list_order(request):
     serializer = OrdersSerializer(orders, many=True)
     return Response(serializer.data)
 
-from orders.serializers import VendorLogoSerializer  # adjust import if needed
-# @api_view(['PATCH'])
-# @permission_classes([AllowAny])
-# def update_order(request):
-#     """
-#     This endpoint updates an existing order's token status to "ready".
-#     If the order (token) does not exist, it creates a new order with status "ready".
-#     After updating the order, it sends a push notification to the subscriptions
-#     associated with that order, unless a recent notification was already sent.
-#     """
-#     try:
-#         data = request.data
-#         vendor_id = data.get('vendor_id')
-#         device_id = data.get('device_id')
-#         counter_no = data.get('counter_no')
-#         token_no = data.get('token_no')
-#         status_to_update = data.get('status')
-
-#         if not token_no or not status_to_update or not vendor_id or not device_id or not counter_no:
-#             return Response(
-#                 {"message": "Token number, status, vendor_id, device_id, and counter_no are required."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # Fetch the vendor and device instances
-#         vendor = Vendor.objects.get(vendor_id=vendor_id)
-#         device = Device.objects.get(serial_no=device_id)
-
-#         try:
-#             # Try to fetch the existing order
-#             order = Order.objects.get(token_no=token_no, vendor=vendor.id)
-#             # Update the order's status and counter number
-#             order.status = status_to_update
-#             order.counter_no = counter_no
-#             order.save()
-#         except Order.DoesNotExist:
-#             # Order doesn't exist; create a new order with status "ready"
-#             new_order_data = {
-#                 'token_no': token_no,
-#                 'vendor': vendor.id,
-#                 'device_id': device.id,
-#                 'counter_no': counter_no,
-#                 'status': "ready"
-#             }
-#             serializer = OrdersSerializer(data=new_order_data)
-#             if serializer.is_valid():
-#                 order = serializer.save()
-#             else:
-#                 return Response(
-#                     {"message": serializer.errors},
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-#         # Cooldown check (only send if last sent > 1 minute ago)
-#         should_notify = (
-#             status_to_update.lower() == "ready" and (
-#                 order.notified_at is None or
-#                 (timezone.now() - order.notified_at) > timedelta(minutes=1)
-#             )
-#         )
-#         if should_notify:
-#             vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
-#             logo_url = vendor_serializer.data.get('logo_url', '')
-#             subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no).distinct()
-#             payload = {
-#                 "title": "Order Update",
-#                 "body": f"Your order {token_no} is now ready.",
-#                 "token_no": token_no,
-#                 "status": status_to_update,
-#                 "counter_no": counter_no,
-#                 "name": vendor.name,
-#                 "vendor_id": vendor.vendor_id,
-#                 "location_id": vendor.location_id,
-#                 "logo_url": logo_url,
-#                 "type": "foodstatus"
-#             }
-#             push_errors = []
-
-#             if subscriptions.exists():  # Only proceed if subscriptions are found
-#                 for subscription in subscriptions:
-#                     subscription_info = {
-#                         "endpoint": subscription.endpoint,
-#                         "keys": {
-#                             "p256dh": subscription.p256dh,
-#                             "auth": subscription.auth
-#                         }
-#                     }
-#                     try:
-#                         send_push_notification(subscription_info, payload)
-#                     except Exception as e:
-#                         push_errors.append(str(e))
-
-#                 order.notified_at = timezone.now()
-#                 order.save(update_fields=['notified_at'])
-
-
-#             if push_errors:
-#                 return Response(
-#                     {
-#                         "message": "Order updated, but push notifications encountered errors.",
-#                         "push_errors": push_errors
-#                     },
-#                     status=status.HTTP_207_MULTI_STATUS
-#                 )
-#         return Response(
-#             {"message": "Order updated and notifications sent.", "token_no": token_no},
-#             status=status.HTTP_200_OK
-#         )
-
-#     except Exception as e:
-#         return Response(
-#             {"message": str(e)},
-#             status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#         )
-
+from orders.serializers import VendorLogoSerializer 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -289,32 +176,68 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def register_android_device(request):
-#     token = request.data.get('token')
-#     customer_id = request.data.get('customer_id') 
-#     mac_address = request.data.get('mac_address')  
-
-#     if not token or not customer_id or not mac_address: 
-#         return Response({"error": "Both 'token' and 'customer_id' are required."}, status=400)
-
-#     try:
-#         customer = AdminOutlet.objects.get(customer_id=customer_id)
-#         AndroidDevice.objects.update_or_create(
-#             token=token,
-#             customer=customer,
-#             defaults={'mac_address': mac_address}
-#         )
-#         return Response({"status": "Device registered successfully"}, status=200)
-
-#     except Vendor.DoesNotExist:
-#         return Response({"error": "Vendor not found"}, status=404)
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .models import AndroidDevice, AdminOutlet, Vendor
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_device(request):
+    serial_no = request.data.get('serial_no')
+    customer_id = request.data.get('customer_id')
+
+    if not serial_no or not customer_id:
+        return Response({"error": "Fields 'serial_no' and 'customer_id' are required."}, status=400)
+
+    try:
+        # Step 1: Validate customer
+        customer = AdminOutlet.objects.get(customer_id=customer_id)
+        
+        try:
+            # Step 2: Check if device exists with this serial_no
+            existing_device = Device.objects.get(serial_no=serial_no)
+
+            if existing_device.admin_outlet == customer:
+                # Same customer and same serial — already registered
+                if existing_device.vendor is not None:
+                    return Response({
+                        "status": "Device is already registered and mapped to vendor.",
+                        "mapped": True,
+                        "vendor_id": existing_device.vendor.vendor_id,
+                        "vendor_name": existing_device.vendor.name,
+                    }, status=200)
+                else:
+                    return Response({
+                        "status": "Device is registered but not yet mapped to a vendor.",
+                        "mapped": False,
+                        "vendor_id": None,
+                        "vendor_name": None,
+                    }, status=200)
+            else:
+                # Serial exists but with a different customer
+                return Response({
+                    "error": "Serial number already registered with another customer."
+                }, status=409)
+
+        except Device.DoesNotExist:
+            # Step 4: New device, create
+            device = Device.objects.create(
+                serial_no=serial_no,
+                admin_outlet=customer,
+                vendor=None  # vendor can be assigned later
+            )
+            return Response({
+                "status": "Device is registered but not yet mapped to a vendor.",
+                "mapped": False,
+                "vendor_id": None,
+                "vendor_name": None,
+            }, status=201)
+
+    except AdminOutlet.DoesNotExist:
+        return Response({"error": "Customer not found."}, status=404)
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -334,13 +257,13 @@ def register_android_device(request):
             device = AndroidDevice.objects.get(mac_address=mac_address)
             # If exists, update the token and customer
             device.token = token
-            device.customer = customer
+            device.admin_outlet = customer
             device.save()
         except AndroidDevice.DoesNotExist:
             # If not exists, create a new device entry
             device = AndroidDevice.objects.create(
                 token=token,
-                customer=customer,
+                admin_outlet=customer,
                 mac_address=mac_address
             )
 
@@ -417,212 +340,7 @@ def send_fcm_data_message(fcm_token, data_payload):
     response = requests.post(url, headers=headers, json=message)
     print(response.json())
     return response.status_code == 200, response.json()
-# from firebase_admin import messaging
-# import json
-# from firebase_admin.exceptions import FirebaseError
 
-# def send_fcm_multicast_message(fcm_tokens, data_payload):
-
-#     if not fcm_tokens:
-#         return False, {'error': 'No tokens provided'}
-
-#     message = messaging.MulticastMessage(
-#         data={
-#             "type": "ready_orders",
-#             "orders": json.dumps(data_payload)
-#         },
-#         tokens=fcm_tokens,
-#         android=messaging.AndroidConfig(
-#             priority="high",
-#             notification=messaging.AndroidNotification(
-#                 sound="default"
-#             )
-#         ),
-#         notification=messaging.Notification(
-#             title="Order Ready!",
-#             body="Your food is ready for pickup.",
-#         )
-#     )
-
-#     response = messaging.send_multicast(message)
-
-#     invalid_tokens = []
-#     for idx, resp in enumerate(response.responses):
-#         if not resp.success:
-#             error = getattr(resp.exception, 'code', None)
-#             # Catch token errors
-#             if error in ['messaging/registration-token-not-registered', 'messaging/invalid-argument']:
-#                 invalid_tokens.append(fcm_tokens[idx])
-
-#     # Remove invalid tokens from your DB
-#     if invalid_tokens:
-#         from orders.models import PushSubscription  # adjust as per your structure
-#         PushSubscription.objects.filter(token__in=invalid_tokens).delete()
-
-#     return response.success_count > 0, {
-#         "success_count": response.success_count,
-#         "failure_count": response.failure_count,
-#         "invalid_tokens": invalid_tokens,
-#         "responses": [r.__dict__ for r in response.responses]
-#     }
-
-
-# from firebase_admin import messaging
-# import json
-# from caller_on.firebase import ensure_firebase_initialized
-        
-# def send_fcm_multicast_message(fcm_tokens, data_payload):
-#     ensure_firebase_initialized()
-#     if not fcm_tokens:
-#         return False, {'error': 'No tokens provided'}
-
-#     message = messaging.MulticastMessage(
-#         data={
-#             "type": "ready_orders",
-#             "orders": json.dumps(data_payload)
-#         },
-#         tokens=fcm_tokens,
-#         android=messaging.AndroidConfig(
-#             priority="high",
-#             notification=messaging.AndroidNotification(
-#                 sound="default"
-#             )
-#         ),
-#         notification=messaging.Notification(
-#             title="Order Ready!",
-#             body="Your food is ready for pickup.",
-#         )
-#     )
-
-#     response = messaging.send_multicast(message)
-
-#     return response.success_count > 0, {
-#         "success_count": response.success_count,
-#         "failure_count": response.failure_count,
-#         "responses": [r.__dict__ for r in response.responses]
-#     }
-
-
-
-# @api_view(['PATCH'])
-# @permission_classes([AllowAny])
-# def update_order(request):
-#     try:
-#         data = request.data
-#         vendor_id = data.get('vendor_id')
-#         token_no = data.get('token_no')
-#         device_id = data.get('device_id')
-#         counter_no = data.get('counter_no')
-#         status_to_update = data.get('status', 'ready')
-
-#         if not all([vendor_id, token_no, device_id, counter_no, status_to_update]):
-#             return Response(
-#                 {"message": "All fields vendor_id, token_no, device_id, counter_no, and status are required."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # Step 1: Fetch vendor and device
-#         vendor = Vendor.objects.get(vendor_id=vendor_id)
-#         device = Device.objects.get(serial_no=device_id)
-#         android_devices = AndroidDevice.objects.filter(vendor=vendor)
-
-#         fcm_tokens = [device.token for device in android_devices if device.token]
-
-#         # ✅ Send to all tokens at once using multicast
-#         if fcm_tokens:
-#             success, response = send_fcm_multicast_message(fcm_tokens,data)
-#             print("Multicast send result:", response)
-#         else:
-#             print("No FCM tokens available for multicast.")
-
-#         try:
-#             # Try to fetch the existing order
-#             order = Order.objects.get(token_no=token_no, vendor=vendor.id)
-#             # Update the order's status and counter number
-#             order.status = status_to_update
-#             order.counter_no = counter_no
-#             order.save()
-#         except Order.DoesNotExist:
-#             # Order doesn't exist; create a new order with status "ready"
-#             new_order_data = {
-#                 'token_no': token_no,
-#                 'vendor': vendor.id,
-#                 'device_id': device.id,
-#                 'counter_no': counter_no,
-#                 'status': "ready"
-#             }
-#             serializer = OrdersSerializer(data=new_order_data)
-#             if serializer.is_valid():
-#                 order = serializer.save()
-#             else:
-#                 return Response(
-#                     {"message": serializer.errors},
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-
-#         # Step 5: Send web push (if cooldown allows)
-#         should_notify = (
-#             status_to_update.lower() == "ready" and (
-#                 not order.notified_at or
-#                 (timezone.now() - order.notified_at) > timedelta(minutes=1)
-#             )
-#         )
-
-#         push_errors = []
-#         if should_notify:
-#             vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
-#             logo_url = vendor_serializer.data.get('logo_url', '')
-
-#             payload = {
-#                 "title": "Order Update",
-#                 "body": f"Your order {token_no} is now ready.",
-#                 "token_no": token_no,
-#                 "status": status_to_update,
-#                 "counter_no": counter_no,
-#                 "name": vendor.name,
-#                 "vendor_id": vendor.vendor_id,
-#                 "location_id": vendor.location_id,
-#                 "logo_url": logo_url,
-#                 "type": "foodstatus"
-#             }
-
-#             subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no).distinct()
-#             for subscription in subscriptions:
-#                 try:
-#                     send_push_notification({
-#                         "endpoint": subscription.endpoint,
-#                         "keys": {
-#                             "p256dh": subscription.p256dh,
-#                             "auth": subscription.auth
-#                         }
-#                     }, payload)
-#                 except Exception as e:
-#                     push_errors.append(str(e))
-
-#             # Step 6: Mark notified
-#             order.notified_at = timezone.now()
-#             order.save(update_fields=['notified_at'])
-
-#         # Step 7: Final response
-#         if push_errors:
-#             return Response(
-#                 {
-#                     "message": "Order updated. FCM sent. Some web pushes failed.",
-#                     "push_errors": push_errors
-#                 },
-#                 status=status.HTTP_207_MULTI_STATUS
-#             )
-
-#         return Response(
-#             {"message": "Order updated and all notifications sent.", "token_no": token_no},
-#             status=status.HTTP_200_OK
-#         )
-
-#     except Exception as e:
-#         return Response(
-#             {"message": str(e)},
-#             status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#         )
 
 #sending payload directly and use firebase cloud messaging
 @api_view(['PATCH'])
