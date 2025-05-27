@@ -1,3 +1,10 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
 firebase/service-account.json
 .env
 *.log
