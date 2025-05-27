@@ -60,7 +60,7 @@ class Vendor(models.Model):
         return json.loads(self.menus or "[]")
     
     def __str__(self):
-        return f"{self.name} - {self.admin_outlet.name}"
+        return f"{self.name} - {self.admin_outlet.customer_name}"
 
 class Device(models.Model):
     serial_no = models.CharField(max_length=255, unique=True)
