@@ -11,3 +11,6 @@
 [2025-05-27 12:39:00,089] INFO django.request GET /check-status/?token_no=1&vendor_id=107 from 127.0.0.1 -> 200
 [2025-05-27 12:39:00,725] INFO django.request POST /vendors/api/save-subscription/ from 127.0.0.1 -> 200
 [2025-05-27 12:39:07,820] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
+[2025-05-27 16:03:50,577] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
+[2025-05-27 16:05:01,795] INFO django.request PATCH /vendors/api/update-order/ from 127.0.0.1 -> 200
+[2025-05-27 16:08:20,319] INFO django.request GET /vendors/api/get-current-time/ from 127.0.0.1 -> 200
