@@ -8,3 +8,12 @@ __pycache__/
 firebase/service-account.json
 .env
 *.log
+
+# Django-specific
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
