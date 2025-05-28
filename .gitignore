@@ -5,15 +5,18 @@ __pycache__/
 *.pyd
 *.so
 
-firebase/service-account.json
+# Environment
 .env
 *.log
+firebase/service-account.json
 
 # Django-specific
-*.log
 *.pot
 *.pyc
 db.sqlite3
 media/
 staticfiles/
 local_settings.py
+
+# Ignore deployment/startup scripts
+start_gunicorn.sh
