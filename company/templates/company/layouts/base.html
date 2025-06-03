@@ -6,6 +6,7 @@
   <meta name="csrf-token" content="{{ csrf_token }}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Company Dashboard{% endblock %}</title>
+  <link rel="icon" href="{% static 'orders/images/food-flash-logo.ico' %}" type="image/x-icon">
 
   <!-- AdminLTE CSS CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css" />
@@ -18,20 +19,21 @@
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="{% static 'orders/css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'companyadmin/css/companyadmin.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed">
-  <div class="wrapper d-flex flex-column vh-100 overflow-hidden">
+<body class="hold-transition sidebar-mini layout-navbar-fixed layout-footer-fixed">
+  <div class="wrapper">
 
     <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light fixed-top">
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light ">
       <ul class="navbar-nav">
         <li class="nav-item">
           <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
-          <a href="{% url 'company_dashboard' %}" class="nav-link">Home</a>
+          <a href="{% url 'company:dashboard' %}" class="nav-link">Home</a>
         </li>
       </ul>
 
@@ -53,7 +55,7 @@
 
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-      <a href="{% url 'company_dashboard' %}" class="brand-link">
+      <a href="{% url 'company:dashboard' %}" class="brand-link">
         <span class="brand-text font-weight-light">FoodFlash Company</span>
       </a>
 
@@ -61,13 +63,13 @@
         <nav class="mt-2">
           <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
             <li class="nav-item">
-              <a href="{% url 'company_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'company_dashboard' %}active{% endif %}">
+              <a href="{% url 'company:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="nav-icon fas fa-tachometer-alt"></i>
                 <p>Dashboard</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="{% url 'create_outlet' %}" class="nav-link {% if request.resolver_match.url_name == 'create_outlet' %}active{% endif %}">
+              <a href="{% url 'company:create_outlet' %}" class="nav-link {% if request.resolver_match.url_name == 'create_outlet' %}active{% endif %}">
                 <i class="nav-icon fas fa-plus-circle"></i>
                 <p>Create Outlet</p>
               </a>
@@ -79,7 +81,7 @@
     <!-- /.sidebar -->
 
     <!-- Main Content Area (Scrollable Only) -->
-    <div class="content-wrapper overflow-auto px-3 py-4" style="flex: 1 1 auto;">
+    <div class="content-wrapper pt-2">
       {% block content %}{% endblock %}
     </div>
     <!-- /.content-wrapper -->
@@ -99,7 +101,7 @@
     };
   </script>
   <script src="{% static 'orders/js/authCheck.js' %}"></script>
-  <script src="{% static 'orders/js/utils.js' %}"></script>
+  <script type ="module" src="{% static 'orders/js/utils.js' %}"></script>
 
   <!-- Page-Specific JS -->
   {% block extra_js %}{% endblock %}

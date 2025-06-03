@@ -1,25 +1,26 @@
-import logging
 import json
+import logging
 import random
 from datetime import timedelta
+
 import pytz
 import requests
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
+
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from google.auth.transport.requests import Request
-from google.oauth2 import service_account
+
 from .models import Order, Vendor, Device, AndroidDevice, PushSubscription, AdminOutlet
 from .serializers import OrdersSerializer
 from orders.serializers import VendorLogoSerializer
@@ -146,32 +147,6 @@ def send_offers(request):
 
     return Response({"message": f"Offer sent to {sent_count} active customers."}, status=200)
 
-@login_required
-def company_dashboard(request):
-    try:
-        admin_outlet = request.user.admin_outlet  # access related AdminOutlet instance
-    except AdminOutlet.DoesNotExist:
-        return redirect('/login')
-
-    context = {
-        'admin_outlet': admin_outlet
-    }
-    return render(request, 'orders/company/company_dashboard.html', context)
-
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('dashboard')  # or whatever your dashboard URL is
-        else:
-            return render(request, 'login.html', {'error': 'Invalid credentials'})
-    
-    return render(request, 'login.html')
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_device(request):
@@ -277,50 +252,79 @@ def register_android_device(request):
         return Response({"error": "Customer not found."}, status=404)
 
 def get_access_token():
-    credentials = service_account.Credentials.from_service_account_file(
-        settings.FIREBASE_SERVICE_ACCOUNT_FILE,
-        scopes=SCOPES,
-    )
-    credentials.refresh(Request())
-    return credentials.token
+    """
+    Generates a Google OAuth2 access token using the service account.
+    """
+    try:
+        logger.info("Attempting to fetch Firebase access token.")
+        credentials = service_account.Credentials.from_service_account_file(
+            settings.FIREBASE_SERVICE_ACCOUNT_FILE,
+            scopes=SCOPES,
+        )
+        credentials.refresh(Request())
+        logger.info("Firebase access token fetched successfully.")
+        return credentials.token
+    except Exception as e:
+        logger.exception("Failed to get Firebase access token.")
+        raise e
 
 def send_fcm_data_message(fcm_token, data_payload):
     """
     Sends a Firebase Cloud Messaging (FCM) data message with a given payload.
     """
-    access_token = get_access_token()
-    url = f'https://fcm.googleapis.com/v1/projects/{settings.FIREBASE_PROJECT_ID}/messages:send'
+    try:
+        access_token = get_access_token()
+        url = f'https://fcm.googleapis.com/v1/projects/{settings.FIREBASE_PROJECT_ID}/messages:send'
 
-    message = {
-        "message": {
-            "token": fcm_token,
-            "data": {
-                "type": "ready_orders",
-                "orders": json.dumps(data_payload)
-            },
-            "notification": {
-                "title": "Order Ready!",
-                "body": "Your food is ready for pickup."
-            },
-            "android": {
-                "priority": "high"
+        message = {
+            "message": {
+                "token": fcm_token,
+                "data": {
+                    "type": "ready_orders",
+                    "orders": json.dumps(data_payload)
+                },
+                "notification": {
+                    "title": "Order Ready!",
+                    "body": "Your food is ready for pickup."
+                },
+                "android": {
+                    "priority": "high"
+                }
             }
         }
-    }
 
-    headers = {
-        'Authorization': f'Bearer {access_token}',
-        'Content-Type': 'application/json; UTF-8',
-    }
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json; UTF-8',
+        }
 
-    response = requests.post(url, headers=headers, json=message)
-    return response.status_code == 200, response.json()
+        logger.info(f"Sending FCM data message to token: {fcm_token}")
+        logger.debug(f"FCM Message Payload: {json.dumps(message, indent=2)}")
+
+        response = requests.post(url, headers=headers, json=message)
+
+        if response.status_code == 200:
+            logger.info(f"FCM message sent successfully to token: {fcm_token}")
+        else:
+            logger.warning(f"FCM message failed with status {response.status_code} — Response: {response.text}")
+
+        return response.status_code == 200, response.json()
+
+    except Exception as e:
+        logger.exception(f"Exception while sending FCM message to token: {fcm_token}")
+        return False, {"error": str(e)}
 
 #sending payload directly and use firebase cloud messaging
 @api_view(['PATCH'])
 @permission_classes([AllowAny])
 def update_order(request):
     try:
+        request_ip = request.META.get('REMOTE_ADDR', 'Unknown')
+        user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
+
+        logger.info(f"Incoming PATCH /update_order API from IP: {request_ip}, User-Agent: {user_agent}")
+        logger.debug(f"Request Data: {request.data}")
+        
         data = request.data
         vendor_id = data.get('vendor_id')
         token_no = data.get('token_no')
@@ -329,30 +333,36 @@ def update_order(request):
         status_to_update = data.get('status', 'ready')
 
         if not all([vendor_id, token_no, device_id, counter_no, status_to_update]):
+            logger.warning("Missing required fields in update_order request.")
             return Response(
                 {"message": "All fields vendor_id, token_no, device_id, counter_no, and status are required."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        logger.info(f"Update Order Request Received: token_no={token_no}, vendor_id={vendor_id}, device_id={device_id}, counter_no={counter_no}, status={status_to_update}")
+        logger.info(f"Validated Fields — Vendor ID: {vendor_id}, Token No: {token_no}, Device ID: {device_id}, Counter: {counter_no}, Status: {status_to_update}")
         # Step 1: Fetch vendor and device
         vendor = Vendor.objects.get(vendor_id=vendor_id)
         device = Device.objects.get(serial_no=device_id)
+        
+        logger.info(f"Vendor and Device resolved — Vendor Name: {vendor.name}, Device ID: {device.id}")
 
         # Step 2: Send FCM notification with recent ready orders
 
         android_devices = AndroidDevice.objects.filter(vendor=vendor)
         for devices in android_devices:
+            logger.debug(f"Sending FCM to Android Device Token: {devices.token}")
             send_fcm_data_message(devices.token, data)
 
 
         try:
             # Try to fetch the existing order
             order = Order.objects.get(token_no=token_no, vendor=vendor.id)
+            logger.info(f"Existing Order found — Updating status to {status_to_update}")
             # Update the order's status and counter number
             order.status = status_to_update
             order.counter_no = counter_no
             order.save()
         except Order.DoesNotExist:
+            logger.info(f"No existing order found for token {token_no}. Creating a new order.")
             # Order doesn't exist; create a new order with status "ready"
             new_order_data = {
                 'token_no': token_no,
@@ -363,8 +373,10 @@ def update_order(request):
             }
             serializer = OrdersSerializer(data=new_order_data)
             if serializer.is_valid():
+                logger.info(f"New Order created — Token: {token_no}, Vendor: {vendor.name}")
                 order = serializer.save()
             else:
+                logger.error(f"Order serializer errors: {serializer.errors}")
                 return Response(
                     {"message": serializer.errors},
                     status=status.HTTP_400_BAD_REQUEST
@@ -374,7 +386,7 @@ def update_order(request):
         should_notify = (
             status_to_update.lower() == "ready" and (
                 not order.notified_at or
-                (timezone.now() - order.notified_at) > timedelta(minutes=1)
+                (timezone.now() - order.notified_at) > timedelta(seconds=1)
             )
         )
 
@@ -395,10 +407,16 @@ def update_order(request):
                 "logo_url": logo_url,
                 "type": "foodstatus"
             }
-
+            
+            logger.debug(f"Prepared push payload: {payload}")
+            
             subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no,tokens__vendor=vendor).distinct()
+            
+            logger.info(f"Found {subscriptions.count()} web push subscriptions to notify.")
+            
             for subscription in subscriptions:
                 try:
+                    logger.debug(f"Sending web push to endpoint: {subscription.endpoint}")
                     send_push_notification({
                         "endpoint": subscription.endpoint,
                         "keys": {
@@ -407,11 +425,14 @@ def update_order(request):
                         }
                     }, payload)
                 except Exception as e:
+                    logger.error(f"Error sending web push: {e}")
                     push_errors.append(str(e))
 
             # Step 4: Mark notified
             order.notified_at = timezone.now()
             order.save(update_fields=['notified_at'])
+            
+            logger.info(f"Order {token_no} marked as notified at {order.notified_at}")
 
         # Step 5: Final response
         if push_errors:
@@ -422,13 +443,16 @@ def update_order(request):
                 },
                 status=status.HTTP_207_MULTI_STATUS
             )
-
+            
+        logger.info(f"Order {token_no} update completed successfully with notifications.")
+        
         return Response(
             {"message": "Order updated and notifications sent.", "token_no": token_no},
             status=status.HTTP_200_OK
         )
 
     except Exception as e:
+        logger.exception("Exception occurred in update_order:")
         return Response(
             {"message": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -22,7 +22,9 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('vendors/', include('vendors.urls')),
+    path('vendors/', include(('vendors.urls','vendors'),namespace='vendors')),
+    path('company/', include(('company.urls', 'company'), namespace='company')),
+    path('companyadmin/', include(('companyadmin.urls', 'companyadmin'), namespace='companyadmin')),
     path('',include('orders.urls')),
     path('service-worker.js', (TemplateView.as_view(template_name="orders/service-worker.js", 
   content_type='application/javascript', )), name='service-worker.js'),

@@ -1,8 +1,3 @@
-import { get as idbGet, set as idbSet } from "https://cdnjs.cloudflare.com/ajax/libs/idb-keyval/6.2.1/index.min.js";
-if (window.navigator.standalone) {
-    console.log('Running in standalone mode');
-}
-  
 window.AppUtils = {
     // ─────────────────────────────────────
     // CSRF Token
@@ -11,72 +6,46 @@ window.AppUtils = {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.getAttribute("content") : "";
     },
-    key: 'activeLocation',
-    async get() {
-        // 1️⃣ Try localStorage
-        let locationId = localStorage.getItem(this.key);
-        if (locationId) {
-          console.log("[LocationStore] Loaded from localStorage:", locationId);
-          return locationId;
-        }
-    
-        // 2️⃣ Try IndexedDB
-        try {
-          locationId = await idbGet(this.key);
-          if (locationId) {
-            console.log("[LocationStore] Loaded from IndexedDB:", locationId);
-            localStorage.setItem(this.key, locationId); // Rehydrate
-            return locationId;
-          }
-        } catch (e) {
-          console.warn("[LocationStore] IndexedDB read failed:", e);
-        }
-    
-        // 3️⃣ Try Cookie (after slight delay for PWA cold boot)
-        await new Promise(resolve => setTimeout(resolve, 200));
-        locationId = this.getCookie(this.key);
-        if (locationId) {
-          console.log("[LocationStore] Loaded from Cookie:", locationId);
-          localStorage.setItem(this.key, locationId); // Rehydrate
-          try { await idbSet(this.key, locationId); } catch {}
-          return locationId;
-        }
-    
-        console.warn("[LocationStore] No activeLocation found in any storage.");
-        return null;
-      },
-    
-      async set(locationId) {
-        if (!locationId) return;
-        console.log("[LocationStore] Setting location:", locationId);
-    
-        // 1️⃣ Set in localStorage
-        localStorage.setItem(this.key, locationId);
-    
-        // 2️⃣ Set in IndexedDB
-        try {
-          await idbSet(this.key, locationId);
-        } catch (e) {
-          console.warn("[LocationStore] IndexedDB write failed:", e);
-        }
-    
-        // 3️⃣ Set in cookie
-        this.setCookie(this.key, locationId);
-      },
-    
-      setCookie(name, value, days = 365) {
+    // ─────────────────────────────────────
+    // Cookies
+    // ─────────────────────────────────────
+    setCookie: function (name, value, days = 365) {
         const expires = new Date(Date.now() + days * 864e5).toUTCString();
         document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}; SameSite=Lax`;
-      },
-    
-      getCookie(name) {
+    },
+
+    getCookie: function (name) {
         const cookieStr = `; ${document.cookie}`;
         const parts = cookieStr.split(`; ${name}=`);
         if (parts.length >= 2) {
-          return decodeURIComponent(parts.pop().split(';')[0]);
+            return decodeURIComponent(parts.pop().split(';')[0]);
         }
         return null;
-      },
+    },
+
+    // ─────────────────────────────────────
+    // Location ID
+    // ─────────────────────────────────────
+    setCurrentLocation: function (locationId) {
+        if (locationId) {
+            console.log("Setting location:", locationId);
+            localStorage.setItem('activeLocation', locationId);
+            this.setCookie('activeLocation', locationId);
+        }
+    },
+    getCurrentLocation: function () {
+        let locationId = localStorage.getItem('activeLocation');
+        console.log("LocalStorage location:", locationId);
+
+        if (!locationId) {
+            locationId = this.getCookie('activeLocation');
+            console.log("Fallback Cookie location:", locationId);
+        }
+        if (!locationId) {
+            console.warn("No location_id found in URL, localStorage, sessionStorage, or cookies.");
+        }
+        return locationId || null;
+    },
 
     // ─────────────────────────────────────
     // Vendor Helpers

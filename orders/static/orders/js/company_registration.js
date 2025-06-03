@@ -54,9 +54,12 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Sending payload:", payload);
 
         // Step 1: Product Registration
-        fetch('/api/product-registration/', {
+        fetch('/companyadmin/api/product-registrations/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': AppUtils.getCSRFToken()
+             },
             body: JSON.stringify(payload)
         })
         .then(response => response.json())
@@ -69,9 +72,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 const pollPayload = { CustomerId: customerId };
 
                 const pollInterval = setInterval(() => {
-                    fetch('/api/product-authentication/', {
+                    fetch('/companyadmin/api/product-authentications/', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': AppUtils.getCSRFToken()
+                         },
                         body: JSON.stringify(pollPayload)
                     })
                     .then(response => response.json())
@@ -112,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 AuthenticationResponse: authData
                             };
 
-                            fetch('/api/register-company/', {
+                            fetch('/companyadmin/api/register-company/', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -172,6 +178,13 @@ document.addEventListener("DOMContentLoaded", function () {
                                 }, 5000);
                             });
                         }
+                        else{
+                            // Auth status is not "Approve", so handle error message
+                            clearInterval(pollInterval); // stop further polling
+                            console.warn("Authentication failed:", authData.Authenticationstatus);
+                            updateLoaderStatus(authData.Authenticationstatus); // show message like "Your licence is expired..."
+                            setTimeout(hideLoader, 5000);
+                        }
                     })
                     .catch(err => {
                         console.error("Polling Error:", err);
@@ -199,4 +212,19 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 2000);
         });
     });
+});
+
+document.getElementById('togglePassword').addEventListener('click', function () {
+    const passwordInput = document.getElementById('CustomerPassword');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    }
 });

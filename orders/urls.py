@@ -3,8 +3,6 @@ from .import views
 
 urlpatterns = [
     path('home/', views.home, name='home'),
-    path('api/register-company/', views.register_company, name='register-company'),
-    path('company_registration/', views.company_registration, name='company_registration'),
     path('token_display/',views.token_display,name='token_display'),
     path('api/get_recent_orders/',views.get_recent_ready_orders,name='get_recent_orders'),
     path('', views.outlet_selection, name="outlet_selection"),
@@ -16,9 +14,6 @@ urlpatterns = [
     path('api/submit_feedback/', views.submit_feedback, name='submit-feedback'),
     path('login/', views.login_view, name='loginview'), 
     path('logout/', views.logout_view, name='logout'),
-    path('superadmin_dashboard/', views.superadmin_dashboard, name='superadmin_dashboard'),
-    path('company_dashboard/', views.company_dashboard, name='company_dashboard'), 
     path('outlet_dashboard/', views.outlet_dashboard, name='outlet_dashboard'),
     path('api/company-update/', views.update_admin_outlet, name='company_update_api'),
-    path('create-outlet/', views.create_outlet, name='create_outlet'),
 ]

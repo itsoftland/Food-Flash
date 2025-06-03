@@ -1,10 +1,14 @@
-{% extends "orders/layouts/base.html" %}
+{% extends "companyadmin/layouts/base.html" %}
 {% load static %}
 
-{% block body_class %}hold-transition sidebar-mini layout-fixed{% endblock %}
+{% block title %}Company Registration - Superadmin Dashboard{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'orders/css/company_registration.css' %}">
+{% endblock %}
+
+{% block header %}
+Company Registration
 {% endblock %}
 
 {% block content %}

@@ -100,7 +100,7 @@ export const AddOutletService = (() => {
             const selectedOutletName = selectedTile?.dataset?.name || "Outlet";
 
             // ✅ Save to localStorage
-            localStorage.setItem("selectedOutletName", selectedOutletName);
+            AppUtils.setSelectedOutletName(selectedOutletName);
             window.location.href = `/home/?location_id=${locationId}&vendor_id=${finalVendorIds}`;
         });
     };

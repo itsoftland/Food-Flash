@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # === SECURITY SETTINGS ===
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
 DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS").split(",")
 
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://calleron.softlandindia.net").split(",")
 CORS_ALLOW_ALL_ORIGINS = True
@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     # Custom apps
     'orders',
     'vendors',
+    'company',
+    'companyadmin',
 ]
 
 # === MIDDLEWARE ===
@@ -196,6 +198,8 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesSto
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+LOGIN_URL = '/login/'
+
 
 # === DEFAULT PRIMARY KEY FIELD TYPE ===
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -1,0 +1,91 @@
+/* Sidebar background */
+.main-sidebar {
+  background-color: #2f2f2f !important; /* Deep charcoal */
+}
+
+/* Sidebar brand header */
+.brand-link {
+  background-color: #2f2f2f !important;
+  color: #fdbf50 !important;
+}
+
+/* Sidebar nav links */
+.nav-sidebar .nav-link {
+  color: #f4f4f4 !important; /* Light gray text */
+  transition: background-color 0.3s ease;
+}
+
+/* Sidebar icons */
+.nav-sidebar .nav-icon {
+  color: #fdbf50 !important; /* Golden accent for icons */
+}
+
+/* Active sidebar link */
+.nav-sidebar .nav-link.active {
+  background-color: #fb8b24 !important;
+  color: #ffffff !important;
+}
+
+
+/* Ensure active icon stays highlighted */
+.nav-sidebar .nav-link.active .nav-icon {
+  color: #ffffff !important;
+}
+/* Card primary header override */
+.card-primary.card-outline,
+.card-primary:not(.card-outline) > .card-header {
+  background-color: #fdbf50 !important;
+  color: #212529 !important;
+  border: none;
+}
+
+/* Override AdminLTE footer */
+.main-footer {
+  background-color: #222 !important;  /* dark background */
+  color: #d97a1f !important;          /* warm dark gold text */
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 0;
+}
+.text-golden {
+  color: #d97a1f; /* dark gold for better readability */
+}
+
+.main-footer a {
+  color: #fb8b24 !important;          /* link color */
+  text-decoration: none;
+}
+
+.main-footer a:hover {
+  color: #fdbf50 !important;          /* link hover color */
+}
+
+/* Override the toggle button styles */
+#togglePassword.btn {
+  border-color: #fb8b24;
+  color: #fb8b24;
+  background-color: transparent;
+  transition: background-color 0.3s ease;
+}
+
+#togglePassword.btn:hover {
+  background-color: #fb8b24;
+  color: white;
+  border-color: #fb8b24;
+}
+
+#togglePassword .fas {
+  font-size: 1.1rem;
+}
+/* Applies to all form controls like input, select, textarea */
+.form-control:focus, 
+.custom-select:focus {
+  border-color: #fb8b24 !important;
+  box-shadow: 0 0 0 0.2rem rgba(251, 139, 36, 0.25) !important;
+}
+.brand-link {
+  white-space: normal;
+  font-size: 1rem; /* reduce font size */
+  padding: 1.1rem 1rem;
+  max-width: 100%;
+}

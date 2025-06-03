@@ -66,9 +66,9 @@ export const VendorUIService = {
 
             if (vendor.vendor_id === activeVendorId) {
                 wrapper.classList.add("active");
-                localStorage.setItem("selectedOutletName", vendor.name);
+                AppUtils.setSelectedOutletName(vendor.name);
                 localStorage.setItem("activeVendorLogo", vendor.logo_url);
-                WelcomeMessageService.show(localStorage.getItem("selectedOutletName") || "our outlet");
+                WelcomeMessageService.show(AppUtils.getSelectedOutletName() || "our outlet");
 
                 handleOutletSelection(vendor.vendor_id, vendor.logo_url, vendor.place_id);
 
@@ -84,7 +84,7 @@ export const VendorUIService = {
             logo.addEventListener("click", () => {
                 document.querySelectorAll(".vendor-logo-wrapper").forEach(el => el.classList.remove("active"));
                 wrapper.classList.add("active");
-                localStorage.setItem("selectedOutletName", vendor.name);
+                AppUtils.setSelectedOutletName(vendor.name);
                 handleOutletSelection(vendor.vendor_id, vendor.logo_url, vendor.place_id);
             });
 

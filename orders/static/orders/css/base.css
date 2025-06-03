@@ -119,6 +119,17 @@
   cursor: pointer;
 }
 
+.btn-outline-primary:focus 
+{
+  background-color: #f0a934 !important;
+  color: #ffffff !important;
+  border-color: #f0a934 !important;
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+
 @media (max-width: 768px) {
     .header-title {
     font-size: 1.5rem !important;

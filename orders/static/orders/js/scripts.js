@@ -5,7 +5,7 @@ import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
 import { VendorUIService } from "./services/vendorUIService.js";
-import { handleOutletSelection,appendMessage } from "./services/chatService.js";
+import { updateChatOnPush,appendMessage } from "./services/chatService.js";
 import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -210,27 +210,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }else{
                 if (pushData.status === "ready") {
                     AppUtils.notifyOrderReady(pushData); 
-                    AppUtils.playNotificationSound();
                     showNotificationModal(pushData,'push');
                     appendMessage(messageHTML, 'server');
                     }
                     
                 }
                 
-            }
-        });
-    }
-    function updateChatOnPush(vendorId,logo_url,name) {
-        document.querySelectorAll(".vendor-logo-wrapper").forEach(wrapper => {
-            const logo = wrapper.querySelector("img");
-            if (logo.dataset.vendorId == vendorId) {
-                // Clear all active states
-                document.querySelectorAll(".vendor-logo-wrapper").forEach(w => w.classList.remove("active"));
-                // Activate matching one
-                wrapper.classList.add("active");
-                localStorage.setItem("selectedOutletName", name);
-                let ratingLink = localStorage.getItem("activeVendorRatingLink") || "https://default-rating-link.com";
-                handleOutletSelection(vendorId,logo_url,ratingLink);
             }
         });
     }
@@ -322,7 +307,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     
                 // If status is ready, notify user
                 if (data.status === "ready") {
-                    AppUtils.playNotificationSound();
                     showNotificationModal(data,'usercheck');
                     AppUtils.notifyOrderReady(data);
                 }

@@ -6,7 +6,7 @@ export function updateChatOnPush(vendorId, logo_url, name) {
         if (logo.dataset.vendorId == vendorId) {
             document.querySelectorAll(".vendor-logo-wrapper").forEach(w => w.classList.remove("active"));
             wrapper.classList.add("active");
-            localStorage.setItem("selectedOutletName", name);
+            AppUtils.setSelectedOutletName(name);
             let ratingLink = localStorage.getItem("activeVendorRatingLink") || "https://default-rating-link.com";
             handleOutletSelection(vendorId, logo_url, ratingLink);
         }
@@ -21,7 +21,7 @@ export function handleOutletSelection(vendorId, vendor_logo, placeId) {
     const chatContainer = document.getElementById("chat-container");
     chatContainer.innerHTML = "";
 
-    const outletName = localStorage.getItem("selectedOutletName") || "our outlet";
+    const outletName = AppUtils.getSelectedOutletName() || "our outlet";
     showWelcomeMessage(outletName);
 
     window.isRestoringHistory = true;

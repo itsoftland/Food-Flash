@@ -41,6 +41,10 @@ class AdminOutlet(models.Model):
         return self.customer_name
 
 class Vendor(models.Model):
+    user = models.OneToOneField(
+    User, on_delete=models.CASCADE, related_name='vendor',
+    null=True, blank=True
+    )
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE, related_name='vendors')
     name = models.CharField(max_length=255)
     location = models.CharField(max_length=255, blank=True, null=True)
@@ -85,7 +89,7 @@ class Order(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="orders")
     device = models.ForeignKey(Device, on_delete=models.CASCADE,null=True, blank=True, related_name="orders")
     token_no = models.IntegerField(validators=[
-            MinValueValidator(1),
+            MinValueValidator(0),
             MaxValueValidator(9999)
         ])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='preparing')
