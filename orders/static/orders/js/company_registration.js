@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Sending payload:", payload);
 
         // Step 1: Product Registration
-        fetch('/companyadmin/api/product-registrations/', {
+        fetch('/companyadmin/api/product-registration/', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const pollPayload = { CustomerId: customerId };
 
                 const pollInterval = setInterval(() => {
-                    fetch('/companyadmin/api/product-authentications/', {
+                    fetch('/companyadmin/api/product-authentication/', {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
@@ -81,10 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         body: JSON.stringify(pollPayload)
                     })
                     .then(response => response.json())
-                    .then(authData => {
-                        console.log("Raw Locations value:", authData.Locations);
-                        console.log("Type of Locations:", typeof authData.Locations);
-                    
+                    .then(authData => {                
                         let locations = [];
                     
                         try {
@@ -180,10 +177,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                         else{
                             // Auth status is not "Approve", so handle error message
-                            clearInterval(pollInterval); // stop further polling
+                            // clearInterval(pollInterval); // stop further polling
                             console.warn("Authentication failed:", authData.Authenticationstatus);
                             updateLoaderStatus(authData.Authenticationstatus); // show message like "Your licence is expired..."
-                            setTimeout(hideLoader, 5000);
+                            // setTimeout(hideLoader, 5000);
                         }
                     })
                     .catch(err => {

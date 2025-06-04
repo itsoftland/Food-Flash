@@ -145,3 +145,9 @@ class AndroidDevice(models.Model):
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class SiteConfig(models.Model):
+    maintenance_mode = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "Site Configuration"

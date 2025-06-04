@@ -40,7 +40,7 @@
         <select id="device_mapping" name="device_mapping" class="form-control form-control-sm">
           <option value="">-- Optional --</option>
           {% for device in devices %}
-            <option value="{{ device.id }}">{{ device.name }}</option>
+            <option value="{{ device.serial_no }}">{{ device.serial_no }}</option>
           {% endfor %}
         </select>
       </div>

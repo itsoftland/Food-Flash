@@ -96,11 +96,11 @@
   <!-- Global JS -->
   <script>
     window.APP_CONTEXT = {
-      customerId: {{ request.user|default:'null' }},
+      customerId: {{ admin_outlet.customer_id|default:'null' }},
       username: "{{ request.user.username }}"
     };
   </script>
-  <script src="{% static 'orders/js/authCheck.js' %}"></script>
+  <script src="{% static 'company/js/authCheck.js' %}"></script>
   <script type ="module" src="{% static 'orders/js/utils.js' %}"></script>
 
   <!-- Page-Specific JS -->

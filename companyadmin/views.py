@@ -137,14 +137,12 @@ def product_authentication(request):
             status=status.HTTP_502_BAD_GATEWAY
         )
 
-
 @login_required
 def dashboard(request):
-    print("success")
     # Superadmin check - not linked to AdminOutlet or Vendor
     is_admin_outlet = AdminOutlet.objects.filter(user=request.user).exists()
     is_vendor = Vendor.objects.filter(user=request.user).exists()
-    if is_admin_outlet:
+    if is_admin_outlet or is_vendor:
         return redirect('/login')
 
     context = {

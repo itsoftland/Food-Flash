@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 
 # === MIDDLEWARE ===
 MIDDLEWARE = [
+    'companyadmin.middleware.MaintenanceModeMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'caller_on.middlewares.RequestLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
