@@ -42,10 +42,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 1️⃣ Check URL param first
     if (locationId) {
-        AppUtils.setCurrentLocation(locationId); // Store it
+        AppUtils.set(locationId); // Store it
     } else {
         // 2️⃣ Fallback to localStorage
-        locationId = AppUtils.getCurrentLocation();
+        locationId = AppUtils.get();
 
         if (!locationId )  {
             // 3️⃣ Ask for it / show error / redirect

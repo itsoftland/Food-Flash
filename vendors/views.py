@@ -3,11 +3,7 @@ import logging
 from datetime import timedelta
 
 import pytz
-import requests
-from google.auth.transport.requests import Request
-from google.oauth2 import service_account
 
-from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
 from django.utils import timezone
@@ -20,9 +16,7 @@ from rest_framework.response import Response
 from .models import Order, Vendor, Device, AndroidDevice, PushSubscription, AdminOutlet
 from .serializers import OrdersSerializer
 from orders.serializers import VendorLogoSerializer
-from .utils import send_push_notification
-
-SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
+from .utils import send_push_notification, notify_web_push
 
 logger = logging.getLogger(__name__)
 
@@ -215,7 +209,7 @@ def register_android_device(request):
 
         # Check if a device with the mac_address exists
         try:
-            device = AndroidDevice.objects.get(mac_address=mac_address)
+            device = AndroidDevice.objects.get(mac_address=mac_address,admin_outlet_id=customer.id)
             # If exists, update the token and customer
             device.token = token
             device.admin_outlet = customer
@@ -247,70 +241,46 @@ def register_android_device(request):
     except AdminOutlet.DoesNotExist:
         return Response({"error": "Customer not found."}, status=404)
 
-def get_access_token():
+from firebase_admin import messaging
+def send_firebase_admin_multicast(fcm_tokens, data_payload):
     """
-    Generates a Google OAuth2 access token using the service account.
+    Sends a true Firebase Admin SDK multicast data+notification message to multiple devices.
     """
+
+    if not fcm_tokens:
+        logger.warning("No FCM tokens provided for multicast.")
+        return False, {"error": "No tokens to send"}
+
     try:
-        logger.info("Attempting to fetch Firebase access token.")
-        credentials = service_account.Credentials.from_service_account_file(
-            settings.FIREBASE_SERVICE_ACCOUNT_FILE,
-            scopes=SCOPES,
+        message = messaging.MulticastMessage(
+            data={
+                "type": "ready_orders",
+                "orders": data_payload  # Ensure this is a string, if JSON dump is needed
+            },
+            notification=messaging.Notification(
+                title="Order Ready!",
+                body="Your food is ready for pickup."
+            ),
+            tokens=fcm_tokens,
         )
-        credentials.refresh(Request())
-        logger.info("Firebase access token fetched successfully.")
-        return credentials.token
-    except Exception as e:
-        logger.exception("Failed to get Firebase access token.")
-        raise e
+        response = messaging.send_each_for_multicast(message)
 
-def send_fcm_data_message(fcm_token, data_payload):
-    """
-    Sends a Firebase Cloud Messaging (FCM) data message with a given payload.
-    """
-    try:
-        access_token = get_access_token()
-        url = f'https://fcm.googleapis.com/v1/projects/{settings.FIREBASE_PROJECT_ID}/messages:send'
+        failed_tokens = []
+        for idx, resp in enumerate(response.responses):
+            if not resp.success:
+                failed_tokens.append(fcm_tokens[idx])
 
-        message = {
-            "message": {
-                "token": fcm_token,
-                "data": {
-                    "type": "ready_orders",
-                    "orders": json.dumps(data_payload)
-                },
-                "notification": {
-                    "title": "Order Ready!",
-                    "body": "Your food is ready for pickup."
-                },
-                "android": {
-                    "priority": "high"
-                }
-            }
-        }
+        if failed_tokens:
+            logger.warning(f"Multicast partially failed: {len(failed_tokens)} failed tokens.")
+            return False, {"failed_tokens": failed_tokens}
 
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json; UTF-8',
-        }
-
-        logger.info(f"Sending FCM data message to token: {fcm_token}")
-        logger.debug(f"FCM Message Payload: {json.dumps(message, indent=2)}")
-
-        response = requests.post(url, headers=headers, json=message)
-
-        if response.status_code == 200:
-            logger.info(f"FCM message sent successfully to token: {fcm_token}")
-        else:
-            logger.warning(f"FCM message failed with status {response.status_code} — Response: {response.text}")
-
-        return response.status_code == 200, response.json()
+        logger.info(f"FCM multicast successful: {response.success_count} sent.")
+        return True, {"success_count": response.success_count}
 
     except Exception as e:
-        logger.exception(f"Exception while sending FCM message to token: {fcm_token}")
+        logger.exception("Multicast FCM error")
         return False, {"error": str(e)}
 
-#sending payload directly and use firebase cloud messaging
 @api_view(['PATCH'])
 @permission_classes([AllowAny])
 def update_order(request):
@@ -328,26 +298,28 @@ def update_order(request):
         counter_no = data.get('counter_no')
         status_to_update = data.get('status', 'ready')
 
-        if not all([vendor_id, token_no, device_id, counter_no, status_to_update]):
-            logger.warning("Missing required fields in update_order request.")
+        required_fields = ['vendor_id', 'token_no', 'device_id', 'counter_no', 'status']
+        missing_fields = [field for field in required_fields if not request.data.get(field)]
+        if missing_fields:
+            logger.warning(f"Missing required fields: {missing_fields}")
             return Response(
-                {"message": "All fields vendor_id, token_no, device_id, counter_no, and status are required."},
+                {"message": f"Missing fields: {', '.join(missing_fields)}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        logger.info(f"Validated Fields — Vendor ID: {vendor_id}, Token No: {token_no}, Device ID: {device_id}, Counter: {counter_no}, Status: {status_to_update}")
+
         # Step 1: Fetch vendor and device
         vendor = Vendor.objects.get(vendor_id=vendor_id)
-        device = Device.objects.get(serial_no=device_id)
+        device = Device.objects.get(serial_no=device_id,vendor_id=vendor.id)
         
         logger.info(f"Vendor and Device resolved — Vendor Name: {vendor.name}, Device ID: {device.id}")
 
         # Step 2: Send FCM notification with recent ready orders
 
         android_devices = AndroidDevice.objects.filter(vendor=vendor)
-        for devices in android_devices:
-            logger.debug(f"Sending FCM to Android Device Token: {devices.token}")
-            send_fcm_data_message(devices.token, data)
-
+        
+        fcm_tokens = list(android_devices.values_list('token', flat=True))
+        fcm_result = send_firebase_admin_multicast(fcm_tokens, json.dumps(data))
+        logger.info(f"FCM Multicast Result: {fcm_result}")
 
         try:
             # Try to fetch the existing order
@@ -453,5 +425,99 @@ def update_order(request):
             {"message": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+def get_vendor(vendor_id):
+    return Vendor.objects.get(vendor_id=vendor_id)
 
+def get_device(device_id, vendor_id):
+    return Device.objects.get(serial_no=device_id, vendor_id=vendor_id)
+
+def get_order(token_no, vendor):
+    return Order.objects.filter(token_no=token_no, vendor=vendor).first()
+
+def create_or_update_order(token_no, vendor, device, counter_no, status):
+    order = get_order(token_no, vendor)
+    if order:
+        logger.info(f"Updating existing order {token_no}")
+        order.status = status
+        order.counter_no = counter_no
+        order.save()
+    else:
+        logger.info(f"Creating new order {token_no}")
+        order_data = {
+            'token_no': token_no,
+            'vendor': vendor.id,
+            'device': device.id,
+            'counter_no': counter_no,
+            'status': status
+        }
+        serializer = OrdersSerializer(data=order_data)
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+    return order
+def notify_fcm(vendor, data):
+    android_devices = AndroidDevice.objects.filter(vendor=vendor)
+    tokens = list(android_devices.values_list('token', flat=True))
+    return send_firebase_admin_multicast(tokens, json.dumps(data))
+
+PUSH_COOLDOWN_SECONDS = 1
+
+# @api_view(['PATCH'])
+# @permission_classes([AllowAny])
+# def update_order(request):
+#     try:
+#         logger.info(f"PATCH /update_order from IP {request.META.get('REMOTE_ADDR')} — UA: {request.META.get('HTTP_USER_AGENT')}")
+        
+#         data = request.data
+#         required_fields = ['vendor_id', 'token_no', 'device_id', 'counter_no', 'status']
+#         missing = [f for f in required_fields if not data.get(f)]
+        
+#         if missing:
+#             logger.info(f"Missing fields: {', '.join(missing)}")
+#             return Response({"message": f"Missing fields: {', '.join(missing)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         vendor = get_vendor(data['vendor_id'])
+#         device = get_device(data['device_id'], vendor.id)
+#         status_to_update = data['status']
+#         token_no = data['token_no']
+#         counter_no = data['counter_no']
+
+#         logger.info(f"Resolved Vendor: {vendor.name}, Device: {device.serial_no}, Token No: {token_no}, Counter No: {counter_no}, Status: {status_to_update}")
+
+#         # FCM Push
+#         fcm_result = notify_fcm(vendor, data)
+#         logger.info(f"FCM sent. Result: {fcm_result}")
+
+#         # Order Create or Update
+#         order = create_or_update_order(token_no, vendor, device, counter_no, status_to_update)
+
+#         push_errors = []
+#         if status_to_update.lower() == "ready" and (not order.notified_at or (timezone.now() - order.notified_at) > timedelta(seconds=PUSH_COOLDOWN_SECONDS)):
+#             vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
+#             payload = {
+#                 "title": "Order Update",
+#                 "body": f"Your order {token_no} is now ready.",
+#                 "token_no": token_no,
+#                 "status": status_to_update,
+#                 "counter_no": counter_no,
+#                 "name": vendor.name,
+#                 "vendor_id": vendor.vendor_id,
+#                 "location_id": vendor.location_id,
+#                 "logo_url": vendor_serializer.data.get("logo_url", ""),
+#                 "type": "foodstatus"
+#             }
+#             push_errors = notify_web_push(order, vendor, payload)
+#             order.notified_at = timezone.now()
+#             order.save(update_fields=['notified_at'])
+#             logger.info(f"Marked order {token_no} as notified.")
+
+#         response_msg = {"message": "Order updated and notifications sent.", "token_no": token_no}
+#         if push_errors:
+#             response_msg.update({"message": "Order updated. FCM sent. Some web pushes failed.", "push_errors": push_errors})
+#             return Response(response_msg, status=status.HTTP_207_MULTI_STATUS)
+
+#         return Response(response_msg, status=status.HTTP_200_OK)
+
+#     except Exception as e:
+#         logger.exception("Unhandled exception in update_order:")
+#         return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

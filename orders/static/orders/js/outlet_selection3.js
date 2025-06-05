@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
         AppUtils.setCurrentLocation(locationId); // Stores in both localStorage and cookie
     } else {
         // 2️⃣ Try to get from fallback (this path usually won't run due to early redirect)
-        locationId = AppUtils.getCurrentLocation();
+        locationId = AppUtils.get();
 
         if (!locationId) {
             AppUtils.showToast("Location ID is missing. Please scan or provide location.");

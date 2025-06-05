@@ -51,7 +51,7 @@ export const AddOutletService = (() => {
     };
 
     const openModal = async () => {
-        locationId = AppUtils.getCurrentLocation(); // from utils.js
+        locationId = AppUtils.get(); // from utils.js
     
         if (!locationId) {
             AppUtils.showToast("Location ID is missing. Please scan or provide location");
