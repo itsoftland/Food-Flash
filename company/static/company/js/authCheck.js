@@ -41,6 +41,7 @@ async function callProductAuthAPI() {
         }
 
         localStorage.setItem('lastAuthCheck', getTodayDateString());
+        localStorage.setItem('customerId', customerId);
 
         // Send the returned data to company update API
         await updateCompanyInfo(result);

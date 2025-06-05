@@ -4,7 +4,7 @@
 {% block title %}Company Registration - Superadmin Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'orders/css/company_registration.css' %}">
+<link rel="stylesheet" href="{% static 'companyadmin/css/company_registration.css' %}">
 {% endblock %}
 
 {% block header %}
@@ -146,9 +146,9 @@ Company Registration
         </div>
     </div>
 </section>
-{% include "orders/partials/loader.html" %}
+{% include "companyadmin/partials/loader.html" %}
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'orders/js/company_registration.js' %}"></script>
+<script type="module" src="{% static 'companyadmin/js/company_registration.js' %}"></script>
 {% endblock %}

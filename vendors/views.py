@@ -1,6 +1,5 @@
 import json
 import logging
-import random
 from datetime import timedelta
 
 import pytz
@@ -10,14 +9,11 @@ from google.oauth2 import service_account
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.utils import timezone
 
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 

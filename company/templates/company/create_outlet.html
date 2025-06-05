@@ -1,91 +1,153 @@
 {% extends 'company/layouts/base.html' %}
 {% load static %}
 {% block title %}Create New Outlet{% endblock %}
-
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<link rel="stylesheet" href="{% static 'companyadmin/css/company_registration.css' %}">
+{% endblock %}
 {% block content %}
 <div class="container-fluid">
-  <form id="create-outlet-form" class="card p-3 mx-auto" style="max-width: 800px;">
-    
-    <!-- Header -->
+  <form id="create-outlet-form" method="POST" enctype="multipart/form-data" class="card px-4 py-1 mx-auto shadow-sm" style="max-width: 900px;">
+    {% csrf_token %}
     <h4 class="text-center">Create a New Outlet</h4>
 
     <div class="row">
       <!-- Outlet Name -->
-      <div class="form-group col-md-6 mb-3">
-        <label for="name" class="mb-1">Outlet Name</label>
+      <div class="form-group col-md-6 col-12">
+        <label for="name">Outlet Name</label>
         <input type="text" id="name" name="name" class="form-control form-control-sm" required />
       </div>
 
       <!-- Location -->
-      <div class="form-group col-md-6 mb-3">
-        <label for="location" class="mb-1">Location</label>
+      <div class="form-group col-md-6 col-12">
+        <label for="location">Location</label>
         <select name="location" id="location" class="form-control form-control-sm" required>
           {% for loc in locations %}
-            <option value="{{ loc.value }}">{{ loc.key }}</option>
+          <option value="{{ loc.value }}" data-location-name="{{ loc.key }}">{{ loc.key }}</option>
           {% endfor %}
         </select>
       </div>
     </div>
 
     <div class="row">
-      <!-- Place ID -->
-      <div class="form-group col-md-6 mb-3">
-        <label for="place_id" class="mb-1">Place ID</label>
-        <input type="text" id="place_id" name="place_id" class="form-control form-control-sm" />
+      <!-- Android TV Mapping -->
+      <div class="form-group col-md-6 col-12">
+        <label for="tv-select">Android TV Mapping</label>
+        <select id="tv-select" name="tv_mapping" multiple>
+          {% for tv in android_devices %}
+            <option value="{{ tv.mac_address }}">{{ tv.mac_address }}</option>
+          {% endfor %}
+        </select>
+        {% if android_devices|length == 0 %}
+          <p class="text-muted">No available TVs</p>
+        {% endif %}
       </div>
-
+    
       <!-- Device Mapping -->
-      <div class="form-group col-md-6 mb-3">
-        <label for="device_mapping" class="mb-1">Device Mapping</label>
-        <select id="device_mapping" name="device_mapping" class="form-control form-control-sm">
-          <option value="">-- Optional --</option>
+      <div class="form-group col-md-6 col-12">
+        <label for="device-select">Device Mapping</label>
+        <select id="device-select" name="device_mapping" multiple>
           {% for device in devices %}
             <option value="{{ device.serial_no }}">{{ device.serial_no }}</option>
           {% endfor %}
         </select>
+        {% if devices|length == 0 %}
+          <p class="text-muted">No available devices</p>
+        {% endif %}
       </div>
     </div>
+    
 
+    
+
+
+    {% comment %} <div class="row">
+      <!-- Android TV Mapping -->
+      <div class="form-group col-md-6 col-12">
+        <label>Android TV Mapping</label>
+        <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
+          {% for tv in android_devices %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="tv_mapping" value="{{ tv.mac_address }}" id="tv_{{ forloop.counter }}">
+              <label class="form-check-label" for="tv_{{ forloop.counter }}">{{ tv.mac_address }}</label>
+            </div>
+          {% empty %}
+            <p class="text-muted">No available TVs</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Device Mapping -->
+      <div class="form-group col-md-6 col-12">
+        <label>Device Mapping</label>
+        <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
+          {% for device in devices %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="device_mapping" value="{{ device.serial_no }}" id="device_{{ forloop.counter }}">
+              <label class="form-check-label" for="device_{{ forloop.counter }}">{{ device.serial_no }}</label>
+            </div>
+          {% empty %}
+            <p class="text-muted">No available devices</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div> {% endcomment %}
     <div class="row">
-      <!-- Logo -->
-      <div class="form-group col-md-6 mb-4">
-        <label for="logo" class="mb-1">Logo</label>
-        <small class="form-text text-muted mb-2">
-          Recommended: 1080×1080 resolution | Format: PNG or SVG
-        </small>
+      <!-- Logo Upload -->
+      <div class="form-group col-md-6 col-12">
+        <label for="logo">Logo</label>
+        <small class="form-text text-muted mb-2">Recommended: 1080×1080 | PNG or SVG</small>
         <input type="file" id="logo" name="logo" accept=".png,.svg" class="form-control-file" />
       </div>
-          <!-- Android TV Mapping -->
-    <div class="form-group col-md-6 mb-3">
-      <label for="tv_mapping" class="mb-1">Android TV Screen Mapping</label>
-      <select id="tv_mapping" name="tv_mapping" class="form-control form-control-sm">
-        <option value="">-- Optional --</option>
-        {% for tv in android_tvs %}
-          <option value="{{ tv.id }}">{{ tv.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-      <!-- Menu Files -->
-      <div class="form-group col-md-6 mb-4">
-        <label for="menu_files" class="mb-1">Menu Files</label>
-        <small class="form-text text-muted mb-2">
-          Upload multiple files | PDF, JPG, PNG, SVG | Max 5MB each
-        </small>
-        <input type="file" id="menu_files" name="menu_files" accept=".pdf,.jpg,.jpeg,.png,.svg" multiple class="form-control-file" />
+      <div class="form-group col-md-6 col-12">
+        <label for="menu_files">Menu Files</label>
+        <small class="form-text text-muted mb-2">Upload multiple files | PDF, JPG, PNG, SVG | Max 5MB each</small>
+        <input type="file" id="menu_files" name="menu_files" multiple accept=".pdf,.jpg,.jpeg,.png,.svg" class="form-control-file" />
       </div>
     </div>
 
-
-    <!-- Submit -->
-    <div class="text-center mt-2">
-      <button type="submit" class="btn btn-outline-primary px-4 py-1">Create Outlet</button>
+    <!-- Menu File Upload -->
+    <div class="row">
+      <!-- Place ID -->
+      <div class="form-group col-md-6 col-12">
+        <label for="place_id">Place ID</label>
+        <input type="text" id="place_id" name="place_id" class="form-control form-control-sm" />
+      </div>
     </div>
 
+    <!-- Submit Button -->
+    <div class="text-center">
+      <button type="submit" class="btn btn-outline-primary px-4 py-1">Create Outlet</button>
+    </div>
   </form>
 </div>
+{% include "companyadmin/partials/loader.html" %}
 {% endblock %}
 
 {% block extra_js %}
-<!-- Optional JS can go here -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tvSelect = document.getElementById('tv-select');
+    const deviceSelect = document.getElementById('device-select');
+  
+    if (tvSelect) {
+      new Choices(tvSelect, {
+        removeItemButton: true,
+        placeholderValue: 'Select TVs',
+        searchEnabled: true
+      });
+    }
+  
+    if (deviceSelect) {
+      new Choices(deviceSelect, {
+        removeItemButton: true,
+        placeholderValue: 'Select Devices',
+        searchEnabled: true
+      });
+    }
+  });
+  
+</script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script type="module" src="{% static 'company/js/createVendor.js' %}"></script>
 {% endblock %}

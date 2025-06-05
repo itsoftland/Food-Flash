@@ -29,17 +29,19 @@ def dashboard(request):
 from django.shortcuts import render, redirect
 import json
 
+@login_required(login_url='/login/')
 def create_outlet(request):
     admin_outlet = request.user.admin_outlet
     locations_json = admin_outlet.locations
     locations_data = json.loads(locations_json)
     locations = [{'key': list(i.keys())[0], 'value': list(i.values())[0]} for i in locations_data]
 
-    devices = Device.objects.filter(admin_outlet=admin_outlet)
-    print(devices)
+    devices = Device.objects.filter(admin_outlet=admin_outlet,vendor__isnull=True)
+    available_android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet,vendor__isnull=True)
     return render(request, 'company/create_outlet.html', {
         'locations': locations,
         'devices': devices,
+        'android_devices':available_android_tvs,
         'admin_outlet':admin_outlet
     })
 
@@ -49,11 +51,12 @@ def generate_unique_vendor_id():
         vendor_id = random.randint(100000, 999999)
         if not Vendor.objects.filter(vendor_id=vendor_id).exists():
             return vendor_id
-
+        
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser])
 def create_vendor(request):
+    print(request.data)
     try:
         customer_id = request.data.get('customer_id')
         admin_outlet = get_object_or_404(AdminOutlet, customer_id=customer_id)
@@ -62,17 +65,22 @@ def create_vendor(request):
         location = request.data.get('location')
         place_id = request.data.get('place_id', '')
         location_id = request.data.get('location_id')
-        
+        if Vendor.objects.filter(name__iexact=name).exists():
+            return Response({
+                'success': False,
+                'error': 'Vendor with this name already exists.'
+            }, status=status.HTTP_409_CONFLICT)
+
         # Generate unique vendor_id
         vendor_id = generate_unique_vendor_id()
-        
-        # Handle logo file upload (store filename only)
+
+        # Handle logo file upload
         logo_file = request.FILES.get('logo')
         logo_path = None
         if logo_file:
             logo_path = default_storage.save('vendor_logos/' + logo_file.name, ContentFile(logo_file.read()))
 
-        # Handle multiple menu files upload
+        # Handle multiple menu files
         menu_files = request.FILES.getlist('menu_files')
         menu_paths = []
         for file in menu_files:
@@ -90,27 +98,26 @@ def create_vendor(request):
             logo=logo_path,
             menus=json.dumps(menu_paths),
         )
-        # Assign Device by serial_no if provided
-        device_mapping_serial = request.data.get('device_mapping')
-        if device_mapping_serial:
+
+        # Handle multiple Device mappings (serial numbers)
+        device_serials = request.data.getlist('device_mapping')
+        for serial in device_serials:
             try:
-                device = Device.objects.get(serial_no=device_mapping_serial)
+                device = Device.objects.get(serial_no=serial)
                 device.vendor = vendor
                 device.save()
             except Device.DoesNotExist:
-                # You may log this or return a warning in response if needed
-                pass
+                pass  # Optional: log or collect errors
 
-        # Assign AndroidDevice by mac_address if provided
-        tv_mapping_mac = request.data.get('tv_mapping')
-        if tv_mapping_mac:
+        # Handle multiple AndroidDevice mappings (MAC addresses)
+        mac_addresses = request.data.getlist('tv_mapping')
+        for mac in mac_addresses:
             try:
-                android_device = AndroidDevice.objects.get(mac_address=tv_mapping_mac)
+                android_device = AndroidDevice.objects.get(mac_address=mac)
                 android_device.vendor = vendor
                 android_device.save()
             except AndroidDevice.DoesNotExist:
-                # You may log this or return a warning in response if needed
-                pass
+                pass  # Optional: log or collect errors
 
         return Response({
             'success': True,
