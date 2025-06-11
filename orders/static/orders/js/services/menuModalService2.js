@@ -3,9 +3,14 @@ export const MenuModalService = (() => {
 
     const renderMenu = (fileList) => {
         if (!fileList || fileList.length === 0) {
-            menuContent.innerHTML = `<p class="text-danger">No menu available.</p>`;
-            return;
-        }
+                menuContent.innerHTML = `
+                    <div class="text-center">
+                        <p class="text-warning">No menu available. Showing default menu.</p>
+                        <img src="/static/orders/files/menu.jpg" alt="Default Menu" class="img-fluid rounded shadow" style="max-height: 500px;">
+                    </div>
+                `;
+                return;
+            }
 
         const imageFiles = fileList.filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
         const pdfFiles = fileList.filter(f => /\.pdf$/i.test(f));
@@ -21,7 +26,7 @@ export const MenuModalService = (() => {
 
         if (imageFiles.length === 1 && pdfFiles.length === 0) {
             menuContent.innerHTML = `
-                <img src="${imageFiles[0]}" alt="Menu" class="img-fluid" onerror="this.src='/static/default-menu.jpg'">
+                <img src="${imageFiles[0]}" alt="Menu" class="img-fluid" onerror="this.src='/static/orders/files/menu.jpg'">
             `;
             return;
         }
@@ -62,7 +67,13 @@ export const MenuModalService = (() => {
         }
 
         // Mixed or unsupported
-        menuContent.innerHTML = `<p class="text-warning">Unsupported or mixed format.</p>`;
+        menuContent.innerHTML = `
+                    <div class="text-center">
+                        <p class="text-warning">No menu available. Showing default menu.</p>
+                        <img src="/static/orders/files/menu.jpg" alt="Default Menu" class="img-fluid rounded shadow" style="max-height: 500px;">
+                    </div>
+                `;
+                return;
     };
 
     let modalInstance = null;

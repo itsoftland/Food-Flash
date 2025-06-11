@@ -2,7 +2,7 @@ import json
 import logging
 import random
 
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -10,40 +10,73 @@ from django.core.files.storage import default_storage
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from vendors.models import Vendor, Device, AdminOutlet, AndroidDevice
 
+from static.utils.validation import validate_fields
+
 @login_required
 def dashboard(request):
-    try:
-        admin_outlet = request.user.admin_outlet 
-    except:
-        return redirect('/login')
-    context = {
-        'admin_outlet': admin_outlet
-    }
-    return render(request, 'company/dashboard.html', context)
+    return render(request, 'company/dashboard.html')
 
-from django.shortcuts import render, redirect
-import json
+@api_view(['GET']) 
+@permission_classes([IsAuthenticated])
+def get_vendors(request):
+    user = request.user
+
+    try:
+        admin_outlet = user.admin_outlet
+    except AdminOutlet.DoesNotExist:
+        return Response({"detail": "AdminOutlet not found for this user."}, status=404)
+
+    vendors = admin_outlet.vendors.all()
+
+    return Response({"vendor_ids": [v.id for v in vendors], "message": "Success"}, status=200)
+
+
+
+# @login_required
+# def dashboard(request):
+#     try:
+#         admin_outlet = request.user.admin_outlet 
+#         vendors = request.user.admin_outlet.vendors.all()
+#     except:
+#         return redirect('/login')
+#     context = {
+#         'admin_outlet': admin_outlet,
+#         'added_vendors': vendors,
+#     }
+#     return render(request, 'company/dashboard.html', context)
 
 @login_required(login_url='/login/')
 def create_outlet(request):
     admin_outlet = request.user.admin_outlet
-    locations_json = admin_outlet.locations
-    locations_data = json.loads(locations_json)
-    locations = [{'key': list(i.keys())[0], 'value': list(i.values())[0]} for i in locations_data]
+    
+    # Parse the locations JSON
+    locations_data = json.loads(admin_outlet.locations)
+    
+    # Get all location codes already mapped to a vendor under this outlet
+    mapped_codes = Vendor.objects.filter(admin_outlet=admin_outlet).values_list('location_id', flat=True)
 
-    devices = Device.objects.filter(admin_outlet=admin_outlet,vendor__isnull=True)
-    available_android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet,vendor__isnull=True)
+    # Filter only unmapped locations
+    unmapped_locations = []
+    for location in locations_data:
+        for name, code in location.items():
+            if code not in mapped_codes:
+                unmapped_locations.append({'key': name, 'value': code})
+    # Get available unmapped devices
+    devices = Device.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
+    available_android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
+
     return render(request, 'company/create_outlet.html', {
-        'locations': locations,
+        'locations': unmapped_locations,
         'devices': devices,
-        'android_devices':available_android_tvs,
-        'admin_outlet':admin_outlet
+        'android_devices': available_android_tvs,
+        'admin_outlet': admin_outlet
     })
+
 
 def generate_unique_vendor_id():
     while True:
@@ -53,15 +86,19 @@ def generate_unique_vendor_id():
             return vendor_id
         
 @api_view(['POST'])
+@validate_fields(['customer_id', 'name', 'location', 'place_id',
+                  'location_id','logo','menu_files','device_mapping[]',
+                  'tv_mapping[]', 'alias_name'])
 @permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser])
 def create_vendor(request):
-    print(request.data)
     try:
+        print(request.data)
         customer_id = request.data.get('customer_id')
         admin_outlet = get_object_or_404(AdminOutlet, customer_id=customer_id)
 
         name = request.data.get('name')
+        alias_name = request.data.get('alias_name')
         location = request.data.get('location')
         place_id = request.data.get('place_id', '')
         location_id = request.data.get('location_id')
@@ -91,6 +128,7 @@ def create_vendor(request):
         vendor = Vendor.objects.create(
             admin_outlet=admin_outlet,
             name=name,
+            alias_name=alias_name,
             location=location,
             place_id=place_id,
             vendor_id=vendor_id,
@@ -98,9 +136,8 @@ def create_vendor(request):
             logo=logo_path,
             menus=json.dumps(menu_paths),
         )
-
         # Handle multiple Device mappings (serial numbers)
-        device_serials = request.data.getlist('device_mapping')
+        device_serials = request.data.getlist('device_mapping[]')
         for serial in device_serials:
             try:
                 device = Device.objects.get(serial_no=serial)
@@ -110,7 +147,7 @@ def create_vendor(request):
                 pass  # Optional: log or collect errors
 
         # Handle multiple AndroidDevice mappings (MAC addresses)
-        mac_addresses = request.data.getlist('tv_mapping')
+        mac_addresses = request.data.getlist('tv_mapping[]')
         for mac in mac_addresses:
             try:
                 android_device = AndroidDevice.objects.get(mac_address=mac)
@@ -130,3 +167,8 @@ def create_vendor(request):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
+
+# views.py
+def update_outlet_page(request):
+    return render(request, "company/update_outlet.html")
+

@@ -107,7 +107,10 @@ DATABASES = {
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
 }
 
 # === LOGGING ===
@@ -194,6 +197,10 @@ USE_TZ = True
 
 # === STATIC & MEDIA FILES ===
 STATIC_URL = '/static/'
+# To support project-level static
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Project-level static folder
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 

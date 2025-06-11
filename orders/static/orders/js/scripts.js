@@ -1,6 +1,6 @@
 import { AddOutletService } from "./services/addOutletService.js"; 
-import { MenuModalService } from './services/menuModalService2.js';
-import { FeedbackService } from "./services/feedBackService2.js";
+import { MenuModalService } from './services/menuModalService.js';
+import { FeedbackService } from "./services/feedBackService.js";
 import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';

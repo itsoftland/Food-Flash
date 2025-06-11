@@ -67,7 +67,6 @@
     }
 }
 
-
 .loader-overlay {
     display: none;
     position: fixed;
@@ -111,5 +110,28 @@
     to {
       transform: rotate(360deg);
     }
+  }
+  .loader-ok-btn {
+    background-color: #f0a934;
+    color: #fff;
+    font-weight: bold;
+    font-size: 15px;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 12px;
+    margin-top: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .loader-ok-btn:hover {
+    background-color: #fb8b24;
+    transform: translateY(-1px);
+  }
+  
+  .loader-ok-btn:active {
+    background-color: #fdbf50;
+    transform: translateY(1px);
   }
   

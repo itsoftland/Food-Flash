@@ -39,14 +39,16 @@
 
       <ul class="navbar-nav ml-auto align-items-center">
         <li class="nav-item mr-3 d-flex align-items-center">
-          <span class="text-dark">
+          <span class="customer-label">
             Customer ID:
-            <span class="font-weight-bold text-primary ml-1">{{ admin_outlet.customer_id }}</span>
+            <span class="customer-id">
+              {{ admin_outlet.customer_id }}
+            </span>
           </span>
         </li>
         <li class="nav-item">
-          <a href="{% url 'logout' %}" class="nav-link text-danger">
-            <i class="fas fa-sign-out-alt"></i> Logout
+          <a href="{% url 'logout' %}" class="nav-link logout-link">
+            <i class="fas fa-sign-out-alt mr-1"></i> Logout
           </a>
         </li>
       </ul>
@@ -94,15 +96,8 @@
   </div>
 
   <!-- Global JS -->
-  <script>
-    window.APP_CONTEXT = {
-      customerId: {{ admin_outlet.customer_id|default:'null' }},
-      username: "{{ request.user.username }}"
-    };
-  </script>
   <script src="{% static 'company/js/authCheck.js' %}"></script>
   <script type ="module" src="{% static 'orders/js/utils.js' %}"></script>
-
   <!-- Page-Specific JS -->
   {% block extra_js %}{% endblock %}
 

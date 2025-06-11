@@ -47,6 +47,7 @@ class Vendor(models.Model):
     )
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE, related_name='vendors')
     name = models.CharField(max_length=255)
+    alias_name = models.CharField(max_length=255,null=True, blank=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     place_id = models.CharField(max_length=255, blank=True, null=True)
     vendor_id = models.IntegerField(unique=True)

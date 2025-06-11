@@ -18,80 +18,40 @@
         <input type="text" id="name" name="name" class="form-control form-control-sm" required />
       </div>
 
-      <!-- Location -->
+      <!-- Outlet Alias Name -->
       <div class="form-group col-md-6 col-12">
-        <label for="location">Location</label>
-        <select name="location" id="location" class="form-control form-control-sm" required>
-          {% for loc in locations %}
-          <option value="{{ loc.value }}" data-location-name="{{ loc.key }}">{{ loc.key }}</option>
-          {% endfor %}
-        </select>
+        <label for="name">Outlet Alias Name</label>
+        <input type="text" id="alias_name" name="alias_name" class="form-control form-control-sm" required />
       </div>
     </div>
 
     <div class="row">
       <!-- Android TV Mapping -->
       <div class="form-group col-md-6 col-12">
-        <label for="tv-select">Android TV Mapping</label>
-        <select id="tv-select" name="tv_mapping" multiple>
+        <label for="tv-select">Android TV's</label>
+        <select id="tv-select" name="tv_mapping[]" multiple>
           {% for tv in android_devices %}
             <option value="{{ tv.mac_address }}">{{ tv.mac_address }}</option>
           {% endfor %}
         </select>
         {% if android_devices|length == 0 %}
-          <p class="text-muted">No available TVs</p>
+          <p class="text-muted">No available Android TVs</p>
         {% endif %}
       </div>
     
       <!-- Device Mapping -->
       <div class="form-group col-md-6 col-12">
-        <label for="device-select">Device Mapping</label>
-        <select id="device-select" name="device_mapping" multiple>
+        <label for="device-select">Keypad Devices</label>
+        <select id="device-select" name="device_mapping[]" multiple>
           {% for device in devices %}
             <option value="{{ device.serial_no }}">{{ device.serial_no }}</option>
           {% endfor %}
         </select>
         {% if devices|length == 0 %}
-          <p class="text-muted">No available devices</p>
+          <p class="text-muted">No available keypad devices</p>
         {% endif %}
       </div>
     </div>
-    
-
-    
-
-
-    {% comment %} <div class="row">
-      <!-- Android TV Mapping -->
-      <div class="form-group col-md-6 col-12">
-        <label>Android TV Mapping</label>
-        <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
-          {% for tv in android_devices %}
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="tv_mapping" value="{{ tv.mac_address }}" id="tv_{{ forloop.counter }}">
-              <label class="form-check-label" for="tv_{{ forloop.counter }}">{{ tv.mac_address }}</label>
-            </div>
-          {% empty %}
-            <p class="text-muted">No available TVs</p>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- Device Mapping -->
-      <div class="form-group col-md-6 col-12">
-        <label>Device Mapping</label>
-        <div class="border rounded p-2" style="max-height: 180px; overflow-y: auto;">
-          {% for device in devices %}
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="device_mapping" value="{{ device.serial_no }}" id="device_{{ forloop.counter }}">
-              <label class="form-check-label" for="device_{{ forloop.counter }}">{{ device.serial_no }}</label>
-            </div>
-          {% empty %}
-            <p class="text-muted">No available devices</p>
-          {% endfor %}
-        </div>
-      </div>
-    </div> {% endcomment %}
     <div class="row">
       <!-- Logo Upload -->
       <div class="form-group col-md-6 col-12">
@@ -112,6 +72,16 @@
       <div class="form-group col-md-6 col-12">
         <label for="place_id">Place ID</label>
         <input type="text" id="place_id" name="place_id" class="form-control form-control-sm" />
+      </div>
+
+      <!-- Location -->
+      <div class="form-group col-md-6 col-12">
+        <label for="location">Location</label>
+        <select name="location" id="location" class="form-control form-control-sm" required>
+          {% for loc in locations %}
+          <option value="{{ loc.value }}" data-location-name="{{ loc.key }}">{{ loc.key }}</option>
+          {% endfor %}
+        </select>
       </div>
     </div>
 

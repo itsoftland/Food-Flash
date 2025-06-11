@@ -1,4 +1,5 @@
 // notificationService.js
+console.log("notification Service");
 import { updateChatOnPush } from './chatService.js';
 
 let notificationsEnabled = true;
@@ -9,6 +10,7 @@ let notificationModal = null;
 let clearTimers = {};  // Store timers to clear token after 1 hour
 
 function initNotificationModal(modalInstance) {
+    console.log("notificationInit Service");
     notificationModal = modalInstance;
 
     document.getElementById('ok-notification').addEventListener('click', () => {
@@ -26,7 +28,7 @@ function initNotificationModal(modalInstance) {
             notificationModal.hide();
     
             if (orderStates[token] && !orderStates[token].acknowledged) {
-                const userSnoozeDuration = 30000; // 🕒 Replace with actual user input (e.g., dropdown value)
+                const userSnoozeDuration = 60000; // 🕒 Replace with actual user input (e.g., dropdown value)
                 const now = Date.now();
     
                 orderStates[token].snoozedAt = now;
@@ -47,6 +49,7 @@ function initNotificationModal(modalInstance) {
     });
 
     for (const [token, state] of Object.entries(orderStates)) {
+        console.log("recall");
         if (!state.acknowledged && state.snoozedAt && state.snoozeDuration) {
             const now = Date.now();
             const elapsed = now - state.snoozedAt;
@@ -60,6 +63,7 @@ function initNotificationModal(modalInstance) {
                     }
                 }, remaining);
             } else {
+               
                 // Snooze already expired while page was reloading
                 showNotificationModal(state.data);
                 AppUtils.notifyOrderReady(state.data);
@@ -123,8 +127,6 @@ function showNotificationModal(pushData, source) {
         AppUtils.saveOrderStates(orderStates);
     }, 3600000); // 1 hour
 }
-// 3600000
-
 
 // Export methods
 export { initNotificationModal, showNotificationModal };

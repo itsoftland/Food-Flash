@@ -1,5 +1,15 @@
 from django.urls import path
 from .import views
+from django.urls import path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,   # For login (access + refresh token)
+    TokenRefreshView       # For refreshing access token
+)
+
+# urlpatterns = [
+#           # POST: username + password
+#          # POST: refresh token
+# ]
 
 urlpatterns = [
     path('home/', views.home, name='home'),
@@ -12,7 +22,9 @@ urlpatterns = [
     path('api/get_vendor_ads/', views.get_vendor_ads, name='get_vendor_ads'),
     path('api/menus/', views.get_vendor_menus, name='get_vendor_menu'),
     path('api/submit_feedback/', views.submit_feedback, name='submit-feedback'),
-    path('login/', views.login_view, name='loginview'), 
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/login/', views.login_api_view, name='login_api_view'), 
+    path('login/', views.login_view, name='login_view'),
     path('logout/', views.logout_view, name='logout'),
     path('outlet_dashboard/', views.outlet_dashboard, name='outlet_dashboard'),
     path('api/company-update/', views.update_admin_outlet, name='company_update_api'),

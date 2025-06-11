@@ -23,7 +23,7 @@
     <div class="card-body login-card-body">
       <p class="login-box-msg">Sign in to start your session</p>
 
-      <form method="POST">
+      <form method="POST" id= "loginForm">
         {% csrf_token %}
         <div class="input-group mb-3">
           <input type="text" name="username" class="form-control" placeholder="Username" required>

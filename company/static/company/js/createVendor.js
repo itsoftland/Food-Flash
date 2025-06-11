@@ -1,11 +1,11 @@
 import createLoaderService from './services/loaderService.js';
+import getFriendlyFieldLabels from '/static/utils/js/formFieldLabelService.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('create-outlet-form');
     const loader = createLoaderService(form);
   
     form.addEventListener('submit', async function (e) {
-      loader.showLoader("Creating outlet...");
       e.preventDefault();
       const locationSelect = document.getElementById('location');
       const selectedOption = locationSelect.options[locationSelect.selectedIndex];
@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
       
       const formData = new FormData();
       formData.append('name', document.getElementById('name').value);
+      formData.append('alias_name', document.getElementById('alias_name').value);
       formData.append('location', locationKey);     // Sending readable name
       formData.append('location_id', locationValue); // Sending internal value
       formData.append('place_id', document.getElementById('place_id').value || '');
@@ -34,15 +35,29 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('menu_files', menuFilesInput.files[i]);
       }
   
-      // Device Mapping checkboxes
-      document.querySelectorAll('input[name="device_mapping"]:checked').forEach(cb => {
-        formData.append('device_mapping', cb.value);
+      // ✅ Handle device mapping
+      const deviceSelect = document.getElementById('device-select');
+      [...deviceSelect.selectedOptions].forEach(option => {
+        formData.append('device_mapping[]', option.value);
       });
-  
-      // Android TV Mapping checkboxes
-      document.querySelectorAll('input[name="tv_mapping"]:checked').forEach(cb => {
-        formData.append('tv_mapping', cb.value);
+
+      // ✅ Handle tv mapping
+      const tvSelect = document.getElementById('tv-select');
+      [...tvSelect.selectedOptions].forEach(option => {
+        formData.append('tv_mapping[]', option.value);
       });
+
+      const fieldLabelMap = {
+        place_id: "Outlet Location",
+        logo: "Logo Image",
+        menu_files: "Menu Upload",
+        device_mapping: "Device Mapping",
+        tv_mapping: "TV Mapping",
+        token_no: "Token Number",
+        counter_no: "Counter Number",
+        // Add more fields as needed
+      };
+
   
       try {
         const response = await fetch('/company/api/create_vendor/', {
@@ -56,19 +71,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = await response.json();
   
         if (result.success) {
-          updateLoaderStatus("Registration complete 🎉");
-          setTimeout(() => {
-              hideLoader();
-              form.reset();
-              window.location.href = "/login/";
-          }, 1500);
-          form.reset();
+          console.log("[Form] API success. Updating loader status and setting redirection callback.");
+          loader.updateLoaderStatus("Registration complete 🎉", true, () => {
+            console.log("[Loader] OK button clicked. Performing redirect...");
+            form.reset();  // ✅ Reset only after OK is clicked
+            window.location.href = "/login/";
+          });
         } else {
-          alert('Error: ' + result.error);
+          const userFriendlyMessage = getFriendlyFieldLabels(result, fieldLabelMap);
+          console.warn("[Form] API returned error:", userFriendlyMessage);
+          loader.updateLoaderStatus(userFriendlyMessage, true);
         }
       } catch (err) {
         console.error('Fetch error:', err);
-        alert('An unexpected error occurred.');
+        loader.updateLoaderStatus(err, true);
       }
     });
   });

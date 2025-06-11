@@ -285,11 +285,16 @@ def send_firebase_admin_multicast(fcm_tokens, data_payload):
 @permission_classes([AllowAny])
 def update_order(request):
     try:
-        request_ip = request.META.get('REMOTE_ADDR', 'Unknown')
+        ip = request.META.get('HTTP_X_FORWARDED_FOR')
+        if ip:
+            ip = ip.split(',')[0] 
+        else:
+            ip = request.META.get('REMOTE_ADDR', 'Unknown')
+        request_ip = ip
         user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
 
         logger.info(f"Incoming PATCH /update_order API from IP: {request_ip}, User-Agent: {user_agent}")
-        logger.debug(f"Request Data: {request.data}")
+        logger.info(f"Request Data: {request.data}")
         
         data = request.data
         vendor_id = data.get('vendor_id')

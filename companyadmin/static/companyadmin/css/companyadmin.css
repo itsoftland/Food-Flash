@@ -89,3 +89,25 @@
   padding: 1.1rem 1rem;
   max-width: 100%;
 }
+
+.customer-label {
+  color: #111;
+  font-weight: 500;
+}
+
+.customer-id {
+  color: #fd800b;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.logout-link {
+  color: #fb8b24 !important;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.logout-link:hover {
+  color: #f0a934 !important;
+  text-decoration: none;
+}

@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from vendors.models import Order, Vendor, AdminOutlet
 from vendors.serializers import OrdersSerializer
@@ -34,7 +35,7 @@ def outlet_selection(request):
 
 def home(request):
     cache.clear()
-    return render(request, 'orders/index2.html')
+    return render(request, 'orders/index.html')
 
 def token_display(request):
     cache.clear()
@@ -263,27 +264,75 @@ def get_recent_ready_orders(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+# def login_view(request):
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         password = request.POST.get('password')
+
+#         user = authenticate(request, username=username, password=password)
+#         if user is not None:
+#             login(request, user)
+#             # Check user type
+#             if user.is_superuser:
+#                 return redirect('/companyadmin/dashboard/')
+#             elif AdminOutlet.objects.filter(user=user).exists():
+#                 return redirect('/company/dashboard/')
+#             elif Vendor.objects.filter(user=user).exists():
+#                 return redirect('/outlet_dashboard/')
+#             else:
+#                 return render(request, 'orders/login.html', {'error': 'User type not recognized'})
+#         else:
+#             return render(request, 'orders/login.html', {'error': 'Invalid username or password'})
+
+#     return render(request, 'orders/login.html')
+
 def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+   return render(request, 'orders/login.html')
 
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            # Check user type
-            if user.is_superuser:
-                return redirect('/companyadmin/dashboard/')
-            elif AdminOutlet.objects.filter(user=user).exists():
-                return redirect('/company/dashboard/')
-            elif Vendor.objects.filter(user=user).exists():
-                return redirect('/outlet_dashboard/')
-            else:
-                return render(request, 'orders/login.html', {'error': 'User type not recognized'})
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_api_view(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    if not username or not password:
+        return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)  # Optional: keeps session alive for browser clients
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+
+        role = None
+        customer_id = None
+
+        if user.is_superuser:
+            role = 'Company Admin'
+        elif AdminOutlet.objects.filter(user=user).exists():
+            role = 'Company'
+            customer_id = user.admin_outlet.customer_id
+            request.session['customer_id'] = customer_id
+        elif Vendor.objects.filter(user=user).exists():
+            role = 'Outlet'
         else:
-            return render(request, 'orders/login.html', {'error': 'Invalid username or password'})
+            return Response({'error': 'User type not recognized.'}, status=status.HTTP_403_FORBIDDEN)
 
-    return render(request, 'orders/login.html')
+        return Response({
+            'message': 'Login successful',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': {
+                'username': user.username,
+                'role': role,
+                'customer_id': customer_id,
+            }
+        }, status=status.HTTP_200_OK)
+
+    return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
 
 @login_required
 def outlet_dashboard(request):

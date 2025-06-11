@@ -1,28 +1,96 @@
 {% extends 'company/layouts/base.html' %}
 {% load static %}
+
 {% block title %}Company Dashboard{% endblock %}
 
 {% block content %}
 <section class="content-header">
   <div class="container-fluid">
-    <h1>Company Dashboard</h1>
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1 class="text-golden">Food Flash Company Dashboard</h1>
+      </div>
+    </div>
   </div>
 </section>
 
 <section class="content">
   <div class="container-fluid">
-    <p>Welcome, {{ request.user.username }}! This is your company dashboard.</p>
-    <!-- Additional content here -->
+    
+    <!-- Admin Outlet Info Section -->
+    <div id="outlet-info" class="mb-3">
+      <!-- Admin Outlet Data will be injected here -->
+    </div>
+
+    <!-- Vendors List -->
+    <div class="row" id="vendor-list">
+      <!-- Vendor Cards will be injected here -->
+    </div>
   </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-{% comment %} <script>
-  window.APP_CONTEXT = {
-      customerId: {{ admin_outlet.customer_id|default:'null' }},
-      username: "{{ request.user.username }}"
-  };
-</script>
-<script src="{% static 'orders/js/authCheck.js' %}"></script> {% endcomment %}
+<script type="module" src="{% static 'company/js/dashboard.js' %}"></script>
 {% endblock %}
+
+
+
+
+{% comment %} {% extends 'company/layouts/base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'company/css/dashboard.css' %}">
+{% endblock%}
+{% block title %}Company Dashboard{% endblock %}
+
+{% block content %}
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1 class="text-golden">Food Flash Company Dashboard</h1>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content">
+  <div class="container-fluid">
+    <div class="card shadow-sm border-0">
+      <div class="card-header" style="background-color: #fdbf50; color: #212529;">
+        <h3 class="card-title mb-0">Welcome, {{ admin_outlet.customer_name }} </h3>
+      </div>
+      <div class="card-body">
+        <p class="mb-2">You can manage companies, view analytics, and control platform settings from here.</p>
+        <div class="row">
+          {% for vendor in added_vendors %}
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-4">
+              <div class="vendor-tile">
+                <div class="inner">
+                  <h4>{{ vendor.name }}</h4>
+                  <p>Location: {{ vendor.location|default:"N/A" }}</p>
+                </div>
+                <div class="icon">
+                  <i class="fas fa-store"></i>
+                </div>
+                <a href="#" class="small-box-footer">
+                  View Details <i class="fas fa-arrow-circle-right"></i>
+                </a>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12">
+              <div class="alert alert-warning">No vendors have been added yet.</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Custom JS can be added here -->
+{% endblock %} {% endcomment %}
