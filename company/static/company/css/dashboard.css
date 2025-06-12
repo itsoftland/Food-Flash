@@ -7,7 +7,7 @@
 
   .vendor-tile {
     background: linear-gradient(135deg, #fdbf50, #fb8b24);
-    color: #fff;
+    color: #2b2b2b;
     border-radius: 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -44,7 +44,7 @@
 
   .vendor-tile .small-box-footer {
     background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: #2b2b2b;
     text-align: center;
     display: block;
     padding: 10px;

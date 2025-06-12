@@ -26,13 +26,13 @@
       <form method="POST" id= "loginForm">
         {% csrf_token %}
         <div class="input-group mb-3">
-          <input type="text" name="username" class="form-control" placeholder="Username" required>
+          <input type="text" id ="username" name="username" class="form-control" placeholder="Username" required>
           <div class="input-group-append">
             <div class="input-group-text"><span class="fas fa-user"></span></div>
           </div>
         </div>
         <div class="input-group mb-3">
-          <input type="password" name="password" class="form-control" placeholder="Password" required>
+          <input type="password" id = "password" name="password" class="form-control" placeholder="Password" required>
           <div class="input-group-append">
             <div class="input-group-text"><span class="fas fa-lock"></span></div>
           </div>
@@ -61,5 +61,6 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="{% static 'orders/js/login.js' %}"></script>
 </body>
 </html>

@@ -30,26 +30,16 @@
       <div class="form-group col-md-6 col-12">
         <label for="tv-select">Android TV's</label>
         <select id="tv-select" name="tv_mapping[]" multiple>
-          {% for tv in android_devices %}
-            <option value="{{ tv.mac_address }}">{{ tv.mac_address }}</option>
-          {% endfor %}
+          <!-- Dynamic Data Populated -->
         </select>
-        {% if android_devices|length == 0 %}
-          <p class="text-muted">No available Android TVs</p>
-        {% endif %}
       </div>
     
       <!-- Device Mapping -->
       <div class="form-group col-md-6 col-12">
         <label for="device-select">Keypad Devices</label>
         <select id="device-select" name="device_mapping[]" multiple>
-          {% for device in devices %}
-            <option value="{{ device.serial_no }}">{{ device.serial_no }}</option>
-          {% endfor %}
+          <!-- Dynamic Data Populated -->
         </select>
-        {% if devices|length == 0 %}
-          <p class="text-muted">No available keypad devices</p>
-        {% endif %}
       </div>
     </div>
     <div class="row">
@@ -78,9 +68,7 @@
       <div class="form-group col-md-6 col-12">
         <label for="location">Location</label>
         <select name="location" id="location" class="form-control form-control-sm" required>
-          {% for loc in locations %}
-          <option value="{{ loc.value }}" data-location-name="{{ loc.key }}">{{ loc.key }}</option>
-          {% endfor %}
+          <!-- Dynamic Data Populated -->
         </select>
       </div>
     </div>
@@ -95,29 +83,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const tvSelect = document.getElementById('tv-select');
-    const deviceSelect = document.getElementById('device-select');
-  
-    if (tvSelect) {
-      new Choices(tvSelect, {
-        removeItemButton: true,
-        placeholderValue: 'Select TVs',
-        searchEnabled: true
-      });
-    }
-  
-    if (deviceSelect) {
-      new Choices(deviceSelect, {
-        removeItemButton: true,
-        placeholderValue: 'Select Devices',
-        searchEnabled: true
-      });
-    }
-  });
-  
-</script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-<script type="module" src="{% static 'company/js/createVendor.js' %}"></script>
+<script type="module" src="{% static 'company/js/createOutlet.js' %}"></script>
+<script type="module" src="{% static 'company/js/createOutletData.js' %}"></script>
 {% endblock %}

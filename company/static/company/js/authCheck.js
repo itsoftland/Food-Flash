@@ -1,3 +1,5 @@
+import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
+
 var PRODUCT_AUTH_URL = '/companyadmin/api/product-authentication/';
 var COMPANY_UPDATE_URL = '/api/company-update/';
 
@@ -8,17 +10,15 @@ function getTodayDateString() {
 
 async function callProductAuthAPI() {
     try {
-        console.log(window.APP_CONTEXT)
-        const customerId = window.APP_CONTEXT?.customerId || null;
+        const customerId = localStorage.getItem("customer_id");
         console.log(customerId);
         if (!customerId) {
             console.warn('No customerId found, skipping product auth check.');
             return;
         }
-
-        const response = await fetch(PRODUCT_AUTH_URL, {
-            method: 'POST',
-            headers: {
+        const response = await fetchWithAutoRefresh(PRODUCT_AUTH_URL, {
+              method: 'POST',
+              headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': AppUtils.getCSRFToken()
             },
@@ -27,7 +27,6 @@ async function callProductAuthAPI() {
                 CustomerId: customerId
             })
         });
-
         if (!response.ok) throw new Error('Auth API failed');
 
         const result = await response.json();
@@ -53,9 +52,9 @@ async function callProductAuthAPI() {
 
 async function updateCompanyInfo(data) {
     try {
-        const response = await fetch(COMPANY_UPDATE_URL, {
-            method: 'PUT',
-            headers: {
+        const response = await fetchWithAutoRefresh(COMPANY_UPDATE_URL, {
+              method: 'PUT',
+              headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': AppUtils.getCSRFToken()
             },
@@ -91,5 +90,17 @@ async function updateCompanyInfo(data) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    const displayElement = document.getElementById('customer_id');
+    const customerIdRaw = localStorage.getItem('customer_id');
+    if (customerIdRaw && displayElement) {
+        let customerId = parseInt(customerIdRaw, 10);
+
+        if (!isNaN(customerId)) {
+            let padded = customerId.toString().padStart(4, '0');  // ensure 4-digit format
+            displayElement.textContent = padded;
+        } else {
+            displayElement.textContent = 'Invalid ID';
+        }
+    }
     callProductAuthAPI();
 });

@@ -324,7 +324,7 @@ def login_api_view(request):
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'user': {
-                'username': user.username,
+                'username': user.admin_outlet.customer_name,
                 'role': role,
                 'customer_id': customer_id,
             }
@@ -348,7 +348,7 @@ def outlet_dashboard(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('loginview')
+    return redirect('/login')
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated]) 

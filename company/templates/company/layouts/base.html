@@ -41,8 +41,8 @@
         <li class="nav-item mr-3 d-flex align-items-center">
           <span class="customer-label">
             Customer ID:
-            <span class="customer-id">
-              {{ admin_outlet.customer_id }}
+            <span class="customer-id" id="customer_id">
+              <!-- Will be filled by JavaScript -->
             </span>
           </span>
         </li>
@@ -66,7 +66,7 @@
           <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
             <li class="nav-item">
               <a href="{% url 'company:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <i class="nav-icon fas fa-tachometer-alt"></i>
+                <i class="nav-icon fas fa-home"></i>
                 <p>Dashboard</p>
               </a>
             </li>
@@ -74,6 +74,12 @@
               <a href="{% url 'company:create_outlet' %}" class="nav-link {% if request.resolver_match.url_name == 'create_outlet' %}active{% endif %}">
                 <i class="nav-icon fas fa-plus-circle"></i>
                 <p>Create Outlet</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'company:platform_settings' %}" class="nav-link {% if request.resolver_match.url_name == 'platform_settings' %}active{% endif %}">
+                <i class="nav-icon fas fa-tools"></i>
+                <p>Platform Setiings</p>
               </a>
             </li>
           </ul>
@@ -96,7 +102,7 @@
   </div>
 
   <!-- Global JS -->
-  <script src="{% static 'company/js/authCheck.js' %}"></script>
+  <script type ="module" src="{% static 'company/js/authCheck.js' %}"></script>
   <script type ="module" src="{% static 'orders/js/utils.js' %}"></script>
   <!-- Page-Specific JS -->
   {% block extra_js %}{% endblock %}
