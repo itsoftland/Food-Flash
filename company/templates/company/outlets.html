@@ -1,16 +1,16 @@
 {% extends 'company/layouts/base.html' %}
 {% load static %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'company/css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'company/css/outlets.css' %}">
 {% endblock%}
-{% block title %}Company Dashboard{% endblock %}
+{% block title %}View Outlets{% endblock %}
 
 {% block content %}
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2">
       <div class="col-sm-6">
-        <h1 class="text-golden">Food Flash Company Dashboard</h1>
+        <h1 class="text-golden">Food Flash Outlets</h1>
       </div>
     </div>
   </div>
@@ -26,8 +26,10 @@
 
       <!-- Vendors List -->
       <div class="card-body">
-        <p class="mb-2">You can view Company Data from here.</p>
-    
+        <p class="mb-2">You can manage companies from here.</p>
+        <div class="row" id="vendor-list">
+          <!-- Vendor Cards will be injected here -->
+        </div>
       </div>
     </div>
   </div>
@@ -35,6 +37,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'company/js/dashboard.js' %}"></script>
+<script type="module" src="{% static 'company/js/outlets.js' %}"></script>
 {% endblock %}
 

@@ -2,8 +2,6 @@ import json
 import logging
 from datetime import timedelta
 
-import pytz
-
 from django.core.cache import cache
 from django.shortcuts import render
 from django.utils import timezone
@@ -20,15 +18,31 @@ from .utils import send_push_notification, notify_web_push
 
 logger = logging.getLogger(__name__)
 
-def get_current_ist_time():
-    ist = pytz.timezone('Asia/Kolkata')
-    return timezone.now().astimezone(ist)
+from django.utils.timezone import now, localtime
+from datetime import timedelta
+import threading
+
+_current_time_cache = {
+    "time": None,
+    "expires_at": None,
+    "lock": threading.Lock()
+}
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_current_time(request):
-    current_time = get_current_ist_time()
-    return Response({'current_time': current_time.strftime('%Y-%m-%d %H:%M:%S')})
+    with _current_time_cache["lock"]:
+        current = now()
+        if (_current_time_cache["time"] is None or
+            _current_time_cache["expires_at"] < current):
+            
+            # Cache refresh
+            current_ist = localtime(current)  # IST as per TIME_ZONE
+            _current_time_cache["time"] = current_ist.strftime('%Y-%m-%d %H:%M:%S')
+            _current_time_cache["expires_at"] = current + timedelta(seconds=5)  # 5-sec cache
+        
+        return Response({'current_time': _current_time_cache["time"]})
+
 
 def manage_order(request):
     cache.clear()

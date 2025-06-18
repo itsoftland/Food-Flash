@@ -2,6 +2,8 @@ import json
 import logging
 import random
 
+from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
@@ -15,50 +17,57 @@ from rest_framework.response import Response
 
 from vendors.models import Vendor, Device, AdminOutlet, AndroidDevice
 
-from static.utils.validation import validate_fields
-from .serializers import VendorSerializer, VendorDetailSerializer
-
+from static.utils.functions.validation import validate_fields
+from .serializers import (VendorSerializer,
+                          VendorDetailSerializer,
+                          UnmappedVendorDetailSerializer,
+                          VendorUpdateSerializer
+                          )
 @login_required
 def dashboard(request):
     return render(request, 'company/dashboard.html')
 
 @login_required
-def update_outlet_page(request):
-    return render(request, "company/update_outlet.html")
+def outlets(request):
+    return render(request, 'company/outlets.html')
 
 @login_required
-def platform_settings(request):
-    return render(request, "company/platform_settings.html")
+def configurations(request):
+    return render(request, "company/configurations.html")
 
+@login_required(login_url='/login/')
+def create_outlet(request):
+    return render(request, 'company/create_outlet.html')
+
+@login_required
+def update_outlet_page(request):
+    return render(request, "company/update_outlet.html")
 
 @api_view(['GET']) 
 @permission_classes([IsAuthenticated])
 def get_vendor_details(request):
-    print(request.data)
-    vendor_id = request.data.get('vendor_id')
+    vendor_id = request.GET.get('vendor_id')
+    
     if not vendor_id:
         return Response({'error': 'Vendor ID not provided'}, status=400)
-    
     try:
         vendor = Vendor.objects.get(vendor_id=vendor_id)
     except Vendor.DoesNotExist:
-        return Response("Vendor not found")
+        return Response({'error': 'Vendor not found'}, status=400)
+    
+    serializer = VendorDetailSerializer(
+        vendor, context={'request': request}
+        ).data
 
-    # Add other related objects if needed
-    data = {
-        'id': vendor.id,
-        'name': vendor.name,
-        'alias_name': vendor.alias_name,
-        'place_id': vendor.place_id,
-        'location': vendor.location,
-        'logo': vendor.logo.url,
-        'menu_files': [f.file.url for f in vendor.menufile_set.all()] if hasattr(vendor, 'menufile_set') else [],
-        'android_tvs': list(vendor.android_devices.values('mac_address')) if hasattr(vendor, 'android_devices') else [],
-        'keypad_devices': list(vendor.devices.values('serial_no')) if hasattr(vendor, 'devices') else [],
-    }
-    serializer = VendorDetailSerializer(vendor, context={'request': request}).data
-
-    return Response({'vendor': serializer})
+    unmapped_vendors_data = UnmappedVendorDetailSerializer(
+        vendor, context={'request': request}
+        ).data
+    
+    return Response({
+        "vendor_data": serializer,
+        "unmapped_data":unmapped_vendors_data,
+        "message": "Success"
+        }, status=200)
 
 @api_view(['GET']) 
 @permission_classes([IsAuthenticated])
@@ -67,36 +76,40 @@ def get_vendors(request):
     try:
         admin_outlet = user.admin_outlet
     except AdminOutlet.DoesNotExist:
-        return Response({"detail": "AdminOutlet not found for this user."}, status=404)
+        return Response(
+            {"error": "AdminOutlet not found for this user."}
+            , status=404)
 
     vendors = admin_outlet.vendors.all()
     vendors_data = VendorSerializer(vendors, many=True).data
-    return Response({"vendors": vendors_data, "message": "Success"}, status=200)
+       
+    return Response(
+        {"vendors": vendors_data, "message": "Success"}
+        , status=200)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_outlet_creation_data(request):
-    # customer_id = request.GET.get('customer_id')
     user = request.user
-    
-
-    # if not customer_id:
-    #     return Response({'error': 'customer_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-
     try:
-        # admin_outlet = AdminOutlet.objects.get(customer_id=customer_id)
         admin_outlet = user.admin_outlet
     except AdminOutlet.DoesNotExist:
-        return Response({'error': 'Invalid customer_id'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {'error': 'Invalid customer_id'}
+            ,status=status.HTTP_404_NOT_FOUND)
 
     # Parse all locations from JSON field
     try:
         locations_data = json.loads(admin_outlet.locations)
     except json.JSONDecodeError:
-        return Response({'error': 'Invalid locations JSON'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(
+            {'error': 'Invalid locations JSON'}
+            , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # Get all location codes already used in vendors
-    mapped_codes = Vendor.objects.filter(admin_outlet=admin_outlet).values_list('location_id', flat=True)
+    mapped_codes = Vendor.objects.filter(
+        admin_outlet=admin_outlet
+        ).values_list('location_id', flat=True)
 
     # Filter unmapped locations
     unmapped_locations = []
@@ -106,46 +119,20 @@ def get_outlet_creation_data(request):
                 unmapped_locations.append({'key': name, 'value': code})
 
     # Get unmapped keypad devices
-    available_keypads = Device.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True).values('serial_no')
+    available_keypads = Device.objects.filter(
+        admin_outlet=admin_outlet, vendor__isnull=True
+        ).values('serial_no')
 
     # Get unmapped Android TVs
-    available_android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True).values('mac_address')
+    available_android_tvs = AndroidDevice.objects.filter(
+        admin_outlet=admin_outlet, vendor__isnull=True
+        ).values('mac_address')
 
     return Response({
         'locations': unmapped_locations,
         'keypad_devices': list(available_keypads),
         'android_tvs': list(available_android_tvs),
     }, status=status.HTTP_200_OK)
-
-
-@login_required(login_url='/login/')
-def create_outlet(request):
-    # admin_outlet = request.user.admin_outlet
-    
-    # # Parse the locations JSON
-    # locations_data = json.loads(admin_outlet.locations)
-    
-    # # Get all location codes already mapped to a vendor under this outlet
-    # mapped_codes = Vendor.objects.filter(admin_outlet=admin_outlet).values_list('location_id', flat=True)
-
-    # # Filter only unmapped locations
-    # unmapped_locations = []
-    # for location in locations_data:
-    #     for name, code in location.items():
-    #         if code not in mapped_codes:
-    #             unmapped_locations.append({'key': name, 'value': code})
-    # # Get available unmapped devices
-    # devices = Device.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
-    # available_android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
-
-    # return render(request, 'company/create_outlet.html', {
-    #     'locations': unmapped_locations,
-    #     'devices': devices,
-    #     'android_devices': available_android_tvs,
-    #     'admin_outlet': admin_outlet
-    # })
-    return render(request, 'company/create_outlet.html')
-
 
 def generate_unique_vendor_id():
     while True:
@@ -158,8 +145,9 @@ def generate_unique_vendor_id():
 @validate_fields(['customer_id', 'name', 'location', 'place_id',
                   'location_id','logo','menu_files','device_mapping[]',
                   'tv_mapping[]', 'alias_name'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
+@transaction.atomic
 def create_vendor(request):
     try:
         print(request.data)
@@ -237,5 +225,87 @@ def create_vendor(request):
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+@transaction.atomic
+def update_vendor(request):
+    try:
+        serializer = VendorUpdateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'errors': serializer.errors}, status=400)
+
+        validated_data = serializer.validated_data
+        vendor = Vendor.objects.get(vendor_id=validated_data['vendor_id'])
+        # Update basic fields if provided
+        for field in ['name', 'alias_name', 'location', 'place_id', 'location_id']:
+            value = validated_data.get(field)
+        if value:
+            setattr(vendor, field, value.strip())
+
+        # Update logo
+        logo_file = request.FILES.get('logo')
+        if logo_file:
+                # Delete existing file if it exists.
+            if vendor.logo and default_storage.exists(vendor.logo.name):
+                default_storage.delete(vendor.logo.name)
+
+            logo_path = default_storage.save('vendor_logos/' + logo_file.name, ContentFile(logo_file.read()))
+            vendor.logo = logo_path
+
+        # Update menus
+        menu_files = request.FILES.getlist('menus')
+        if menu_files:
+            if vendor.menus:
+                try:
+                    old_menu_paths = json.loads(vendor.menus)
+                    for old_path in old_menu_paths:
+                        if old_path and default_storage.exists(old_path):
+                            default_storage.delete(old_path)
+                except json.JSONDecodeError:
+                    pass  # In case menus field isn't valid JSON.
+                
+            menu_paths = []
+            for file in menu_files:
+                path = default_storage.save('menus/' + file.name, ContentFile(file.read()))
+                menu_paths.append(path)
+            vendor.menus = json.dumps(menu_paths)
+
+        vendor.save()
+
+        # Update device mappings
+        device_serials = request.data.getlist('device_mapping[]')
+        if device_serials:
+            # Unmap all devices previously linked to this vendor
+            vendor.devices.update(vendor=None)
+            for serial in device_serials:
+                try:
+                    device = Device.objects.get(serial_no=serial)
+                    device.vendor = vendor
+                    device.save()
+                except Device.DoesNotExist:
+                    pass
+
+        #Update TV (AndroidDevice) mappings
+        mac_addresses = request.data.getlist('tv_mapping[]')
+        if mac_addresses:
+            vendor.android_devices.update(vendor=None)
+            for mac in mac_addresses:
+                try:
+                    android_device = AndroidDevice.objects.get(mac_address=mac)
+                    android_device.vendor = vendor
+                    android_device.save()
+                except AndroidDevice.DoesNotExist:
+                    pass
+
+        return Response({
+            'message': 'Vendor updated successfully.',
+            'vendor_id': vendor.vendor_id,
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 

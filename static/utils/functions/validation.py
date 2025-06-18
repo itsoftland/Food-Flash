@@ -1,4 +1,4 @@
-# utils/validation.py
+# utils/functions/validation.py
 
 from functools import wraps
 from rest_framework.response import Response
@@ -31,3 +31,13 @@ def validate_fields(required_fields):
         return _wrapped_view
     return decorator
 
+def check_unique_field(model, field_name, value, exclude_id=None):
+    """
+    Checks whether a field value is unique in the given model,
+    optionally excluding a specific object by ID.
+    """
+    filter_kwargs = {f"{field_name}__iexact": value}
+    queryset = model.objects.filter(**filter_kwargs)
+    if exclude_id:
+        queryset = queryset.exclude(id=exclude_id)
+    return queryset.exists()

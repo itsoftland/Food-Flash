@@ -264,28 +264,6 @@ def get_recent_ready_orders(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-# def login_view(request):
-#     if request.method == 'POST':
-#         username = request.POST.get('username')
-#         password = request.POST.get('password')
-
-#         user = authenticate(request, username=username, password=password)
-#         if user is not None:
-#             login(request, user)
-#             # Check user type
-#             if user.is_superuser:
-#                 return redirect('/companyadmin/dashboard/')
-#             elif AdminOutlet.objects.filter(user=user).exists():
-#                 return redirect('/company/dashboard/')
-#             elif Vendor.objects.filter(user=user).exists():
-#                 return redirect('/outlet_dashboard/')
-#             else:
-#                 return render(request, 'orders/login.html', {'error': 'User type not recognized'})
-#         else:
-#             return render(request, 'orders/login.html', {'error': 'Invalid username or password'})
-
-#     return render(request, 'orders/login.html')
-
 def login_view(request):
    return render(request, 'orders/login.html')
 
@@ -310,6 +288,15 @@ def login_api_view(request):
 
         if user.is_superuser:
             role = 'Company Admin'
+            return Response({
+            'message': 'Login successful',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': {
+                'username': user.username,
+                'role': role,
+            }
+        }, status=status.HTTP_200_OK)
         elif AdminOutlet.objects.filter(user=user).exists():
             role = 'Company'
             customer_id = user.admin_outlet.customer_id

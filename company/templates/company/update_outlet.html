@@ -5,6 +5,8 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <link rel="stylesheet" href="{% static 'companyadmin/css/company_registration.css' %}">
+<link rel="stylesheet" href="{% static 'utils/css/choices.css' %}">
+<link rel="stylesheet" href="{% static 'company/css/update_outlets.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -17,42 +19,28 @@
     <div class="row">
       <div class="form-group col-md-6 col-12">
         <label for="name">Outlet Name</label>
-        <input type="text" id="name" name="name" value="{{ vendor.name }}" class="form-control form-control-sm" required />
+        <input type="text" id="name" name="name" value="" class="form-control form-control-sm" required />
       </div>
 
       <div class="form-group col-md-6 col-12">
         <label for="alias_name">Outlet Alias Name</label>
-        <input type="text" id="alias_name" name="alias_name" value="{{ vendor.alias_name }}" class="form-control form-control-sm" required />
+        <input type="text" id="alias_name" name="alias_name" value="" class="form-control form-control-sm" required />
       </div>
     </div>
 
     <div class="row">
       <div class="form-group col-md-6 col-12">
         <label for="tv-select">Android TVs</label>
-        <select id="tv-select" name="tv_mapping[]" multiple>
-          {% for tv in android_devices %}
-            <option value="{{ tv.mac_address }}"
-              {% if tv.assigned_vendor and tv.assigned_vendor.id == vendor.id %} selected
-              {% elif tv.assigned_vendor %} disabled
-              {% endif %}>
-              {{ tv.mac_address }}
-            </option>
-          {% endfor %}
-        </select>
+        <div class="choices-scroll-wrapper">
+          <select id="tv-select" name="tv_mapping[]" multiple></select>
+        </div>
       </div>
 
       <div class="form-group col-md-6 col-12">
         <label for="device-select">Keypad Devices</label>
-        <select id="device-select" name="device_mapping[]" multiple>
-          {% for device in keypad_devices %}
-            <option value="{{ device.serial_no }}"
-              {% if device.vendor and device.vendor.id == vendor.id %} selected
-              {% elif device.vendor %} disabled
-              {% endif %}>
-              {{ device.serial_no }}
-            </option>
-          {% endfor %}
-        </select>
+        <div class="choices-scroll-wrapper">
+          <select id="device-select" name="device_mapping[]" multiple></select>
+        </div>
       </div>
     </div>
 
@@ -61,18 +49,16 @@
         <label for="logo">Logo</label>
         <small class="form-text text-muted mb-2">Leave blank to keep current</small>
         <input type="file" id="logo" name="logo" accept=".png,.svg" class="form-control-file" />
-        {% if vendor %}
-          <p class="mt-1"><img src="{{ vendor.logo_url }}" alt="Current Logo" width="100"></p>
-        {% endif %}
+          <p class="mt-1"><img src="" alt="Current Logo" width="100"></p>
       </div>
 
       <div class="form-group col-md-6 col-12">
         <label for="menu_files">Menu Files</label>
         <small class="form-text text-muted mb-2">Upload multiple files | Leave blank to keep existing</small>
         <input type="file" id="menu_files" name="menu_files" multiple accept=".pdf,.jpg,.jpeg,.png,.svg" class="form-control-file" />
-        {% for menu in vendor.get_menus_list %}
-          <a href="{{ MEDIA_URL }}{{ menu }}" target="_blank">{{ menu }}</a><br>
-        {% endfor %}
+        
+        <!-- container for displaying existing menu file links -->
+        <div id="menu-files-container" class="mt-2"></div>
       </div>
     </div>
 
@@ -85,9 +71,6 @@
       <div class="form-group col-md-6 col-12">
         <label for="location">Location</label>
         <select name="location" id="location" class="form-control form-control-sm" required>
-          {% for loc in locations %}
-            <option value="{{ loc.value }}" {% if vendor.location == loc.value %}selected{% endif %}>{{ loc.key }}</option>
-          {% endfor %}
         </select>
       </div>
     </div>
@@ -98,14 +81,10 @@
   </form>
 </div>
 {% include "companyadmin/partials/loader.html" %}
+{% include "company/partials/modals.html" %}
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    new Choices('#tv-select', { removeItemButton: true });
-    new Choices('#device-select', { removeItemButton: true });
-  });
-</script>
+<script type="module" src="{% static 'company/js/updateOutletData.js' %}"></script>
 {% endblock %}

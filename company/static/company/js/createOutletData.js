@@ -1,8 +1,6 @@
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-//   const customerId = localStorage.getItem('customer_id');
-//   if (!customerId) return console.error("No customer_id found in localStorage");
 
   const locationSelect = document.getElementById('location');
   const tvSelect = document.getElementById('tv-select');
