@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/get_vendors/', views.get_vendors, name='get_vendors'),
     path('api/banner_upload/', views.upload_banner, name='upload_banner'),
     path('api/banner_list/', views.list_banners, name='list_banners'),
+    path('api/banner_delete/', views.delete_banner, name='delete_banner'),
     path('api/get_vendor_details/', views.get_vendor_details, name='get_vendor_details'),
     path('api/get_outlet_creation_data/', views.get_outlet_creation_data, name='get_outlet_creation_data'),
 ]

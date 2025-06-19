@@ -1,7 +1,9 @@
 {% extends 'company/layouts/base.html' %}
 {% load static %}
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'companyadmin/css/company_registration.css' %}">
 <link rel="stylesheet" href="{% static 'company/css/banners.css' %}">
+<link rel="stylesheet" href="{% static 'company/css/confirm_dialogue.css' %}">
 {% endblock%}
 {% block title %}Banners{% endblock %}
 
@@ -27,6 +29,16 @@
       <!-- Vendors List -->
       <div class="card-body">
         <p class="mb-2">You can view and create Banners from here.</p>
+        <!-- Upload Banner -->
+        <div class="mb-4">
+        <label class="form-label text-golden font-weight-bold">Upload a New Banner</label>
+        <form id="banner-upload-form" enctype="multipart/form-data">
+            <div class="d-flex align-items-center gap-3">
+            <input type="file" name="banner_images[]" id="banner_images" accept="image/*" class="form-control w-auto" multiple required>
+            <button type="submit" class="btn btn-golden shadow-sm">Upload</button>
+            </div>
+        </form>
+        </div>
         <!-- Banner Tiles -->
         <div class="row" id="banner-tiles-container">
         <!-- Tiles will be populated by JS -->

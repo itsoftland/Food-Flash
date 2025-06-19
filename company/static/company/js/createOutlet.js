@@ -1,5 +1,6 @@
 import createLoaderService from './services/loaderService.js';
 import getFriendlyFieldLabels from '/static/utils/js/formFieldLabelService.js';
+import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('create-outlet-form');
@@ -60,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   
       try {
-        const response = await fetch('/company/api/create_vendor/', {
+        const response = await fetchWithAutoRefresh('/company/api/create_vendor/', {
           method: 'POST',
           headers: {
             'X-CSRFToken': AppUtils.getCSRFToken()  // ✅ CSRF token only,
@@ -71,19 +72,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = await response.json();
   
         if (result.success) {
-          console.log("[Form] API success. Updating loader status and setting redirection callback.");
           loader.updateLoaderStatus("Registration complete 🎉", true, () => {
-            console.log("[Loader] OK button clicked. Performing redirect...");
             form.reset();  // ✅ Reset only after OK is clicked
             window.location.href = "/login/";
           });
         } else {
           const userFriendlyMessage = getFriendlyFieldLabels(result, fieldLabelMap);
-          console.warn("[Form] API returned error:", userFriendlyMessage);
           loader.updateLoaderStatus(userFriendlyMessage, true);
         }
       } catch (err) {
-        console.error('Fetch error:', err);
         loader.updateLoaderStatus(err, true);
       }
     });

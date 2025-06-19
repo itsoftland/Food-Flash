@@ -348,15 +348,20 @@ def update_vendor(request):
 @parser_classes([MultiPartParser])
 def upload_banner(request):
     try:
-        image = request.FILES.get('banner_image')
-        if not image:
+        images = request.FILES.getlist('banner_images[]')
+        if not images:
             return Response({'error': 'No image file provided.'}, status=400)
         admin_outlet = request.user.admin_outlet
-        ad = AdvertisementImage.objects.create(admin_outlet=admin_outlet, image=image)
+        banner_objs = []
+        for img in images:
+            banner = AdvertisementImage(admin_outlet=admin_outlet, image=img)
+            banner_objs.append(banner)
+        AdvertisementImage.objects.bulk_create(banner_objs)
+        # ad = AdvertisementImage.objects.create(admin_outlet=admin_outlet, image=images)
         return Response({
-                'message': 'Banner uploaded successfully.',
-                'banner_id': ad.id,
-                'image_url': ad.image.url
+                'message': f'{len(banner_objs)} banner(s) uploaded successfully.',
+                # 'banner_id': ad.id,
+                # 'image_url': ad.image.url
             }, status=status.HTTP_200_OK)
     except Exception as e:
         logger.exception("Error during Banner upload")
@@ -369,8 +374,8 @@ def upload_banner(request):
 def list_banners(request):
     try:
         admin_outlet = request.user.admin_outlet
-        ads = admin_outlet.ad_images.order_by('-uploaded_at')
-        serializer = AdvertisementImageSerializer(ads, many=True, context={'request': request})
+        banners = admin_outlet.ad_images.order_by('-uploaded_at')
+        serializer = AdvertisementImageSerializer(banners, many=True, context={'request': request})
 
         return Response({
             'message': 'Banners retrieved successfully.',
@@ -383,3 +388,30 @@ def list_banners(request):
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_banner(request):
+    try:
+        banner_id = request.GET.get('banner_id')
+        if not banner_id or not banner_id.isdigit():
+            return Response({
+                'error': 'A valid banner_id is required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        admin_outlet = request.user.admin_outlet
+        banner = admin_outlet.ad_images.filter(id=banner_id).first()
+        # Delete the image file from storage
+        banner.image.delete(save=False)
+
+        # Delete the DB record
+        banner.delete()
+
+        return Response({
+            'message': 'Banner deleted successfully.'
+        }, status=status.HTTP_204_NO_CONTENT)
+
+    except Exception as e:
+        logger.exception("Error during banner deletion.")
+        return Response({
+            'error': 'An unexpected error occurred while deleting the banner.'
+        }, status=status.HTTP_400_BAD_REQUEST)
