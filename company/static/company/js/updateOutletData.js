@@ -1,5 +1,7 @@
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
 import { MenuFileManagerService } from './services/menuService.js';
+import { OutletUpdateService } from './services/updateOutletService.js';
+import createLoaderService from './services/loaderService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -11,6 +13,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const name = document.getElementById('name');
   const alias = document.getElementById('alias_name');
   const placeId = document.getElementById('place_id');
+  const outletForm = document.getElementById('outlet_update_form');
+  const logoInput = document.getElementById('logo');
+  const menuFilesInput = document.getElementById('menu_files');
+
+  const loader = createLoaderService(outletForm);
 
   let vendorData = {};
   let unmappedVendorData = {};
@@ -105,5 +112,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (vendorData.menu_files && Array.isArray(vendorData.menu_files)) {
     MenuFileManagerService.init(vendorData.menu_files)
   }
+  // 🔁 Handle form submission
+  outletForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const locationValue = locationSelect.selectedOptions[0].text;
+    const nameVal = name.value.trim();
+    const aliasVal = alias.value.trim();
+    const location_id = locationSelect.value;
+    const location_key = locationValue;
+    const placeIdVal = placeId.value.trim();
+    const logoFile = logoInput?.files?.[0] || null;
+    const menuFiles = Array.from(menuFilesInput?.files || []);
+    const selectedTVs = Array.from(tvSelect.selectedOptions).map(opt => opt.value);
+    const selectedDevices = Array.from(deviceSelect.selectedOptions).map(opt => opt.value);
+    
+    console.log(menuFiles);
+    
+    const formData = OutletUpdateService.buildFormData({
+      vendor_id: vendorId,
+      name: nameVal,
+      alias_name: aliasVal,
+      location_id: location_id,
+      location: location_key,
+      place_id: placeIdVal,
+      logoFile:logoFile,
+      menuFiles:menuFiles,
+      deviceMapping: selectedDevices,
+      tvMapping: selectedTVs,
+    });
+
+    const result = await OutletUpdateService.updateOutlet(formData);
+
+    if (result.success) {
+      loader.updateLoaderStatus("Outlet Updated 🎉", true, () => {
+        outletForm.reset(); 
+        window.location.href = "/company/outlets";
+      });
+    } else {
+      const userFriendlyMessage = getFriendlyFieldLabels(result, fieldLabelMap);
+      console.warn("[Form] API returned error:", userFriendlyMessage);
+      loader.updateLoaderStatus(userFriendlyMessage, true);
+      }
+  });
 });
 

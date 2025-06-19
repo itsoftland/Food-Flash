@@ -2,7 +2,6 @@ import { get as idbGet, set as idbSet } from "https://cdnjs.cloudflare.com/ajax/
 if (window.navigator.standalone) {
     console.log('Running in standalone mode');
 }
-  
 window.AppUtils = {
     // ─────────────────────────────────────
     // CSRF Token
@@ -45,38 +44,37 @@ window.AppUtils = {
         console.warn("[LocationStore] No activeLocation found in any storage.");
         return null;
       },
-    
-      async set(locationId) {
-        if (!locationId) return;
-        console.log("[LocationStore] Setting location:", locationId);
-    
-        // 1️⃣ Set in localStorage
-        localStorage.setItem(this.key, locationId);
-    
-        // 2️⃣ Set in IndexedDB
-        try {
-          await idbSet(this.key, locationId);
-        } catch (e) {
-          console.warn("[LocationStore] IndexedDB write failed:", e);
-        }
-    
-        // 3️⃣ Set in cookie
-        this.setCookie(this.key, locationId);
-      },
-    
-      setCookie(name, value, days = 365) {
-        const expires = new Date(Date.now() + days * 864e5).toUTCString();
-        document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}; SameSite=Lax`;
-      },
-    
-      getCookie(name) {
-        const cookieStr = `; ${document.cookie}`;
-        const parts = cookieStr.split(`; ${name}=`);
-        if (parts.length >= 2) {
-          return decodeURIComponent(parts.pop().split(';')[0]);
-        }
-        return null;
-      },
+    async set(locationId) {
+    if (!locationId) return;
+    console.log("[LocationStore] Setting location:", locationId);
+
+    // 1️⃣ Set in localStorage
+    localStorage.setItem(this.key, locationId);
+
+    // 2️⃣ Set in IndexedDB
+    try {
+        await idbSet(this.key, locationId);
+    } catch (e) {
+        console.warn("[LocationStore] IndexedDB write failed:", e);
+    }
+
+    // 3️⃣ Set in cookie
+    this.setCookie(this.key, locationId);
+    },
+
+    setCookie(name, value, days = 365) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}; SameSite=Lax`;
+    },
+
+    getCookie(name) {
+    const cookieStr = `; ${document.cookie}`;
+    const parts = cookieStr.split(`; ${name}=`);
+    if (parts.length >= 2) {
+        return decodeURIComponent(parts.pop().split(';')[0]);
+    }
+    return null;
+    },
 
     // ─────────────────────────────────────
     // Vendor Helpers

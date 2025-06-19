@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from vendors.models import Vendor, AndroidDevice, Device
+from vendors.models import Vendor, AndroidDevice, Device ,AdvertisementImage
 from django.db.models import Q
 import json
 
@@ -142,4 +142,15 @@ class VendorUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError("Vendor name already exists.")
         return value
 
+class AdvertisementImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
 
+    class Meta:
+        model = AdvertisementImage
+        fields = ['id', 'image_url']
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.image.url)
+        return obj.image.url

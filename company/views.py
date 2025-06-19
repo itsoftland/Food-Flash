@@ -12,20 +12,29 @@ from django.core.files.storage import default_storage
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from vendors.models import Vendor, Device, AdminOutlet, AndroidDevice
+from vendors.models import (Vendor, Device, AdminOutlet,
+                            AndroidDevice,AdvertisementImage)
 
 from static.utils.functions.validation import validate_fields
 from .serializers import (VendorSerializer,
                           VendorDetailSerializer,
                           UnmappedVendorDetailSerializer,
-                          VendorUpdateSerializer
+                          VendorUpdateSerializer,
+                          AdvertisementImageSerializer
                           )
+
+logger = logging.getLogger(__name__)
+
 @login_required
 def dashboard(request):
     return render(request, 'company/dashboard.html')
+
+@login_required
+def banners(request):
+    return render(request, 'company/banners.html')
 
 @login_required
 def outlets(request):
@@ -150,7 +159,9 @@ def generate_unique_vendor_id():
 @transaction.atomic
 def create_vendor(request):
     try:
-        print(request.data)
+        logger.info("Vendor creation initiated by user: %s", request.user)
+        logger.debug("Incoming vendor creation data: %s", dict(request.data))
+        
         customer_id = request.data.get('customer_id')
         admin_outlet = get_object_or_404(AdminOutlet, customer_id=customer_id)
 
@@ -159,7 +170,9 @@ def create_vendor(request):
         location = request.data.get('location')
         place_id = request.data.get('place_id', '')
         location_id = request.data.get('location_id')
+        
         if Vendor.objects.filter(name__iexact=name).exists():
+            logger.warning("Vendor with name '%s' already exists", name)
             return Response({
                 'success': False,
                 'error': 'Vendor with this name already exists.'
@@ -167,12 +180,14 @@ def create_vendor(request):
 
         # Generate unique vendor_id
         vendor_id = generate_unique_vendor_id()
+        logger.debug("Generated unique vendor_id: %s", vendor_id)
 
         # Handle logo file upload
         logo_file = request.FILES.get('logo')
         logo_path = None
         if logo_file:
             logo_path = default_storage.save('vendor_logos/' + logo_file.name, ContentFile(logo_file.read()))
+            logger.debug("Uploaded logo file to: %s", logo_path)
 
         # Handle multiple menu files
         menu_files = request.FILES.getlist('menu_files')
@@ -180,7 +195,8 @@ def create_vendor(request):
         for file in menu_files:
             path = default_storage.save('menus/' + file.name, ContentFile(file.read()))
             menu_paths.append(path)
-
+        logger.debug("Uploaded menu files: %s", menu_paths)
+        
         # Create Vendor instance
         vendor = Vendor.objects.create(
             admin_outlet=admin_outlet,
@@ -193,6 +209,8 @@ def create_vendor(request):
             logo=logo_path,
             menus=json.dumps(menu_paths),
         )
+        logger.info("Vendor created: %s", vendor.vendor_id)
+        
         # Handle multiple Device mappings (serial numbers)
         device_serials = request.data.getlist('device_mapping[]')
         for serial in device_serials:
@@ -200,8 +218,9 @@ def create_vendor(request):
                 device = Device.objects.get(serial_no=serial)
                 device.vendor = vendor
                 device.save()
+                logger.debug("Mapped device serial: %s", serial)
             except Device.DoesNotExist:
-                pass  # Optional: log or collect errors
+                logger.warning("Device not found for serial: %s", serial)
 
         # Handle multiple AndroidDevice mappings (MAC addresses)
         mac_addresses = request.data.getlist('tv_mapping[]')
@@ -210,8 +229,9 @@ def create_vendor(request):
                 android_device = AndroidDevice.objects.get(mac_address=mac)
                 android_device.vendor = vendor
                 android_device.save()
+                logger.debug("Mapped Android device MAC: %s", mac)
             except AndroidDevice.DoesNotExist:
-                pass  # Optional: log or collect errors
+                logger.warning("AndroidDevice not found for MAC: %s", mac)
 
         return Response({
             'success': True,
@@ -220,6 +240,7 @@ def create_vendor(request):
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
+        logger.exception("Error during vendor creation")
         return Response({
             'success': False,
             'error': str(e)
@@ -231,8 +252,11 @@ def create_vendor(request):
 @transaction.atomic
 def update_vendor(request):
     try:
+        logger.info("Vendor update requested by user: %s", request.user)
+        logger.debug("Incoming update data: %s", dict(request.data))
         serializer = VendorUpdateSerializer(data=request.data)
         if not serializer.is_valid():
+            logger.warning("Validation failed: %s", serializer.errors)
             return Response({'errors': serializer.errors}, status=400)
 
         validated_data = serializer.validated_data
@@ -240,8 +264,9 @@ def update_vendor(request):
         # Update basic fields if provided
         for field in ['name', 'alias_name', 'location', 'place_id', 'location_id']:
             value = validated_data.get(field)
-        if value:
-            setattr(vendor, field, value.strip())
+            if value:
+                setattr(vendor, field, value.strip())
+                logger.debug("Updated %s: %s", field, value.strip())
 
         # Update logo
         logo_file = request.FILES.get('logo')
@@ -249,9 +274,11 @@ def update_vendor(request):
                 # Delete existing file if it exists.
             if vendor.logo and default_storage.exists(vendor.logo.name):
                 default_storage.delete(vendor.logo.name)
+                logger.debug("Deleted old logo: %s", vendor.logo.name)
 
             logo_path = default_storage.save('vendor_logos/' + logo_file.name, ContentFile(logo_file.read()))
             vendor.logo = logo_path
+            logger.debug("Uploaded new logo: %s", logo_path)
 
         # Update menus
         menu_files = request.FILES.getlist('menus')
@@ -262,41 +289,48 @@ def update_vendor(request):
                     for old_path in old_menu_paths:
                         if old_path and default_storage.exists(old_path):
                             default_storage.delete(old_path)
+                            logger.debug("Deleted old menu file: %s", old_path)
                 except json.JSONDecodeError:
-                    pass  # In case menus field isn't valid JSON.
+                    logger.warning("Failed to parse old menu JSON.")
                 
             menu_paths = []
             for file in menu_files:
                 path = default_storage.save('menus/' + file.name, ContentFile(file.read()))
                 menu_paths.append(path)
             vendor.menus = json.dumps(menu_paths)
+            logger.debug("Uploaded new menus: %s", menu_paths)
 
         vendor.save()
+        logger.info("Vendor updated: %s", vendor.vendor_id)
 
         # Update device mappings
         device_serials = request.data.getlist('device_mapping[]')
         if device_serials:
             # Unmap all devices previously linked to this vendor
             vendor.devices.update(vendor=None)
+            logger.debug("Unmapped all previous devices")
             for serial in device_serials:
                 try:
                     device = Device.objects.get(serial_no=serial)
                     device.vendor = vendor
                     device.save()
+                    logger.debug("Mapped device serial: %s", serial)
                 except Device.DoesNotExist:
-                    pass
+                    logger.warning("Device not found: %s", serial)
 
         #Update TV (AndroidDevice) mappings
         mac_addresses = request.data.getlist('tv_mapping[]')
         if mac_addresses:
             vendor.android_devices.update(vendor=None)
+            logger.debug("Unmapped all previous Android devices")
             for mac in mac_addresses:
                 try:
                     android_device = AndroidDevice.objects.get(mac_address=mac)
                     android_device.vendor = vendor
                     android_device.save()
+                    logger.debug("Mapped Android MAC: %s", mac)
                 except AndroidDevice.DoesNotExist:
-                    pass
+                    logger.warning("AndroidDevice not found: %s", mac)
 
         return Response({
             'message': 'Vendor updated successfully.',
@@ -304,8 +338,48 @@ def update_vendor(request):
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
+        logger.exception("Error during vendor update")
         return Response({
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser])
+def upload_banner(request):
+    try:
+        image = request.FILES.get('banner_image')
+        if not image:
+            return Response({'error': 'No image file provided.'}, status=400)
+        admin_outlet = request.user.admin_outlet
+        ad = AdvertisementImage.objects.create(admin_outlet=admin_outlet, image=image)
+        return Response({
+                'message': 'Banner uploaded successfully.',
+                'banner_id': ad.id,
+                'image_url': ad.image.url
+            }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.exception("Error during Banner upload")
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_banners(request):
+    try:
+        admin_outlet = request.user.admin_outlet
+        ads = admin_outlet.ad_images.order_by('-uploaded_at')
+        serializer = AdvertisementImageSerializer(ads, many=True, context={'request': request})
+
+        return Response({
+            'message': 'Banners retrieved successfully.',
+            'banners': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.exception("Error during Banner Listing.")
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
 

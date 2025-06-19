@@ -8,8 +8,9 @@
   overflow-y: auto; 
   overflow-x: hidden;
   background-color: #f4f4f8;
-  border: 1px solid #fdbf50;
-  border-radius: 12px;
+  border: 1px solid #dee2e6
+;
+  border-radius: 6px;
   padding: 10px 12px;
   font-size: 0.95rem;
   color: #333;
@@ -19,7 +20,7 @@
 .choices-item-foodflash {
   background-color: #fff5e0;
   color: #fb8b24;
-  border-radius: 12px;
+  border-radius: 2px;
   padding: 6px 6px 6px 6px;
   margin: 6px 6px 0 0;
   font-weight: 500;

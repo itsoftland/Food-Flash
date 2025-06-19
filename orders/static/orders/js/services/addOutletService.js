@@ -4,6 +4,7 @@ export const AddOutletService = (() => {
 
     const fetchOutlets = async () => {
         try {
+            console.log("LocationId2",locationId)
             const response = await fetch(`/api/outlets/?location_id=${locationId}`);
             return response.ok ? await response.json() : [];
         } catch (err) {
@@ -51,7 +52,8 @@ export const AddOutletService = (() => {
     };
 
     const openModal = async () => {
-        locationId = AppUtils.get(); // from utils.js
+        locationId = await AppUtils.get(); // from utils.js
+        console.log("LocationId",locationId)
     
         if (!locationId) {
             AppUtils.showToast("Location ID is missing. Please scan or provide location");

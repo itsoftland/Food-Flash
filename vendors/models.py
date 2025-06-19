@@ -70,7 +70,7 @@ class Vendor(models.Model):
 class Device(models.Model):
     serial_no = models.CharField(max_length=255, unique=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="devices",null=True,blank=True)
-    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,null=True,blank=True)
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,null=True,blank=True,related_name='device')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -152,3 +152,8 @@ class SiteConfig(models.Model):
 
     def __str__(self):
         return "Site Configuration"
+
+class AdvertisementImage(models.Model):
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE, related_name='ad_images')
+    image = models.ImageField(upload_to='ads/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)

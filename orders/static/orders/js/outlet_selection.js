@@ -50,12 +50,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     const urlParams = new URLSearchParams(window.location.search);
     locationId = urlParams.get("location_id");
 
-    // 1️⃣ Save to localStorage and cookie if present in URL
+    // Save to localStorage and cookie if present in URL
     if (locationId) {
         AppUtils.set(locationId); // Stores in both localStorage and cookie
     } else {
-        // 2️⃣ Try to get from fallback (this path usually won't run due to early redirect)
-        locationId = await AppUtils.get();
+        // Try to get from fallback (this path usually won't run due to early redirect)
+        locationId = AppUtils.get();
 
         if (!locationId) {
             AppUtils.showToast("Location ID is missing. Please scan or provide location.");

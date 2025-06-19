@@ -36,6 +36,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       new Choices(tvSelect, {
         removeItemButton: true,
+        classNames: {
+          containerInner: 'choices-inner-foodflash',
+          item: 'choices-item-foodflash',
+        },
         placeholderValue: 'Select TVs',
         searchEnabled: true
       });
@@ -52,6 +56,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       new Choices(deviceSelect, {
         removeItemButton: true,
+        classNames: {
+          containerInner: 'choices-inner-foodflash',
+          item: 'choices-item-foodflash',
+        },
         placeholderValue: 'Select Devices',
         searchEnabled: true
       });

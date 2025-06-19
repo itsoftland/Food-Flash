@@ -1,0 +1,56 @@
+.btn-golden {
+  background-color: #f0a934;
+  color: white;
+  border-radius: 12px;
+  padding: 8px 20px;
+  transition: 0.3s ease;
+}
+.btn-golden:hover {
+  background-color: #fb8b24;
+  color: white;
+}
+
+#banner-tiles-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.banner-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.banner-tile img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.banner-tile:hover img {
+  transform: scale(1.05);
+}
+
+.banner-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.banner-actions button {
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.banner-actions button:hover {
+  background: rgba(0, 0, 0, 0.8);
+}

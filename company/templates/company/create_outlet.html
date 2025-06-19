@@ -4,6 +4,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <link rel="stylesheet" href="{% static 'companyadmin/css/company_registration.css' %}">
+<link rel="stylesheet" href="{% static 'utils/css/choices.css' %}">
 {% endblock %}
 {% block content %}
 <div class="container-fluid">
@@ -29,17 +30,21 @@
       <!-- Android TV Mapping -->
       <div class="form-group col-md-6 col-12">
         <label for="tv-select">Android TV's</label>
-        <select id="tv-select" name="tv_mapping[]" multiple>
-          <!-- Dynamic Data Populated -->
-        </select>
+         <div class="choices-scroll-wrapper">
+          <select id="tv-select" name="tv_mapping[]" multiple>
+            <!-- Dynamic Data Populated -->
+          </select>
+        </div>
       </div>
     
       <!-- Device Mapping -->
       <div class="form-group col-md-6 col-12">
         <label for="device-select">Keypad Devices</label>
-        <select id="device-select" name="device_mapping[]" multiple>
-          <!-- Dynamic Data Populated -->
-        </select>
+        <div class="choices-scroll-wrapper">
+          <select id="device-select" name="device_mapping[]" multiple>
+            <!-- Dynamic Data Populated -->
+          </select>
+        </div>
       </div>
     </div>
     <div class="row">

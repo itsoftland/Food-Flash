@@ -6,11 +6,20 @@ export async function fetchWithAutoRefresh(url, options = {}) {
 
   options.headers = options.headers || {};
   options.headers['Authorization'] = 'Bearer ' + accessToken;
-  options.headers['Content-Type'] = 'application/json';
 
+  // Only set Content-Type if it's not FormData
+  if (!(options.body instanceof FormData)) {
+    options.headers['Content-Type'] = 'application/json';
+  }
+  // Add CSRF token if available
+  const csrfToken = AppUtils?.getCSRFToken?.();
+  if (csrfToken) {
+    options.headers['X-CSRFToken'] = csrfToken;
+  }
+  
   let response = await fetch(url, options);
 
-  if (response.status === 401) {
+  if (response.status === 401 && refreshToken) {
     // Attempt to refresh the token
     const refreshResponse = await fetch('/api/token/refresh/', {
       method: 'POST',
@@ -34,3 +43,4 @@ export async function fetchWithAutoRefresh(url, options = {}) {
 
   return response;
 }
+
