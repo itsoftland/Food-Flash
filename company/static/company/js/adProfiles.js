@@ -205,6 +205,11 @@ function setupFormSubmitHandler() {
 document.getElementById('open-image-library-btn')?.addEventListener('click', () => {
   ImageLibraryService.open();
 });
+function showSuccessModal(message) {
+  document.getElementById("successModalBody").innerText = message;
+  const modal = new bootstrap.Modal(document.getElementById("successModal"));
+  modal.show();
+}
 
 async function initAssignProfileForm() {
   try {
@@ -270,9 +275,12 @@ async function initAssignProfileForm() {
         });
 
         const result = await res.json();
+        console.log(result)
 
         if (res.ok) {
-          
+          const msg = `${result.summary}\n${result.duplicates_skipped} duplicate mappings were skipped.`;
+          showSuccessModal(msg); 
+
           profileChoices.clearStore();
           outletChoices.clearStore();
         } else {

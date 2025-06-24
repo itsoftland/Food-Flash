@@ -502,10 +502,17 @@ def assign_ad_profile(request):
         if serializer.is_valid():
             result = serializer.save()  # calls create() internally
             return Response({
-                'message': 'Bulk assignment completed.',
-                'assigned': result['assigned'],
-                'skipped_duplicates': result['skipped']
+                'message': 'Advertisement profiles assigned successfully.',
+                'summary': f"{result['vendor_count']} outlets were mapped with {result['profile_count']} profiles each "
+                        f"(total {result['total_assigned']} assignments).",
+                'duplicates_skipped': result['skipped']
             }, status=status.HTTP_201_CREATED)
+
+            # return Response({
+            #     'message': 'Ad Profile assignment completed.',
+            #     'assigned': result['assigned'],
+            #     'skipped_duplicates': result['skipped']
+            # }, status=status.HTTP_201_CREATED)
         else:
             return Response({
                 'error': 'Validation failed.',

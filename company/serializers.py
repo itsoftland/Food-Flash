@@ -240,40 +240,64 @@ class AdvertisementProfileAssignmentSerializer(serializers.Serializer):
             raise serializers.ValidationError("profile_ids is required and cannot be empty.")
 
         return data
-
     def create(self, validated_data):
         vendor_ids = validated_data['vendor_ids']
         profile_ids = validated_data['profile_ids']
 
-        vendors = Vendor.objects.filter(id__in=vendor_ids)
+        vendors = Vendor.objects.filter(vendor_id__in=vendor_ids)
         profiles = AdvertisementProfile.objects.filter(id__in=profile_ids)
 
-        created = []
-        skipped = []
+        assigned_count = 0
+        skipped_count = 0
 
         for vendor in vendors:
             for profile in profiles:
                 if AdvertisementProfileAssignment.objects.filter(profile=profile, vendor=vendor).exists():
-                    skipped.append({
-                        'vendor_id': vendor.id,
-                        'vendor_name': vendor.name,
-                        'profile_id': profile.id,
-                        'profile_name': profile.name
-                    })
-                    continue
-
-                assignment = AdvertisementProfileAssignment.objects.create(profile=profile, vendor=vendor)
-                created.append({
-                    'vendor_id': vendor.id,
-                    'vendor_name': vendor.name,
-                    'profile_id': profile.id,
-                    'profile_name': profile.name,
-                    'assigned_at': assignment.assigned_at
-                })
+                    skipped_count += 1
+                else:
+                    AdvertisementProfileAssignment.objects.create(profile=profile, vendor=vendor)
+                    assigned_count += 1
 
         return {
-            'assigned': created,
-            'skipped': skipped
+            'vendor_count': vendors.count(),
+            'profile_count': profiles.count(),
+            'total_assigned': assigned_count,
+            'skipped': skipped_count
         }
+
+    # def create(self, validated_data):
+    #     vendor_ids = validated_data['vendor_ids']
+    #     profile_ids = validated_data['profile_ids']
+
+    #     vendors = Vendor.objects.filter(id__in=vendor_ids)
+    #     profiles = AdvertisementProfile.objects.filter(id__in=profile_ids)
+
+    #     created = []
+    #     skipped = []
+
+    #     for vendor in vendors:
+    #         for profile in profiles:
+    #             if AdvertisementProfileAssignment.objects.filter(profile=profile, vendor=vendor).exists():
+    #                 skipped.append({
+    #                     'vendor_id': vendor.id,
+    #                     'vendor_name': vendor.name,
+    #                     'profile_id': profile.id,
+    #                     'profile_name': profile.name
+    #                 })
+    #                 continue
+
+    #             assignment = AdvertisementProfileAssignment.objects.create(profile=profile, vendor=vendor)
+    #             created.append({
+    #                 'vendor_id': vendor.id,
+    #                 'vendor_name': vendor.name,
+    #                 'profile_id': profile.id,
+    #                 'profile_name': profile.name,
+    #                 'assigned_at': assignment.assigned_at
+    #             })
+
+    #     return {
+    #         'assigned': created,
+    #         'skipped': skipped
+    #     }
 
 
