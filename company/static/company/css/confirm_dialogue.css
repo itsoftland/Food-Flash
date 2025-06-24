@@ -38,8 +38,8 @@
 }
 
 .ff-btn.confirm {
-  background-color: #fdbf50;
-  color: white;
+  background-color: #ebebeb;
+  color: #333;
 }
 
 .ff-btn.confirm:hover {
@@ -52,7 +52,7 @@
 }
 
 .ff-btn.cancel:hover {
-  background-color: #dcdcdc;
+  background-color: #f0a934;
 }
 
 .hidden {

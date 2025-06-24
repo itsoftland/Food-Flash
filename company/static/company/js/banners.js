@@ -1,26 +1,28 @@
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
 import { ConfirmModalService } from './services/confirmModalService.js';
 
-document.addEventListener('DOMContentLoaded',  async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const outletInfoContainer = document.getElementById('outlet-info');
   const outletName = localStorage.getItem('username') || 'Admin';
 
-  // Inject Admin Outlet Card
   outletInfoContainer.innerHTML = `
     <h3 class="card-title mb-0">Welcome, ${outletName} </h3>
   `;
+
   const uploadForm = document.getElementById('banner-upload-form');
   const bannerContainer = document.getElementById('banner-tiles-container');
   const modalImage = document.getElementById('bannerModalImage');
+  const selectAllCheckbox = document.getElementById('selectAllBanners');
+  const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+  const selectedBannerIds = new Set();
 
-  // Load all banners on page load
+  let cachedBannerList = [];
+
   fetchBanners();
 
-  // Upload form submission
   uploadForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(uploadForm);
-    console.log(formData)
     const response = await fetchWithAutoRefresh('/company/api/banner_upload/', {
       method: 'POST',
       body: formData
@@ -33,40 +35,113 @@ document.addEventListener('DOMContentLoaded',  async () => {
     }
   });
 
-  // Fetch and render banners
   async function fetchBanners() {
-    // const response = await fetch('/company/api/banner_list/');
     const response = await fetchWithAutoRefresh('/company/api/banner_list/', {
       method: 'GET'
     });
     const banners = await response.json();
-    console.log(banners);
+    cachedBannerList = banners.banners;
 
     bannerContainer.innerHTML = '';
-    banners.banners.forEach(banner => {
-      const tile = document.createElement('div');
-      tile.className = 'banner-tile';
+    selectedBannerIds.clear();
+    selectAllCheckbox.checked = false;
+    toggleDeleteSelectedBtn();
 
-      tile.innerHTML = `
-        <img src="${banner.image_url}" alt="Banner">
-        <div class="banner-actions">
-          <button onclick="viewBanner('${banner.image_url}')" title="View">
-            <i class="fas fa-eye"></i>
-          </button>
-          <button onclick="deleteBanner(${banner.id})" title="Delete">
-            <i class="fas fa-trash-alt"></i>
-          </button>
-        </div>
+    cachedBannerList.forEach((banner) => {
+      const tile = document.createElement('div');
+      tile.className = 'banner-tile position-relative';
+      tile.setAttribute('data-id', banner.id);
+
+      // Image (clickable for selection)
+      const image = document.createElement('img');
+      image.src = banner.image_url;
+      image.alt = "Banner";
+      image.className = 'selectable-banner';
+      image.addEventListener('click', () => toggleSelection(tile, banner.id));
+
+      // Actions
+      const actions = document.createElement('div');
+      actions.className = 'banner-actions';
+      actions.innerHTML = `
+        <button onclick="viewBanner('${banner.image_url}')" title="View">
+          <i class="fas fa-eye"></i>
+        </button>
       `;
+
+      tile.appendChild(image);
+      tile.appendChild(actions);
+
       bannerContainer.appendChild(tile);
     });
   }
+
+  function toggleSelection(tile, id) {
+    const selected = tile.classList.toggle('selected');
+    if (selected) {
+      selectedBannerIds.add(id);
+    } else {
+      selectedBannerIds.delete(id);
+      selectAllCheckbox.checked = false;
+    }
+    toggleDeleteSelectedBtn();
+  }
+
+  selectAllCheckbox.addEventListener('change', () => {
+    const tiles = document.querySelectorAll('.banner-tile');
+    selectedBannerIds.clear();
+
+    tiles.forEach(tile => {
+      const id = parseInt(tile.getAttribute('data-id'));
+      const image = tile.querySelector('img');
+
+      if (selectAllCheckbox.checked) {
+        tile.classList.add('selected');
+        selectedBannerIds.add(id);
+      } else {
+        tile.classList.remove('selected');
+        selectedBannerIds.delete(id);
+      }
+    });
+
+    toggleDeleteSelectedBtn();
+  });
+
+  const selectionCount = document.getElementById('selectionCount');
+
+  const toggleDeleteSelectedBtn = () => {
+    if (selectedBannerIds.size > 0) {
+      deleteSelectedBtn.classList.remove('hidden');
+      selectionCount.textContent = `${selectedBannerIds.size}`;
+    } else {
+      deleteSelectedBtn.classList.add('hidden');
+      selectionCount.textContent = '';
+    }
+  };
+
+
+  deleteSelectedBtn.addEventListener('click', async () => {
+    const confirmed = await ConfirmModalService.show(`Delete ${selectedBannerIds.size} selected banner(s)?`);
+    if (!confirmed) return;
+
+    try {
+      await Promise.all(
+        Array.from(selectedBannerIds).map(id =>
+          fetchWithAutoRefresh(`/company/api/banner_delete/?banner_id=${id}`, {
+            method: 'DELETE'
+          })
+        )
+      );
+      selectedBannerIds.clear();
+      fetchBanners();
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+    }
+  });
 
   window.viewBanner = (url) => {
     modalImage.src = url;
     $('#bannerModal').modal('show');
   };
-
 
   window.deleteBanner = async (id) => {
     const confirmed = await ConfirmModalService.show("Do you want to discard this banner?");
@@ -84,21 +159,4 @@ document.addEventListener('DOMContentLoaded',  async () => {
       console.error("Banner delete error:", err);
     }
   };
-
-  // window.deleteBanner = async (id) => {
-  //   // const confirmed = await loader.awaitConfirmation("Do you want to discard this banner?", false); // ⬅️ no overlay
-  //   // if (!confirmed) return;
-
-  //   try {
-  //     const response = await fetchWithAutoRefresh(`/company/api/banner_delete/?banner_id=${id}`, {
-  //       method: 'DELETE'
-  //     });
-
-  //     if (response.ok) {
-  //       fetchBanners();
-  //     }
-  //   } catch (err) {
-  //     console.error("Banner delete error:", err);
-  //   }
-  // };
 });

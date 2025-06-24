@@ -23,7 +23,9 @@ from .serializers import (VendorSerializer,
                           VendorDetailSerializer,
                           UnmappedVendorDetailSerializer,
                           VendorUpdateSerializer,
-                          AdvertisementImageSerializer
+                          AdvertisementImageSerializer,
+                          AdvertisementProfileSerializer,
+                          AdvertisementProfileAssignmentSerializer,
                           )
 
 logger = logging.getLogger(__name__)
@@ -31,6 +33,10 @@ logger = logging.getLogger(__name__)
 @login_required
 def dashboard(request):
     return render(request, 'company/dashboard.html')
+
+@login_required
+def ad_profiles(request):
+    return render(request, 'company/ad_profiles.html')
 
 @login_required
 def banners(request):
@@ -415,3 +421,126 @@ def delete_banner(request):
         return Response({
             'error': 'An unexpected error occurred while deleting the banner.'
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_advertisement_profile(request):
+    try:
+        serializer = AdvertisementProfileSerializer(
+            data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            profile = serializer.save()
+            response_data = AdvertisementProfileSerializer(profile, context={'request': request}).data
+            return Response({
+                'message': 'Advertisement profile created successfully.',
+                'profile': response_data
+            }, status=status.HTTP_201_CREATED)
+
+        return Response({
+            'error': 'Invalid input.',
+            'details': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        logger.exception("Error during Advertisement Profile creation.")
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_advertisement_profiles(request):
+    try:
+        # If the user is an outlet admin, filter profiles by their outlet
+        admin_outlet = request.user.admin_outlet
+        profiles = admin_outlet.ad_profiles
+
+        serializer = AdvertisementProfileSerializer(profiles, context={'request': request}, many=True)
+        return Response({
+            'message': 'Advertisement profiles fetched successfully.',
+            'profiles': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_ad_profiles(request):
+    try:
+        ad_profile_id = request.GET.get('ad_profile_id')
+        if not ad_profile_id or not ad_profile_id.isdigit():
+            return Response({
+                'error': 'A valid ad_profile_id is required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        admin_outlet = request.user.admin_outlet
+        ad_profile = admin_outlet.ad_profiles.filter(id=ad_profile_id).first()
+
+        # Delete the DB record
+        ad_profile.delete()
+
+        return Response({
+            'message': 'Advertisement Profile deleted successfully.'
+        }, status=status.HTTP_204_NO_CONTENT)
+
+    except Exception as e:
+        logger.exception("Error during Advertisement Profile deletion.")
+        return Response({
+            'error': 'An unexpected error occurred while deleting the Advertisement Profile.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def assign_ad_profile(request):
+    try:
+        serializer = AdvertisementProfileAssignmentSerializer(data=request.data)
+        if serializer.is_valid():
+            result = serializer.save()  # calls create() internally
+            return Response({
+                'message': 'Bulk assignment completed.',
+                'assigned': result['assigned'],
+                'skipped_duplicates': result['skipped']
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response({
+                'error': 'Validation failed.',
+                'details': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        return Response({
+            'error': 'An unexpected error occurred.',
+            'details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def assign_ad_profile(request):
+#     try:
+#         serializer = AdvertisementProfileAssignmentSerializer(
+#             data=request.data, context={'request': request})
+        
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({
+#                 'message': 'Ad Profile assigned to vendor successfully.',
+#                 'assignment': serializer.data
+#             }, status=status.HTTP_201_CREATED)
+        
+#         return Response({
+#             'error': 'Validation failed.',
+#             'details': serializer.errors
+#         }, status=status.HTTP_400_BAD_REQUEST)
+
+#     except Exception as e:
+#         return Response({
+#             'error': 'An error occurred while assigning ad profile.',
+#             'details': str(e)
+#         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

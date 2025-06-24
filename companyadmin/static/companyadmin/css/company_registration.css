@@ -49,10 +49,6 @@
     margin-bottom: 0.1rem;
     font-weight: 500;
     color: #495057;
-}
-/*
-.btn-outline-primary {
-
 } 
 
 /* Responsive adjustments */
@@ -134,4 +130,3 @@
     background-color: #fdbf50;
     transform: translateY(1px);
   }
-  

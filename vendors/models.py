@@ -2,6 +2,7 @@ from django.db import models
 import json
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 
 class AdminOutlet(models.Model):  
     user = models.OneToOneField(
@@ -157,3 +158,50 @@ class AdvertisementImage(models.Model):
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE, related_name='ad_images')
     image = models.ImageField(upload_to='ads/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+class AdvertisementProfile(models.Model):
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE, related_name='ad_profiles')
+    name = models.CharField(max_length=100)
+    date_start = models.DateField(blank=True, null=True)
+    date_end = models.DateField(blank=True, null=True)
+    days_active = models.JSONField(blank=True, default=list,null=True) 
+    priority = models.PositiveSmallIntegerField(default=1)  # 1–10
+    images = models.ManyToManyField(AdvertisementImage, related_name='profiles', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    def is_active_today(self):
+        today = timezone.now().date()
+        weekday = today.strftime('%A')
+
+        # Only match if both dates are provided
+        is_date_match = (
+            self.date_start is not None and
+            self.date_end is not None and
+            self.date_start <= today <= self.date_end
+        )
+
+        is_day_match = (
+            self.days_active and (
+                'All' in self.days_active or
+                weekday in self.days_active
+            )
+        )
+
+        return is_date_match or is_day_match
+
+class AdvertisementProfileAssignment(models.Model):
+    profile = models.ForeignKey(
+        AdvertisementProfile, on_delete=models.CASCADE,
+        related_name='assigned_vendors'
+    )
+    vendor = models.ForeignKey(
+        Vendor, on_delete=models.CASCADE,
+        related_name='assigned_profiles'
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('profile', 'vendor')  

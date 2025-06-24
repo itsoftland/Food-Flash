@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from vendors.models import Vendor, AndroidDevice, Device ,AdvertisementImage
+from vendors.models import (Vendor,AndroidDevice,
+                            Device ,AdvertisementImage,
+                            AdvertisementProfile,
+                            AdvertisementProfileAssignment)
 from django.db.models import Q
 import json
 
@@ -154,3 +157,123 @@ class AdvertisementImageSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(obj.image.url)
         return obj.image.url
+
+class AdvertisementProfileSerializer(serializers.ModelSerializer):
+    image_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True
+    )
+    
+    images = AdvertisementImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = AdvertisementProfile
+        fields = [
+            'id',
+            'name',
+            'date_start',
+            'date_end',
+            'days_active',
+            'priority',
+            'image_ids',
+            'images',
+            'created_at',
+        ]
+
+    def get_images(self, obj):
+        return [img.id for img in obj.images.all()]
+
+    def validate_image_ids(self, value):
+        request = self.context.get('request')
+        if not request or not hasattr(request.user, 'admin_outlet'):
+            raise serializers.ValidationError("User context or admin outlet missing.")
+
+        images = AdvertisementImage.objects.filter(
+            id__in=value,
+            admin_outlet=request.user.admin_outlet
+        )
+
+        if images.count() != len(set(value)):
+            raise serializers.ValidationError("Some image IDs are invalid or not allowed.")
+
+        return list(images)
+
+    def create(self, validated_data):
+        images = validated_data.pop('image_ids', [])
+        profile = AdvertisementProfile.objects.create(
+            admin_outlet=self.context['request'].user.admin_outlet,
+            **validated_data
+        )
+        profile.images.set(images)
+        return profile
+    
+    def validate(self, attrs):
+        date_start = attrs.get('date_start')
+        date_end = attrs.get('date_end')
+        days_active = attrs.get('days_active')
+
+        has_dates = date_start and date_end
+        has_days = bool(days_active)
+
+        if not (has_dates or has_days):
+            raise serializers.ValidationError(
+                "Either both start & end dates OR at least one active day must be provided."
+            )
+
+        return attrs
+
+class AdvertisementProfileAssignmentSerializer(serializers.Serializer):
+    vendor_ids = serializers.ListField(
+        child=serializers.IntegerField(), required=True
+    )
+    profile_ids = serializers.ListField(
+        child=serializers.IntegerField(), required=True
+    )
+
+    def validate(self, data):
+        vendor_ids = data.get('vendor_ids')
+        profile_ids = data.get('profile_ids')
+
+        if not vendor_ids:
+            raise serializers.ValidationError("vendor_ids is required and cannot be empty.")
+        if not profile_ids:
+            raise serializers.ValidationError("profile_ids is required and cannot be empty.")
+
+        return data
+
+    def create(self, validated_data):
+        vendor_ids = validated_data['vendor_ids']
+        profile_ids = validated_data['profile_ids']
+
+        vendors = Vendor.objects.filter(id__in=vendor_ids)
+        profiles = AdvertisementProfile.objects.filter(id__in=profile_ids)
+
+        created = []
+        skipped = []
+
+        for vendor in vendors:
+            for profile in profiles:
+                if AdvertisementProfileAssignment.objects.filter(profile=profile, vendor=vendor).exists():
+                    skipped.append({
+                        'vendor_id': vendor.id,
+                        'vendor_name': vendor.name,
+                        'profile_id': profile.id,
+                        'profile_name': profile.name
+                    })
+                    continue
+
+                assignment = AdvertisementProfileAssignment.objects.create(profile=profile, vendor=vendor)
+                created.append({
+                    'vendor_id': vendor.id,
+                    'vendor_name': vendor.name,
+                    'profile_id': profile.id,
+                    'profile_name': profile.name,
+                    'assigned_at': assignment.assigned_at
+                })
+
+        return {
+            'assigned': created,
+            'skipped': skipped
+        }
+
+

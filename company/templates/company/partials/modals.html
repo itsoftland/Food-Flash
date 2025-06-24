@@ -17,8 +17,8 @@
 <div id="bannerModal" class="modal fade" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-3 shadow">
-      <div class="modal-body p-0">
-        <img id="bannerModalImage" src="" class="img-fluid w-100 rounded-3" alt="Banner Preview">
+      <div class="modal-body p-0 d-flex justify-content-center align-items-center">
+        <img id="bannerModalImage" class="responsive-banner-img" alt="Banner Preview">
       </div>
     </div>
   </div>
@@ -31,6 +31,70 @@
     <div class="ff-modal-actions">
       <button id="confirmOkBtn" class="ff-btn confirm">OK</button>
       <button id="confirmCancelBtn" class="ff-btn cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Library Modal -->
+<div class="modal fade" id="imageLibraryModal" tabindex="-1" aria-labelledby="imageLibraryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageLibraryModalLabel">Select Advertisement Images</h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="select-all-images">
+          <label class="form-check-label" for="select-all-images">Select All</label>
+        </div>
+
+        <div id="image-library-grid" class="d-flex flex-wrap"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-golden" id="confirm-image-selection" disabled>
+          Confirm Selection
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content border-0 rounded shadow">
+      <div class="modal-header">
+        <h5 class="modal-title text-golden">Profile Images</h5>
+        <button type="button" class="close" data-bs-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body d-flex flex-wrap gap-2" id="modal-image-container">
+        <!-- Images will be injected by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Styled Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow border-0" style="background-color: #fefaf5;">
+      <div class="modal-header border-0" style="background-color: #fff3cd;">
+        <h5 class="modal-title text-dark fw-semibold" id="errorModalLabel">
+          <i class="fas fa-exclamation-triangle text-warning me-2"></i> Something went wrong
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0.5);"></button>
+      </div>
+      <div class="modal-body text-dark small" id="errorModalBody" style="line-height: 1.6;">
+        Unexpected error occurred.
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn px-4 rounded-pill text-white" style="background-color: #f0a934;" data-bs-dismiss="modal">
+          OK
+        </button>
+      </div>
     </div>
   </div>
 </div>

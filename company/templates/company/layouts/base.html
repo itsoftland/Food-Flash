@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="{% static 'orders/css/base.css' %}">
   <link rel="stylesheet" href="{% static 'company/css/base.css' %}">
   <link rel="stylesheet" href="{% static 'companyadmin/css/companyadmin.css' %}">
+  <link rel="stylesheet" href="{% static 'utils/css/buttons.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -90,6 +91,12 @@
               <a href="{% url 'company:banners' %}" class="nav-link {% if request.resolver_match.url_name == 'banners' %}active{% endif %}">
                 <i class="nav-icon fas fa-ad"></i>
                 <p>Banners</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'company:ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'ad_profiles' %}active{% endif %}">
+                <i class="nav-icon fas fa-object-group"></i>
+                <p>Advertisement Profiles</p>
               </a>
             </li>
             <li class="nav-item">
