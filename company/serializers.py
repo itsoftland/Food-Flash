@@ -301,3 +301,7 @@ class AdvertisementProfileAssignmentSerializer(serializers.Serializer):
     #     }
 
 
+class AdvertisementProfileMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvertisementProfile
+        fields = ['id', 'name']

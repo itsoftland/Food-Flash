@@ -16,7 +16,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from vendors.models import (Vendor, Device, AdminOutlet,
-                            AndroidDevice,AdvertisementImage)
+                            AndroidDevice,AdvertisementImage,
+                            AdvertisementProfileAssignment)
 
 from static.utils.functions.validation import validate_fields
 from .serializers import (VendorSerializer,
@@ -26,6 +27,7 @@ from .serializers import (VendorSerializer,
                           AdvertisementImageSerializer,
                           AdvertisementProfileSerializer,
                           AdvertisementProfileAssignmentSerializer,
+                          AdvertisementProfileMiniSerializer
                           )
 
 logger = logging.getLogger(__name__)
@@ -37,6 +39,14 @@ def dashboard(request):
 @login_required
 def ad_profiles(request):
     return render(request, 'company/ad_profiles.html')
+
+@login_required
+def view_ad_profiles(request):
+    return render(request, 'company/view_ad_profiles.html')
+
+@login_required
+def assigned_ad_profiles(request):
+    return render(request, 'company/assigned_ad_profiles.html')
 
 @login_required
 def banners(request):
@@ -500,7 +510,7 @@ def assign_ad_profile(request):
     try:
         serializer = AdvertisementProfileAssignmentSerializer(data=request.data)
         if serializer.is_valid():
-            result = serializer.save()  # calls create() internally
+            result = serializer.save()
             return Response({
                 'message': 'Advertisement profiles assigned successfully.',
                 'summary': f"{result['vendor_count']} outlets were mapped with {result['profile_count']} profiles each "
@@ -551,3 +561,37 @@ def assign_ad_profile(request):
 #             'error': 'An error occurred while assigning ad profile.',
 #             'details': str(e)
 #         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def assigned_profiles(request):
+    try:
+        vendors = request.user.admin_outlet.vendors.all()
+        result = []
+
+        for vendor in vendors:
+            assignments = vendor.assigned_profiles.all()
+            profiles = [a.profile for a in assignments]
+            profile_data = AdvertisementProfileMiniSerializer(profiles, many=True).data
+
+            result.append({
+                'outlet_id': vendor.id,
+                'outlet_name': vendor.name,
+                'assigned_count': len(profiles),
+                'assigned_profiles': profile_data
+            })
+
+        return Response({
+            'message': 'Assigned profiles fetched successfully.',
+            'profiles': result
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': 'Something went wrong while fetching assigned profiles.',
+            'details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
