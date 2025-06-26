@@ -3,14 +3,13 @@
 {% block extra_css %}
 {% comment %} <link rel="stylesheet" href="{% static 'company/css/dashboard.css' %}"> {% endcomment %}
 {% endblock%}
-{% block title %}Platform Settings{% endblock %}
-
+{% block title %}Configurations{% endblock %}
 {% block content %}
 <section class="content-header">
   <div class="container-fluid">
-    <div class="row mb-2">
+    <div class="row mb-2 align-items-center justify-content-between">
       <div class="col-sm-6">
-        <h1 class="text-golden">Food Flash Platform Settings</h1>
+        <h1 class="page-title">Configurations</h1>
       </div>
     </div>
   </div>
@@ -19,17 +18,8 @@
 <section class="content">
   <div class="container-fluid">
     <div class="card shadow-sm border-0">
-      <!-- Admin Outlet Info Section -->
-      <div id="outlet-info" class="card-header">
-        <!-- Admin Outlet Data will be injected here -->
-      </div>
-
-      <!-- Vendors List -->
       <div class="card-body">
-        <p class="mb-2">You can control platform settings from here.</p>
-        <div class="row" id="vendor-list">
-          <!-- Vendor Cards will be injected here -->
-        </div>
+        <p class="mb-2">You can configure data from here.</p>
       </div>
     </div>
   </div>
@@ -37,6 +27,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'company/js/platformSettings.js' %}"></script>
+<script type="module" src="{% static 'company/js/configurations.js' %}"></script>
 {% endblock %}
 

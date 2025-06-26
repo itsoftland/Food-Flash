@@ -40,6 +40,7 @@ async function callProductAuthAPI() {
         }
 
         localStorage.setItem('lastAuthCheck', getTodayDateString());
+        AppUtils.setCustomerId(customerId);
         localStorage.setItem('customer_id', customerId);
 
         // Send the returned data to company update API
@@ -90,8 +91,10 @@ async function updateCompanyInfo(data) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    
     const displayElement = document.getElementById('customer_id');
-    const customerIdRaw = localStorage.getItem('customer_id');
+    const customerIdRaw = AppUtils.getCustomerId('customer_id');
+    // const customerIdRaw = localStorage.getItem('customer_id');
     if (customerIdRaw && displayElement) {
         let customerId = parseInt(customerIdRaw, 10);
 
@@ -103,4 +106,5 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     callProductAuthAPI();
+
 });

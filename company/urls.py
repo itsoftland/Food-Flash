@@ -3,9 +3,10 @@ from .import views
 
 urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
-    path('ad_profiles/', views.ad_profiles, name='ad_profiles'),
-    path('view_ad_profiles/', views.view_ad_profiles, name='view_ad_profiles'),
-    path('assigned_ad_profiles/', views.assigned_ad_profiles, name='assigned_ad_profiles'),
+    path('new_profile/', views.new_profile, name='new_profile'),
+    path('profile_list/', views.profile_list, name='profile_list'),
+    path('map_profiles/', views.map_profiles, name='map_profiles'), 
+    path('mapped_list/', views.mapped_list, name='mapped_list'),
     path('banners/', views.banners, name='banners'), 
     path('outlets/', views.outlets, name='outlets'),
     path('create_outlet/', views.create_outlet, name='create_outlet'),

@@ -1,10 +1,9 @@
-import createLoaderService from './services/loaderService.js';
 import getFriendlyFieldLabels from '/static/utils/js/formFieldLabelService.js';
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
+import { ModalService } from '/static/utils/js/services/modalService.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('create-outlet-form');
-    const loader = createLoaderService(form);
   
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
@@ -22,7 +21,9 @@ document.addEventListener('DOMContentLoaded', function () {
       formData.append('place_id', document.getElementById('place_id').value || '');
 
       // You can replace this with dynamic customer_id if needed
-      const customer_id = localStorage.getItem('customerId');
+      const customer_id =AppUtils.getCustomerId('customer_id');
+      // const customer_id = localStorage.getItem('customerId');
+      console.log("customerId",customer_id)
       formData.append('customer_id', customer_id);
   
       // File fields
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
         counter_no: "Counter Number",
         // Add more fields as needed
       };
-
+      console.log(formData)
   
       try {
         const response = await fetchWithAutoRefresh('/company/api/create_vendor/', {
@@ -72,16 +73,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = await response.json();
   
         if (result.success) {
-          loader.updateLoaderStatus("Registration complete 🎉", true, () => {
-            form.reset();  // ✅ Reset only after OK is clicked
-            window.location.href = "/login/";
-          });
+          ModalService.showSuccess("Outlet Created Successfully", () => {
+          // Callback on OK button click
+          form.reset();
+          window.location.href = "/company/outlets/";
+        });
         } else {
           const userFriendlyMessage = getFriendlyFieldLabels(result, fieldLabelMap);
-          loader.updateLoaderStatus(userFriendlyMessage, true);
+          ModalService.showError(userFriendlyMessage);
         }
       } catch (err) {
-        loader.updateLoaderStatus(err, true);
+        ModalService.showError(err);
       }
     });
   });

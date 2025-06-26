@@ -1,10 +1,23 @@
-document.addEventListener('DOMContentLoaded',() => {
-  const outletInfoContainer = document.getElementById('outlet-info');
+// document.addEventListener('DOMContentLoaded',() => {
+//     setupOutletGreeting();
+// });
+// // =================== INIT HELPERS ===================
+// function setupOutletGreeting() {
+//     const welcomeInfoContainer = document.getElementById('welcome-info');
+//     const outletName = localStorage.getItem('username') || 'Admin';
+//     welcomeInfoContainer.innerHTML = `<h1 class="text-golden">Welcome, ${outletName}</h1>`;
+// }
+document.addEventListener('DOMContentLoaded', () => {
+  const currentPath = window.location.pathname;
 
-  const outletName = localStorage.getItem('username') || 'Admin';
-
-  // Inject Admin Outlet Card
-  outletInfoContainer.innerHTML = `
-    <h3 class="card-title mb-0">Welcome, ${outletName} </h3>
-  `;
+  // Show welcome only on dashboard
+  if (currentPath.includes('/dashboard') || currentPath.endsWith('/company/')) {
+    setupOutletGreeting();
+  }
 });
+
+function setupOutletGreeting() {
+  const welcomeInfoContainer = document.getElementById('welcome-info');
+  const outletName = localStorage.getItem('username') || 'Admin';
+  welcomeInfoContainer.innerHTML = `<span class="text-golden fw-bold">Welcome, ${outletName}</span>`;
+}

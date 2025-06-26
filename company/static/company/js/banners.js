@@ -2,12 +2,6 @@ import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService
 import { ConfirmModalService } from './services/confirmModalService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const outletInfoContainer = document.getElementById('outlet-info');
-  const outletName = localStorage.getItem('username') || 'Admin';
-
-  outletInfoContainer.innerHTML = `
-    <h3 class="card-title mb-0">Welcome, ${outletName} </h3>
-  `;
 
   const uploadForm = document.getElementById('banner-upload-form');
   const bannerContainer = document.getElementById('banner-tiles-container');

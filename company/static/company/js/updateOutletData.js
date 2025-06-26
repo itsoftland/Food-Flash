@@ -1,7 +1,7 @@
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
 import { MenuFileManagerService } from './services/menuService.js';
 import { OutletUpdateService } from './services/updateOutletService.js';
-import createLoaderService from './services/loaderService.js';
+import { ModalService } from '/static/utils/js/services/modalService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -16,8 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const outletForm = document.getElementById('outlet_update_form');
   const logoInput = document.getElementById('logo');
   const menuFilesInput = document.getElementById('menu_files');
-
-  const loader = createLoaderService(outletForm);
 
   let vendorData = {};
   let unmappedVendorData = {};
@@ -141,18 +139,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       tvMapping: selectedTVs,
     });
 
-    const result = await OutletUpdateService.updateOutlet(formData);
-
-    if (result.success) {
-      loader.updateLoaderStatus("Outlet Updated 🎉", true, () => {
-        outletForm.reset(); 
-        window.location.href = "/company/outlets";
-      });
-    } else {
-      const userFriendlyMessage = getFriendlyFieldLabels(result, fieldLabelMap);
-      console.warn("[Form] API returned error:", userFriendlyMessage);
-      loader.updateLoaderStatus(userFriendlyMessage, true);
+    try {
+      const result = await OutletUpdateService.updateOutlet(formData);
+      if (result.success) {
+        ModalService.showSuccess("Outlet Updated Successfully", () => {
+          // Callback on OK button click
+          outletForm.reset();
+          window.location.href = "/company/outlets/";
+        });
+      } else {
+        const userFriendlyMessage = getFriendlyFieldLabels(result, fieldLabelMap);
+        ModalService.showError(userFriendlyMessage);
       }
+    } catch (err) {
+      ModalService.showError(err);
+    }
   });
 });
 

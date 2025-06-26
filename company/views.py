@@ -16,8 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from vendors.models import (Vendor, Device, AdminOutlet,
-                            AndroidDevice,AdvertisementImage,
-                            AdvertisementProfileAssignment)
+                            AndroidDevice,AdvertisementImage)
 
 from static.utils.functions.validation import validate_fields
 from .serializers import (VendorSerializer,
@@ -36,37 +35,43 @@ logger = logging.getLogger(__name__)
 def dashboard(request):
     return render(request, 'company/dashboard.html')
 
-@login_required
-def ad_profiles(request):
-    return render(request, 'company/ad_profiles.html')
+@login_required(login_url='/login/')
+def create_outlet(request):
+    return render(request, 'company/outlets/create_outlet.html')
 
 @login_required
-def view_ad_profiles(request):
-    return render(request, 'company/view_ad_profiles.html')
+def outlets(request):
+    return render(request, 'company/outlets/outlets.html')
 
 @login_required
-def assigned_ad_profiles(request):
-    return render(request, 'company/assigned_ad_profiles.html')
+def update_outlet_page(request):
+    return render(request, "company/outlets/update_outlet.html")
 
 @login_required
 def banners(request):
     return render(request, 'company/banners.html')
 
 @login_required
-def outlets(request):
-    return render(request, 'company/outlets.html')
+def new_profile(request):
+    return render(request, 'company/profiles/new_profile.html')
+
+@login_required
+def profile_list(request):
+    return render(request, 'company/profiles/profile_list.html')
+
+@login_required
+def map_profiles(request):
+    return render(request, 'company/profiles/map_profiles.html')
+
+@login_required
+def mapped_list(request):
+    return render(request, 'company/profiles/mapped_list.html')
 
 @login_required
 def configurations(request):
     return render(request, "company/configurations.html")
 
-@login_required(login_url='/login/')
-def create_outlet(request):
-    return render(request, 'company/create_outlet.html')
 
-@login_required
-def update_outlet_page(request):
-    return render(request, "company/update_outlet.html")
 
 @api_view(['GET']) 
 @permission_classes([IsAuthenticated])
@@ -517,12 +522,6 @@ def assign_ad_profile(request):
                         f"(total {result['total_assigned']} assignments).",
                 'duplicates_skipped': result['skipped']
             }, status=status.HTTP_201_CREATED)
-
-            # return Response({
-            #     'message': 'Ad Profile assignment completed.',
-            #     'assigned': result['assigned'],
-            #     'skipped_duplicates': result['skipped']
-            # }, status=status.HTTP_201_CREATED)
         else:
             return Response({
                 'error': 'Validation failed.',
@@ -534,34 +533,6 @@ def assign_ad_profile(request):
             'error': 'An unexpected error occurred.',
             'details': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def assign_ad_profile(request):
-#     try:
-#         serializer = AdvertisementProfileAssignmentSerializer(
-#             data=request.data, context={'request': request})
-        
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response({
-#                 'message': 'Ad Profile assigned to vendor successfully.',
-#                 'assignment': serializer.data
-#             }, status=status.HTTP_201_CREATED)
-        
-#         return Response({
-#             'error': 'Validation failed.',
-#             'details': serializer.errors
-#         }, status=status.HTTP_400_BAD_REQUEST)
-
-#     except Exception as e:
-#         return Response({
-#             'error': 'An error occurred while assigning ad profile.',
-#             'details': str(e)
-#         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

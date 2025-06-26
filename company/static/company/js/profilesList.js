@@ -1,23 +1,12 @@
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
-import { ImageLibraryService } from './services/imageLibraryService.js';
 import { ConfirmModalService } from './services/confirmModalService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  setupOutletGreeting();
   await fetchAdProfiles();
-  ImageLibraryService.init();
   $(function () {
   $('[data-toggle="tooltip"]').tooltip();
   });
 });
-
-// =================== INIT HELPERS ===================
-
-function setupOutletGreeting() {
-  const outletInfoContainer = document.getElementById('outlet-info');
-  const outletName = localStorage.getItem('username') || 'Admin';
-  outletInfoContainer.innerHTML = `<h3 class="card-title mb-0">Welcome, ${outletName}</h3>`;
-}
 
 // =================== FETCH PROFILES ===================
 
@@ -31,46 +20,6 @@ async function fetchAdProfiles() {
     console.error('Error fetching advertisement profiles:', err);
   }
 }
-
-// function renderAdProfiles(profiles) {
-//   const tbody = document.getElementById("ad-profile-table-body");
-//   tbody.innerHTML = "";
-
-//   profiles.forEach(profile => {
-//     const row = document.createElement("tr");
-//     const days = (profile.days_active || []).map(day =>
-//       `<span class="badge badge-secondary mr-1">${day}</span>`
-//     ).join("");
-
-//     const dateStart = profile.date_start || "";
-//     const dateEnd = profile.date_end || "";
-
-//     row.innerHTML = `
-//       <td><strong>${profile.name}</strong></td>
-//       <td>${dateStart && dateEnd ? `${dateStart} → ${dateEnd}` : ""}</td>
-//       <td>${days}</td>
-//       <td class="text-center"><span class="badge-priority">${profile.priority}</span></td>
-//       <td>
-//         <button class="icon-btn icon-view" title="View Images" data-images='${JSON.stringify(profile.images)}'>
-//           <i class="fas fa-image"></i>
-//         </button>
-
-//         <button class="icon-btn icon-edit" title="Edit Profile" data-id="${profile.id}">
-//           <i class="fas fa-edit"></i>
-//         </button>
-
-//         <button class="icon-btn icon-delete" title="Delete Profile" data-id="${profile.id}">
-//           <i class="fas fa-trash"></i>
-//         </button>
-//       </td>
-
-//     `;
-
-//     tbody.appendChild(row);
-//   });
-
-//   attachActionListeners();
-// }
 function renderAdProfiles(profiles) {
   const tbody = document.getElementById("ad-profile-table-body");
   tbody.innerHTML = "";
@@ -121,7 +70,7 @@ function renderAdProfiles(profiles) {
 
 }
 
-// =================== IMAGE MODAL ===================
+// =================== ACTIONS ===================
 
 function attachActionListeners() {
   document.querySelectorAll('.icon-view').forEach(btn => {

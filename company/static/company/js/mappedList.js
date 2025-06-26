@@ -1,63 +1,10 @@
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  setupOutletGreeting();
   await loadAssignedProfiles();
 });
 
 // =================== INIT HELPERS ===================
-
-function setupOutletGreeting() {
-  const outletInfoContainer = document.getElementById('outlet-info');
-  const outletName = localStorage.getItem('username') || 'Admin';
-  outletInfoContainer.innerHTML = `<h3 class="card-title mb-0">Welcome, ${outletName}</h3>`;
-}
-// ========== Load Assigned Profiles ==========
-// async function loadAssignedProfiles() {
-//   const tableBody = document.getElementById('ad-profile-table-body');
-//   tableBody.innerHTML = `<tr><td colspan="3" class="text-center">Loading...</td></tr>`;
-
-//   try {
-//     const response = await fetchWithAutoRefresh('/company/api/assigned_profiles/');
-//     const data = await response.json();
-
-//     if (response.ok) {
-//       if (data.profiles.length === 0) {
-//         tableBody.innerHTML = `<tr><td colspan="3" class="text-center">No assigned profiles found.</td></tr>`;
-//         return;
-//       }
-
-//       tableBody.innerHTML = '';
-
-//       data.profiles.forEach((outlet) => {
-//         const profileNames = outlet.assigned_profiles.map(p => p.name).join(', ');
-//         const row = document.createElement('tr');
-
-//         row.innerHTML = `
-//           <td>${outlet.outlet_name}</td>
-//           <td>${profileNames || '<span class="text-muted">No Profiles Assigned</span>'}</td>
-//           <td>
-//             <!-- Future: Add action buttons -->
-//             <button class="btn btn-sm btn-outline-primary disabled">View</button>
-//           </td>
-//         `;
-
-//         tableBody.appendChild(row);
-//       });
-//     } else {
-//       showError('Failed to load assigned profiles.');
-//       console.error(data);
-//     }
-//   } catch (error) {
-//     console.error('Error fetching profiles:', error);
-//     tableBody.innerHTML = `<tr><td colspan="3" class="text-danger text-center">Error loading data.</td></tr>`;
-//   }
-// }
-
-// // ========== Optional: Global Error Modal ==========
-// function showError(message) {
-//   alert(message); // Replace with a modal if needed
-// }
 
 async function loadAssignedProfiles() {
     const accordion = document.getElementById('outletAccordion');

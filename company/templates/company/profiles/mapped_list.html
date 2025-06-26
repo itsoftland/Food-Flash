@@ -3,16 +3,15 @@
 {% block extra_css %}
 
 <link rel="stylesheet" href="{% static 'utils/css/modals.css' %}">
-<link rel="stylesheet" href="{% static 'company/css/assigned_ad_profile.css' %}">
+<link rel="stylesheet" href="{% static 'company/css/mapped_list.css' %}">
 {% endblock %}
-{% block title %}Assigned Banner Profiles{% endblock %}
-
+{% block title %}Mapped List{% endblock %}
 {% block content %}
 <section class="content-header">
   <div class="container-fluid">
-    <div class="row mb-2">
+    <div class="row mb-2 align-items-center justify-content-between">
       <div class="col-sm-6">
-        <h1 class="text-golden">Assigned Banner Profiles</h1>
+        <h1 class="page-title">Mapped List</h1>
       </div>
     </div>
   </div>
@@ -21,23 +20,16 @@
 <section class="content">
   <div class="container-fluid">
     <div class="card shadow-sm border-0">
-      <!-- Admin Outlet Info Section -->
-      <div id="outlet-info" class="card-header">
-        <!-- Admin Outlet Data will be injected here -->
-      </div>
-      
-      <!-- Vendors List -->
       <div class="card-body">
-        <p class="mb-2">You can view assigned Banner profiles grouped by Outlets from here.</p>
+        <h4 class="text-center mb-4">Profiles Mapped to Each Outlet</h4>
         <div class="accordion" id="outletAccordion"></div>
       </div>
     </div>
   </div>
 </section>
-
 {% include "company/partials/modals.html" %}
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'company/js/assignedAdProfiles.js' %}"></script>
+<script type="module" src="{% static 'company/js/mappedList.js' %}"></script>
 {% endblock %}

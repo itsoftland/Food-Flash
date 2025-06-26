@@ -21,8 +21,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
   <!-- Custom Styles -->
+  <link rel="stylesheet" href="{% static 'utils/css/colors.css' %}">
   <link rel="stylesheet" href="{% static 'orders/css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'company/css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'utils/css/base.css' %}">
   <link rel="stylesheet" href="{% static 'companyadmin/css/companyadmin.css' %}">
   <link rel="stylesheet" href="{% static 'utils/css/buttons.css' %}">
   {% block extra_css %}{% endblock %}
@@ -104,8 +105,8 @@
                 <p>Banners</p>
               </a>
             </li>
-            <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'ad_profiles' or request.resolver_match.url_name == 'assigned_ad_profiles' or request.resolver_match.url_name == 'view_ad_profiles' %}menu-open{% endif %}">
-                <a href="#" class="nav-link {% if request.resolver_match.url_name == 'ad_profiles' or request.resolver_match.url_name == 'assigned_ad_profiles' or request.resolver_match.url_name == 'view_ad_profiles' %}active{% endif %}">
+            <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'new_profile' or request.resolver_match.url_name == 'mapped_list' or request.resolver_match.url_name == 'profile_list' or request.resolver_match.url_name == 'map_profiles' %}menu-open{% endif %}">
+                <a href="#" class="nav-link {% if request.resolver_match.url_name == 'new_profile' or request.resolver_match.url_name == 'mapped_list' or request.resolver_match.url_name == 'profile_list' or request.resolver_match.url_name == 'map_profiles' %}active{% endif %}">
                     <i class="nav-icon fas fa-object-group"></i>
                     <p>
                         Banner Profiles
@@ -114,19 +115,25 @@
                 </a>
                 <ul class="nav nav-treeview">
                     <li class="nav-item">
-                        <a href="{% url 'company:ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'ad_profiles' %}active{% endif %}">
+                        <a href="{% url 'company:new_profile' %}" class="nav-link {% if request.resolver_match.url_name == 'new_profile' %}active{% endif %}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>New Profile</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'company:view_ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'view_ad_profiles' %}active{% endif %}">
+                        <a href="{% url 'company:profile_list' %}" class="nav-link {% if request.resolver_match.url_name == 'profile_list' %}active{% endif %}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Profile List</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'company:assigned_ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'assigned_ad_profiles' %}active{% endif %}">
+                        <a href="{% url 'company:map_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'map_profiles' %}active{% endif %}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Map Profiles</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'company:mapped_list' %}" class="nav-link {% if request.resolver_match.url_name == 'mapped_list' %}active{% endif %}">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Mapped List</p>
                         </a>
@@ -160,7 +167,7 @@
 
   <!-- Global JS -->
   <script type ="module" src="{% static 'company/js/authCheck.js' %}"></script>
-  <script type ="module" src="{% static 'orders/js/utils.js' %}"></script>
+  <script type ="module" src="{% static 'utils/js/utils.js' %}"></script>
   <!-- Page-Specific JS -->
   {% block extra_js %}{% endblock %}
 

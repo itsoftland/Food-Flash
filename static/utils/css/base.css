@@ -1,0 +1,6 @@
+/* company/css/base.css */
+.card-header {
+  background-color: var(--primary-gold);
+  color: var(--text-dark);
+}
+

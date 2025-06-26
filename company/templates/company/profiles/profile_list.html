@@ -2,17 +2,16 @@
 {% load static %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'utils/css/modals.css' %}">
-<link rel="stylesheet" href="{% static 'company/css/ad_profiles.css' %}">
+<link rel="stylesheet" href="{% static 'company/css/profiles_list.css' %}">
 <link rel="stylesheet" href="{% static 'company/css/confirm_dialogue.css' %}">
 {% endblock %}
 {% block title %}Banner Profiles{% endblock %}
-
 {% block content %}
 <section class="content-header">
   <div class="container-fluid">
-    <div class="row mb-2">
+    <div class="row mb-2 align-items-center justify-content-between">
       <div class="col-sm-6">
-        <h1 class="text-golden">Food Flash Banner Profiles</h1>
+        <h1 class="page-title">Banner Profiles</h1>
       </div>
     </div>
   </div>
@@ -21,14 +20,8 @@
 <section class="content">
   <div class="container-fluid">
     <div class="card shadow-sm border-0">
-      <!-- Admin Outlet Info Section -->
-      <div id="outlet-info" class="card-header">
-        <!-- Admin Outlet Data will be injected here -->
-      </div>
-      
-      <!-- Vendors List -->
       <div class="card-body">
-        <p class="mb-2">You can view and create Banner Profiles from here.</p>
+        <!-- Profile List -->
         <div class="table-responsive">
             <table class="table table-hover table-bordered rounded shadow-sm bg-light-gray">
             <thead class="thead-light">
@@ -49,7 +42,6 @@
     </div>
   </div>
 </section>
-
 {% include "company/partials/modals.html" %}
 {% endblock %}
 
