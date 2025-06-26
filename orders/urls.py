@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/outlets/', views.get_outlets, name="get_outlets"),
     path('api/get_vendor_logos/', views.get_vendor_logos, name='get_vendor_logos'),
     path('api/get_vendor_ads/', views.get_vendor_ads, name='get_vendor_ads'),
+    path('api/get_banners/', views.get_banners, name='get_banners'),
     path('api/menus/', views.get_vendor_menus, name='get_vendor_menu'),
     path('api/submit_feedback/', views.submit_feedback, name='submit-feedback'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

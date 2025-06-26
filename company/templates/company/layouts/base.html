@@ -85,15 +85,15 @@
               </a>
               <ul class="nav nav-treeview">
                 <li class="nav-item">
-                  <a href="{% url 'company:outlets' %}" class="nav-link {% if request.resolver_match.url_name == 'outlets' %}active{% endif %}">
+                  <a href="{% url 'company:create_outlet' %}" class="nav-link {% if request.resolver_match.url_name == 'create_outlet' %}active{% endif %}">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Outlet List</p>
+                    <p>New Outlet</p>
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a href="{% url 'company:create_outlet' %}" class="nav-link {% if request.resolver_match.url_name == 'create_outlet' %}active{% endif %}">
+                  <a href="{% url 'company:outlets' %}" class="nav-link {% if request.resolver_match.url_name == 'outlets' %}active{% endif %}">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Create Outlet</p>
+                    <p>Outlet List</p>
                   </a>
                 </li>
               </ul>
@@ -104,41 +104,35 @@
                 <p>Banners</p>
               </a>
             </li>
-            <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'ad_profiles' or request.resolver_match.url_name == 'assigned_ad_profiles' %}menu-open{% endif %}">
-              <a href="#" class="nav-link {% if request.resolver_match.url_name == 'ad_profiles' or request.resolver_match.url_name == 'assigned_ad_profiles' %}active{% endif %}">
-                <i class="nav-icon fas fa-store"></i>
-                <p>
-                  Banner Profiles
-                  <i class="right fas fa-angle-down"></i> 
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="{% url 'company:ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'ad_profiles' %}active{% endif %}">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Create Profile</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="{% url 'company:view_ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'view_ad_profiles' %}active{% endif %}">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>View Profile</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="{% url 'company:assigned_ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'assigned_ad_profiles' %}active{% endif %}">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>View Assigned</p>
-                  </a>
-                </li>
-              </ul>
+            <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'ad_profiles' or request.resolver_match.url_name == 'assigned_ad_profiles' or request.resolver_match.url_name == 'view_ad_profiles' %}menu-open{% endif %}">
+                <a href="#" class="nav-link {% if request.resolver_match.url_name == 'ad_profiles' or request.resolver_match.url_name == 'assigned_ad_profiles' or request.resolver_match.url_name == 'view_ad_profiles' %}active{% endif %}">
+                    <i class="nav-icon fas fa-object-group"></i>
+                    <p>
+                        Banner Profiles
+                        <i class="right fas fa-angle-down"></i>  
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="{% url 'company:ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'ad_profiles' %}active{% endif %}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>New Profile</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'company:view_ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'view_ad_profiles' %}active{% endif %}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Profile List</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'company:assigned_ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'assigned_ad_profiles' %}active{% endif %}">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>Mapped List</p>
+                        </a>
+                    </li>
+                </ul>
             </li>
-            {% comment %} <li class="nav-item">
-              <a href="{% url 'company:ad_profiles' %}" class="nav-link {% if request.resolver_match.url_name == 'ad_profiles' %}active{% endif %}">
-                <i class="nav-icon fas fa-object-group"></i>
-                <p>Advertisement Profiles</p>
-              </a>
-            </li> {% endcomment %}
             <li class="nav-item">
               <a href="{% url 'company:configurations' %}" class="nav-link {% if request.resolver_match.url_name == 'configurations' %}active{% endif %}">
                 <i class="nav-icon fas fa-tools"></i>
