@@ -104,3 +104,10 @@ thead th {
   object-fit: cover;
   border-radius: inherit;
 }
+.badge-days-active {
+  background-color: #f0a934;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
