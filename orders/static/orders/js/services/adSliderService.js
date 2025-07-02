@@ -51,9 +51,76 @@ export const AdSliderService = (() => {
      * Render ad images into a slider container
      * Duplicates ads only if necessary to fill the visible area for smooth scroll
      */
+    // const renderAds = (ads, containerId = "ad-slider") => {
+    //     const container = document.getElementById(containerId);
+    //     if (!container) return;
+
+    //     // Clear existing content
+    //     container.innerHTML = "";
+
+    //     // Create a wrapper div for scrolling track
+    //     const track = document.createElement("div");
+    //     track.classList.add("ad-slider-track");
+
+    //     // 1. Get visible width of the container
+    //     const containerWidth = container.offsetWidth;
+
+    //     // 2. Define fixed image width (match CSS or design)
+    //     const imgWidth = 180;
+
+    //     // 3. Calculate how many images are needed to fill the width
+    //     const imagesNeeded = Math.ceil(containerWidth / imgWidth);
+
+    //     // 4. Duplicate ads until there are enough to scroll smoothly
+    //     let finalAds = [...ads];
+    //     while (finalAds.length < imagesNeeded * 2) {
+    //         finalAds = finalAds.concat(ads);
+    //     }
+
+    //     // 5. Create and append image elements to the track
+    //     finalAds.forEach(adUrl => {
+    //         const img = document.createElement("img");
+    //         img.src = adUrl;
+    //         img.alt = "Advertisement";
+    //         img.classList.add("ad-slide");
+
+    //         // iOS-specific rendering optimizations
+    //         img.style.willChange = "transform";
+    //         img.style.backfaceVisibility = "hidden";
+    //         img.style.WebkitTransform = "translateZ(0)";
+
+    //         // Set loading behavior and dimensions
+    //         img.loading = "eager";
+    //         img.width = imgWidth;
+    //         img.height = 100;
+
+    //         // Open full-screen modal on click
+    //         img.addEventListener("click", () => {
+    //             openAdModal(adUrl);
+    //         });
+
+    //         track.appendChild(img);
+    //     });
+
+    //     // Add the track to the container
+    //     container.appendChild(track);
+
+    //     // Start the infinite scrolling animation
+    //     startScroll(track);
+    // };
     const renderAds = (ads, containerId = "ad-slider") => {
         const container = document.getElementById(containerId);
         if (!container) return;
+
+        // Default fallback images
+        const defaultAds = [
+            "/media/ads/Default/Demo.jpg",
+        ];
+
+        // If no ads available, use default ones
+        if (!ads || ads.length === 0) {
+            ads = defaultAds;
+        }
 
         // Clear existing content
         container.innerHTML = "";
@@ -108,6 +175,7 @@ export const AdSliderService = (() => {
         // Start the infinite scrolling animation
         startScroll(track);
     };
+
 
     /**
      * Scrolls the ad track horizontally using CSS transform
