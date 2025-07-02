@@ -25,9 +25,10 @@ async function initAssignProfileForm() {
     const outletsRes = await fetchWithAutoRefresh('/company/api/get_vendors/');
     const outletsData = await outletsRes.json();
     const outlets = outletsData.vendors || [];
+    console.log("outlet data",outlets)
 
     const outletSelect = document.getElementById('outlet-select');
-    outletSelect.innerHTML = outlets.map(o => `<option value="${o.vendor_id}">${o.name}</option>`).join('');
+    outletSelect.innerHTML = outlets.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
 
     // Initialize Choices
     const profileChoices = new Choices(profileSelect, {
@@ -63,6 +64,10 @@ async function initAssignProfileForm() {
       }
 
       try {
+        console.log("request body",JSON.stringify({ 
+          profile_ids: profileIds, 
+          vendor_ids: outletIds
+        }));
         const res = await fetchWithAutoRefresh('/company/api/assign_ad_profile/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

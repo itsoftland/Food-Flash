@@ -1,3 +1,4 @@
+/* static/utils/css/buttons.css */
 .btn-golden {
   background-color: #f0a934;
   color: white;
@@ -24,19 +25,20 @@
 
 /* Icon-specific colors */
 .icon-view {
-  color: #f0a934;
+  color: #4a90e2;
 }
 
 .icon-view:hover {
-  color: #e09a20;
+  color: #357ABD;
 }
 
 .icon-edit {
-  color: #fb8b24;
+  color: #2aa198;
+  transition: color 0.2s ease-in-out;
 }
 
 .icon-edit:hover {
-  color: #e07a1e;
+  color: #21867a; 
 }
 
 .icon-delete {
@@ -46,14 +48,4 @@
 .icon-delete:hover {
   color: #c0392b;
 }
-.badge-priority {
-  background-color: #f9aa33;  
-  color: #141414;           
-  border-radius: 999px;      
-  padding: 4px 10px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  display: inline-block;
-  min-width: 28px;
-  text-align:center;
-}
+

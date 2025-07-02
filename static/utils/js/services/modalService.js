@@ -27,6 +27,19 @@ export const ModalService = (() => {
 
     successModal.show();
   };
+  const showCustom = ({ title, body, onShown }) => {
+    const modalEl = document.getElementById("customModal");
+    modalEl.querySelector(".modal-title").innerHTML = title;
+    modalEl.querySelector(".modal-body").innerHTML = body;
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    if (typeof onShown === 'function') {
+      setTimeout(onShown, 100); // wait until DOM is updated
+    }
+  }
+
 
   // const showSuccess = (message = "Operation completed successfully.") => {
   //   const modalBody = document.getElementById('successModalBody');
@@ -38,5 +51,6 @@ export const ModalService = (() => {
   return {
     showError,
     showSuccess,
+    showCustom
   };
 })();

@@ -1,6 +1,82 @@
-/* company/css/base.css */
+/* static/utils/css/base.css */
 .card-header {
-  background-color: var(--primary-gold);
+  background-color: var(--accordion-header);
   color: var(--text-dark);
 }
 
+.main-sidebar {
+  background-color: #2f2f2f !important;
+}
+
+.brand-link {
+  background-color: #2f2f2f !important;
+  color: #fdbf50 !important;
+  text-decoration: none;
+}
+
+.nav-sidebar .nav-link {
+  color: #f4f4f4 !important;
+  transition: background-color 0.3s ease;
+}
+
+.nav-sidebar .nav-icon {
+  color: #fdbf50 !important; 
+}
+
+.nav-sidebar .nav-link.active {
+  background-color: #73451c !important;
+  color: #ffffff !important;
+}
+
+.nav-sidebar .nav-link.active .nav-icon {
+  color: #ffffff !important;
+}
+
+.main-footer {
+  background-color: #222 !important; 
+  color: #d97a1f !important;        
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 0;
+}
+.text-golden {
+  color: #d97a1f; 
+}
+
+.main-footer a {
+  color: #fb8b24 !important;  
+  text-decoration: none;
+}
+
+.main-footer a:hover {
+  color: #fdbf50 !important;
+}
+
+.brand-link {
+  white-space: normal;
+  font-size: 1rem; 
+  padding: 1.1rem 1rem;
+  max-width: 100%;
+}
+
+.customer-label {
+  color: #111;
+  font-weight: 500;
+}
+
+.customer-id {
+  color: #ed7302;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.logout-link {
+  color: #fd0b0f !important;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.logout-link:hover {
+  color: #fd0b0f !important;
+  text-decoration: none;
+}

@@ -1,38 +1,32 @@
-/* Sidebar background */
+
 .main-sidebar {
-  background-color: #2f2f2f !important; /* Deep charcoal */
+  background-color: #2f2f2f !important;
 }
 
-/* Sidebar brand header */
 .brand-link {
   background-color: #2f2f2f !important;
   color: #fdbf50 !important;
   text-decoration: none;
 }
 
-/* Sidebar nav links */
 .nav-sidebar .nav-link {
-  color: #f4f4f4 !important; /* Light gray text */
+  color: #f4f4f4 !important;
   transition: background-color 0.3s ease;
 }
 
-/* Sidebar icons */
 .nav-sidebar .nav-icon {
-  color: #fdbf50 !important; /* Golden accent for icons */
+  color: #fdbf50 !important; 
 }
 
-/* Active sidebar link */
 .nav-sidebar .nav-link.active {
-  background-color: #fb8b24 !important;
+  background-color: #73451c !important;
   color: #ffffff !important;
 }
 
-
-/* Ensure active icon stays highlighted */
 .nav-sidebar .nav-link.active .nav-icon {
   color: #ffffff !important;
 }
-/* Card primary header override */
+
 .card-primary.card-outline,
 .card-primary:not(.card-outline) > .card-header {
   background-color: #fdbf50 !important;
@@ -40,28 +34,27 @@
   border: none;
 }
 
-/* Override AdminLTE footer */
+
 .main-footer {
-  background-color: #222 !important;  /* dark background */
-  color: #d97a1f !important;          /* warm dark gold text */
+  background-color: #222 !important; 
+  color: #d97a1f !important;        
   font-weight: 600;
   text-align: center;
   padding: 10px 0;
 }
 .text-golden {
-  color: #d97a1f; /* dark gold for better readability */
+  color: #d97a1f; 
 }
 
 .main-footer a {
-  color: #fb8b24 !important;          /* link color */
+  color: #fb8b24 !important;  
   text-decoration: none;
 }
 
 .main-footer a:hover {
-  color: #fdbf50 !important;          /* link hover color */
+  color: #fdbf50 !important;
 }
 
-/* Override the toggle button styles */
 #togglePassword.btn {
   border-color: #fb8b24;
   color: #fb8b24;
@@ -78,7 +71,7 @@
 #togglePassword .fas {
   font-size: 1.1rem;
 }
-/* Applies to all form controls like input, select, textarea */
+
 .form-control:focus, 
 .custom-select:focus {
   border-color: #fb8b24 !important;
@@ -86,7 +79,7 @@
 }
 .brand-link {
   white-space: normal;
-  font-size: 1rem; /* reduce font size */
+  font-size: 1rem; 
   padding: 1.1rem 1rem;
   max-width: 100%;
 }
@@ -97,18 +90,18 @@
 }
 
 .customer-id {
-  color: #fd800b;
+  color: #ed7302;
   font-weight: 600;
   margin-left: 4px;
 }
 
 .logout-link {
-  color: #fb8b24 !important;
+  color: #fd0b0f !important;
   font-weight: 600;
   transition: color 0.2s ease;
 }
 
 .logout-link:hover {
-  color: #f0a934 !important;
+  color: #fd0b0f !important;
   text-decoration: none;
 }

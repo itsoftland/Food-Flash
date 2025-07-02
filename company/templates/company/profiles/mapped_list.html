@@ -1,8 +1,10 @@
 {% extends 'company/layouts/base.html' %}
 {% load static %}
 {% block extra_css %}
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
 <link rel="stylesheet" href="{% static 'utils/css/modals.css' %}">
+<link rel="stylesheet" href="{% static 'utils/css/choices.css' %}">
+<link rel="stylesheet" href="{% static 'company/css/confirm_dialogue.css' %}">
 <link rel="stylesheet" href="{% static 'company/css/mapped_list.css' %}">
 {% endblock %}
 {% block title %}Mapped List{% endblock %}
@@ -31,5 +33,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'company/js/mappedList.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script type="module" src="{% static 'company/js/profiles/mappedList.js' %}"></script>
 {% endblock %}

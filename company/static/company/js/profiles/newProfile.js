@@ -1,5 +1,5 @@
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
-import { ImageLibraryService } from './services/imageLibraryService.js';
+import { ImageLibraryService } from '../services/imageLibraryService.js';
 import { ModalService } from '/static/utils/js/services/modalService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {

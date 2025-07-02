@@ -1,5 +1,5 @@
 import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
-import { ConfirmModalService } from './services/confirmModalService.js';
+import { ConfirmModalService } from '../services/confirmModalService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchAdProfiles();
@@ -37,20 +37,37 @@ function renderAdProfiles(profiles) {
     const titleText = fullDays.join(', ');
     const days = fullDays.length > 0
       ? `<span class="badge-days-active" data-toggle="tooltip" title="${titleText}">${short.join(', ')}</span>`
-      : `<span class="text-muted"></span>`;
-    console.log(days)
+      : `<span class="text-muted">No Days Set</span>`;
+    const priorityLabels = {
+      1: "Top Priority",
+      2: "High Priority",
+      3: "Standard Priority",
+      4: "Low Priority",
+      5: "Backup Priority"
+    };
 
     const dateStart = profile.date_start || "";
     const dateEnd = profile.date_end || "";
-
     row.innerHTML = `
-      <td><strong>${profile.name}</strong></td>
-      <td>${dateStart && dateEnd ? `${dateStart} → ${dateEnd}` : ""}</td>
-      <td>${days}</td>
-      <td class="text-center"><span class="badge-priority">${profile.priority}</span></td>
-      <td>
+      <td data-label="Name" class="profile-name">${profile.name}</td>
+      <td data-label="Date Range" class="text-muted">
+        ${
+          dateStart && dateEnd
+            ? `${dateStart} → ${dateEnd}`
+            : dateStart
+              ? `From ${dateStart}`
+              : dateEnd
+                ? `Until ${dateEnd}`
+                : "No Date Set"
+        }
+      </td>
+      <td data-label="Days Active">${days}</td>
+      <td data-label="Priority" class="text-center">
+        <span class="badge-priority">${priorityLabels[profile.priority] || "Unknown Priority"}</span>
+      </td>
+      <td data-label="Actions">
         <button class="icon-btn icon-view" title="View Images" data-images='${JSON.stringify(profile.images)}'>
-          <i class="fas fa-image"></i>
+          <i class="fa-regular fa-eye"></i>
         </button>
 
         <button class="icon-btn icon-edit" title="Edit Profile" data-id="${profile.id}">

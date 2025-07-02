@@ -1,7 +1,9 @@
 {% extends 'company/layouts/base.html' %}
 {% load static %}
 {% block extra_css %}
-{% comment %} <link rel="stylesheet" href="{% static 'company/css/dashboard.css' %}"> {% endcomment %}
+<link rel="stylesheet" href="{% static 'utils/css/buttons.css' %}">
+<link rel="stylesheet" href="{% static 'utils/css/modals.css' %}">
+<link rel="stylesheet" href="{% static 'company/css/confirm_dialogue.css' %}">
 {% endblock%}
 {% block title %}Configurations{% endblock %}
 {% block content %}
@@ -19,11 +21,35 @@
   <div class="container-fluid">
     <div class="card shadow-sm border-0">
       <div class="card-body">
-        <p class="mb-2">You can configure data from here.</p>
+        <form id="congiguration-form" method="POST" class="px-0 py-0 mx-auto">
+          {% csrf_token %}
+          <div class="mb-3">
+            <h5 class="text-golden mb-3">General Configurations</h5>
+            <label for="autoDeleteTime" class="form-label">Auto-Delete Orders After (in hours)
+              <i class="fas fa-info-circle text-secondary ml-1"
+                data-toggle="tooltip"
+                data-placement="right"
+                title="Choose how long orders should stay in the main system before being moved to archive. Archived orders are still available for reporting and analytics.">
+              </i>
+            </label>
+            <select id="autoDeleteTime" class="form-select" style="max-width: 300px;">
+              <option value="">Disable Auto Deletion</option>
+              <option value="2">2 hours</option>
+              <option value="3">3 hours</option>                                                                            
+              <option value="6">6 hours</option>
+              <option value="12">12 hours</option>
+              <option value="24">24 hours</option>
+            </select>
+            <div class="text-center">
+              <button type="submit" class="btn btn-golden mt-1">Save</button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </section>
+{% include "company/partials/modals.html" %}
 {% endblock %}
 
 {% block extra_js %}

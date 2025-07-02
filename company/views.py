@@ -16,7 +16,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from vendors.models import (Vendor, Device, AdminOutlet,
-                            AndroidDevice,AdvertisementImage)
+                            AndroidDevice,AdvertisementImage,
+                            AdvertisementProfileAssignment,
+                            AdvertisementProfile)
 
 from static.utils.functions.validation import validate_fields
 from .serializers import (VendorSerializer,
@@ -26,7 +28,9 @@ from .serializers import (VendorSerializer,
                           AdvertisementImageSerializer,
                           AdvertisementProfileSerializer,
                           AdvertisementProfileAssignmentSerializer,
-                          AdvertisementProfileMiniSerializer
+                          AdvertisementProfileMiniSerializer,
+                          AdminOutletAutoDeleteSerializer,
+                          DashboardMetricsSerializer
                           )
 
 logger = logging.getLogger(__name__)
@@ -46,6 +50,10 @@ def outlets(request):
 @login_required
 def update_outlet_page(request):
     return render(request, "company/outlets/update_outlet.html")
+
+@login_required
+def keypad_devices(request):
+    return render(request, 'company/keypad_devices.html')
 
 @login_required
 def banners(request):
@@ -483,6 +491,59 @@ def get_advertisement_profiles(request):
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_available_profiles(request, vendor_id):
+    try:
+        admin_outlet = request.user.admin_outlet
+
+        # Step 1: Get all profiles created by this outlet admin
+        all_profiles = AdvertisementProfile.objects.filter(admin_outlet=admin_outlet)
+
+        # Step 2: Get profile IDs already assigned to this vendor
+        assigned_profile_ids = AdvertisementProfileAssignment.objects.filter(
+            vendor_id=vendor_id
+        ).values_list('profile_id', flat=True)
+
+        # Step 3: Exclude assigned ones
+        available_profiles = all_profiles.exclude(id__in=assigned_profile_ids)
+
+        serializer = AdvertisementProfileMiniSerializer(
+            available_profiles, context={'request': request}, many=True
+        )
+        return Response({
+            'message': 'Available profiles fetched successfully.',
+            'profiles': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def unmap_profile(request, vendor_id, profile_id):
+    try:
+        assignment = AdvertisementProfileAssignment.objects.get(
+            vendor_id=vendor_id, profile_id=profile_id)
+        assignment.delete()
+
+        return Response({
+            'message': 'Profile unmapped from vendor successfully.'
+        }, status=status.HTTP_204_NO_CONTENT)
+
+    except AdvertisementProfileAssignment.DoesNotExist:
+        return Response({
+            'error': 'No such mapping found between this vendor and profile.'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_ad_profiles(request):
@@ -564,5 +625,47 @@ def assigned_profiles(request):
             'details': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def config(request):
+    admin_outlet = request.user.admin_outlet
+
+    if request.method == 'GET':
+        serializer = AdminOutletAutoDeleteSerializer(admin_outlet)
+        return Response(serializer.data)
+
+    if request.method == 'POST':
+        serializer = AdminOutletAutoDeleteSerializer(admin_outlet, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Auto-delete setting updated successfully.',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response({
+            'error': 'Validation failed.',
+            'details': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard_metrics(request):
+    try:
+        admin_outlet = getattr(request.user, 'admin_outlet', None)
+
+        if not admin_outlet:
+            return Response(
+                {"error": "Admin outlet not found for this user."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = DashboardMetricsSerializer(admin_outlet)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {"error": "Something went wrong.", "details": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 

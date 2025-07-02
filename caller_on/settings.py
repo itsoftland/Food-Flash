@@ -189,6 +189,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "orders.scheduler": {
+            "handlers": ["orders_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 

@@ -33,6 +33,9 @@ class AdminOutlet(models.Model):
     led_display_count = models.IntegerField(blank=True, null=True)
     outlet_count = models.IntegerField(blank=True, null=True)
     locations = models.JSONField(blank=True, null=True) 
+    auto_delete_hours = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text="Set after how many hours orders should be auto-deleted (min 2 hours)")
     
     customer_email = models.EmailField(blank=True, null=True) 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -70,7 +73,7 @@ class Vendor(models.Model):
 
 class Device(models.Model):
     serial_no = models.CharField(max_length=255, unique=True)
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="devices",null=True,blank=True)
+    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, related_name="devices",null=True,blank=True)
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,null=True,blank=True,related_name='device')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -89,7 +92,7 @@ class Order(models.Model):
     ]
 
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="orders")
-    device = models.ForeignKey(Device, on_delete=models.CASCADE,null=True, blank=True, related_name="orders")
+    device = models.ForeignKey(Device, on_delete=models.SET_NULL,null=True, blank=True, related_name="orders")
     token_no = models.IntegerField(validators=[
             MinValueValidator(0),
             MaxValueValidator(9999)
@@ -143,8 +146,8 @@ class Feedback(models.Model):
 class AndroidDevice(models.Model):
     token = models.CharField(max_length=255, unique=True)
     mac_address = models.CharField(max_length=255, blank=True, null=True,unique=True)
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE,null=True, blank=True,related_name='android_devices')
-    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE)
+    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL,null=True, blank=True,related_name='android_devices')
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,related_name='android_device')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -205,3 +208,19 @@ class AdvertisementProfileAssignment(models.Model):
 
     class Meta:
         unique_together = ('profile', 'vendor')  
+
+class ArchivedOrder(models.Model):
+    original_order_id = models.IntegerField()
+    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
+    token_no = models.IntegerField()
+    status = models.CharField(max_length=20)
+    counter_no = models.IntegerField()
+    shown_on_tv = models.BooleanField()
+    notified_at = models.DateTimeField(null=True, blank=True)
+    updated_by = models.CharField(max_length=20)
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
+    archived_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Archived Token {self.token_no}"

@@ -106,5 +106,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     callProductAuthAPI();
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+    });
 
 });

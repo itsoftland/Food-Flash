@@ -2,14 +2,15 @@ from rest_framework import serializers
 from vendors.models import (Vendor,AndroidDevice,
                             Device ,AdvertisementImage,
                             AdvertisementProfile,
-                            AdvertisementProfileAssignment)
+                            AdvertisementProfileAssignment,
+                            AdminOutlet)
 from django.db.models import Q
 import json
 
 class VendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
-        fields = ['vendor_id', 'name', 'location']  
+        fields = ['id','vendor_id', 'name', 'location']  
 
 from rest_framework import serializers
 from vendors.models import Vendor
@@ -238,13 +239,25 @@ class AdvertisementProfileAssignmentSerializer(serializers.Serializer):
             raise serializers.ValidationError("vendor_ids is required and cannot be empty.")
         if not profile_ids:
             raise serializers.ValidationError("profile_ids is required and cannot be empty.")
+        
+        # Validate vendors
+        existing_vendor_ids = set(Vendor.objects.filter(id__in=vendor_ids).values_list('id', flat=True))
+        missing_vendors = set(vendor_ids) - existing_vendor_ids
+        if missing_vendors:
+            raise serializers.ValidationError(f"Vendor(s) not found: {sorted(missing_vendors)}")
+
+        # Validate profiles
+        existing_profile_ids = set(AdvertisementProfile.objects.filter(id__in=profile_ids).values_list('id', flat=True))
+        missing_profiles = set(profile_ids) - existing_profile_ids
+        if missing_profiles:
+            raise serializers.ValidationError(f"AdvertisementProfile(s) not found: {sorted(missing_profiles)}")
 
         return data
     def create(self, validated_data):
         vendor_ids = validated_data['vendor_ids']
         profile_ids = validated_data['profile_ids']
 
-        vendors = Vendor.objects.filter(vendor_id__in=vendor_ids)
+        vendors = Vendor.objects.filter(id__in=vendor_ids)
         profiles = AdvertisementProfile.objects.filter(id__in=profile_ids)
 
         assigned_count = 0
@@ -265,43 +278,59 @@ class AdvertisementProfileAssignmentSerializer(serializers.Serializer):
             'skipped': skipped_count
         }
 
-    # def create(self, validated_data):
-    #     vendor_ids = validated_data['vendor_ids']
-    #     profile_ids = validated_data['profile_ids']
-
-    #     vendors = Vendor.objects.filter(id__in=vendor_ids)
-    #     profiles = AdvertisementProfile.objects.filter(id__in=profile_ids)
-
-    #     created = []
-    #     skipped = []
-
-    #     for vendor in vendors:
-    #         for profile in profiles:
-    #             if AdvertisementProfileAssignment.objects.filter(profile=profile, vendor=vendor).exists():
-    #                 skipped.append({
-    #                     'vendor_id': vendor.id,
-    #                     'vendor_name': vendor.name,
-    #                     'profile_id': profile.id,
-    #                     'profile_name': profile.name
-    #                 })
-    #                 continue
-
-    #             assignment = AdvertisementProfileAssignment.objects.create(profile=profile, vendor=vendor)
-    #             created.append({
-    #                 'vendor_id': vendor.id,
-    #                 'vendor_name': vendor.name,
-    #                 'profile_id': profile.id,
-    #                 'profile_name': profile.name,
-    #                 'assigned_at': assignment.assigned_at
-    #             })
-
-    #     return {
-    #         'assigned': created,
-    #         'skipped': skipped
-    #     }
-
 
 class AdvertisementProfileMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdvertisementProfile
         fields = ['id', 'name']
+
+class AdminOutletAutoDeleteSerializer(serializers.ModelSerializer):
+    auto_delete_hours = serializers.IntegerField(
+        required=False, allow_null=True, min_value=2,
+        help_text="Auto-delete order data after these many hours. Set null to disable."
+    )
+
+    class Meta:
+        model = AdminOutlet
+        fields = ['auto_delete_hours']
+    
+    def to_internal_value(self, data):
+        if 'auto_delete_hours' in data and data['auto_delete_hours'] == 'None':
+            data['auto_delete_hours'] = None 
+        return super().to_internal_value(data)
+
+class DashboardMetricsSerializer(serializers.ModelSerializer):
+    unmapped_keypad_devices = serializers.SerializerMethodField()
+    mapped_keypad_devices = serializers.SerializerMethodField()
+    unmapped_android_tvs = serializers.SerializerMethodField()
+    mapped_android_tvs = serializers.SerializerMethodField()
+    outlets = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AdminOutlet
+        fields = [
+            "outlets",
+            "mapped_keypad_devices",
+            "unmapped_keypad_devices", 
+            "mapped_android_tvs", 
+            "unmapped_android_tvs",  
+        ]
+
+    def get_outlets(self, obj):
+        return obj.vendors.count() if hasattr(obj, 'vendors') else 0
+    
+    def get_mapped_keypad_devices(self, obj):
+        unmapped = obj.device.all().filter(vendor__isnull=False).count()
+        return unmapped
+    
+    def get_unmapped_keypad_devices(self, obj):
+        unmapped = obj.device.all().filter(vendor__isnull=True).count()
+        return unmapped
+    
+    def get_mapped_android_tvs(self, obj):
+        mapped = obj.android_device.filter(vendor__isnull=False).count()
+        return mapped
+    
+    def get_unmapped_android_tvs(self, obj):
+        unmapped = obj.android_device.filter(vendor__isnull=True).count()
+        return unmapped
