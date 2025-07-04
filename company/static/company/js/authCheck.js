@@ -41,8 +41,6 @@ async function callProductAuthAPI() {
 
         localStorage.setItem('lastAuthCheck', getTodayDateString());
         AppUtils.setCustomerId(customerId);
-        localStorage.setItem('customer_id', customerId);
-
         // Send the returned data to company update API
         await updateCompanyInfo(result);
 
@@ -91,20 +89,38 @@ async function updateCompanyInfo(data) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    
-    const displayElement = document.getElementById('customer_id');
-    const customerIdRaw = AppUtils.getCustomerId('customer_id');
-    // const customerIdRaw = localStorage.getItem('customer_id');
-    if (customerIdRaw && displayElement) {
-        let customerId = parseInt(customerIdRaw, 10);
 
-        if (!isNaN(customerId)) {
-            let padded = customerId.toString().padStart(4, '0');  // ensure 4-digit format
-            displayElement.textContent = padded;
-        } else {
-            displayElement.textContent = 'Invalid ID';
-        }
+    const displayElement = document.getElementById('customer_info');
+    const customerIdRaw = AppUtils.getCustomerId();
+    const customerName = AppUtils.getCustomerName();
+
+    if (displayElement && customerIdRaw) {
+        let customerId = parseInt(customerIdRaw, 10);
+        let paddedId = !isNaN(customerId) ? customerId.toString().padStart(4, '0') : "Invalid";
+
+        // Always show ID, truncate name if needed
+        const nameHtml = `<span class="customer-name">${customerName}</span>`;
+        const idHtml = `<span class="customer-id">(ID: ${paddedId})</span>`;
+
+        displayElement.innerHTML = nameHtml + ' ' + idHtml;
+        displayElement.setAttribute("title", `${customerName} (ID: ${paddedId})`);
     }
+
+
+    
+    // const displayElement = document.getElementById('customer_id');
+    // const customerIdRaw = AppUtils.getCustomerId('customer_id');
+    // // const customerIdRaw = localStorage.getItem('customer_id');
+    // if (customerIdRaw && displayElement) {
+    //     let customerId = parseInt(customerIdRaw, 10);
+
+    //     if (!isNaN(customerId)) {
+    //         let padded = customerId.toString().padStart(4, '0');  // ensure 4-digit format
+    //         displayElement.textContent = padded;
+    //     } else {
+    //         displayElement.textContent = 'Invalid ID';
+    //     }
+    // }
     callProductAuthAPI();
     $(function () {
     $('[data-toggle="tooltip"]').tooltip();

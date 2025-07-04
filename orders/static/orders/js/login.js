@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function () {
     const loginForm = document.getElementById('loginForm');
 
@@ -28,9 +29,9 @@ document.addEventListener('DOMContentLoaded', function () {
             // Store data in localStorage
             localStorage.setItem('access_token', data.access);
             localStorage.setItem('refresh_token', data.refresh);
-            localStorage.setItem('username', data.user.username);
+            AppUtils.setCustomerName(data.user.username);
             localStorage.setItem('role', data.user.role);
-            localStorage.setItem('customer_id', data.user.customer_id || '');
+            AppUtils.setCustomerId(data.user.customer_id || '');
 
             // Redirect based on role
             const role = data.user.role;

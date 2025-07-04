@@ -32,21 +32,19 @@ export const ModalService = (() => {
     modalEl.querySelector(".modal-title").innerHTML = title;
     modalEl.querySelector(".modal-body").innerHTML = body;
 
-    const modal = new bootstrap.Modal(modalEl);
+    // Create modal with options: backdrop static, keyboard false
+    const modal = new bootstrap.Modal(modalEl, {
+      backdrop: 'static',   // Do NOT close on outside click
+      keyboard: false       // Do NOT close on ESC key
+    });
+
     modal.show();
 
     if (typeof onShown === 'function') {
-      setTimeout(onShown, 100); // wait until DOM is updated
+      setTimeout(onShown, 100); // After DOM is rendered
     }
-  }
+  };
 
-
-  // const showSuccess = (message = "Operation completed successfully.") => {
-  //   const modalBody = document.getElementById('successModalBody');
-  //   modalBody.innerText = message;
-  //   const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-  //   successModal.show();
-  // };
 
   return {
     showError,

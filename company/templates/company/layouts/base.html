@@ -43,7 +43,7 @@
         </li>
       </ul>
 
-      <ul class="navbar-nav ml-auto align-items-center">
+      {% comment %} <ul class="navbar-nav ml-auto align-items-center">
         <li class="nav-item mr-3 d-flex align-items-center">
           <span class="customer-label">
             Customer ID:
@@ -57,6 +57,18 @@
             <i class="fas fa-sign-out-alt mr-1"></i> Logout
           </a>
         </li>
+      </ul> {% endcomment %}
+      <ul class="navbar-nav ml-auto align-items-center">
+        <li class="nav-item mr-3 d-flex align-items-center">
+          <div id="customer_info" class="customer-info" title="">
+            <!-- Filled by JS: name + ID -->
+          </div>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'logout' %}" class="nav-link logout-link">
+            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+          </a>
+        </li>
       </ul>
     </nav>
     <!-- /.navbar -->
@@ -64,7 +76,7 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <a href="{% url 'company:dashboard' %}" class="brand-link">
-        <span class="brand-text font-weight-light">FoodFlash Company</span>
+        <img src="{% static 'company/images/foodflashlogo.png' %}" alt="FoodFlash Logo" class="brand-image">
       </a>
 
       <div class="sidebar">
@@ -103,6 +115,12 @@
               <a href="{% url 'company:keypad_devices' %}" class="nav-link {% if request.resolver_match.url_name == 'keypad_devices' %}active{% endif %}">
                 <i class="nav-icon fas fa-mobile-retro"></i>
                 <p>Keypad Devices</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'company:android_tvs' %}" class="nav-link {% if request.resolver_match.url_name == 'android_tvs' %}active{% endif %}">
+                <i class="nav-icon fas fa-tv"></i>
+                <p>Android TV's</p>
               </a>
             </li>
             <li class="nav-item">

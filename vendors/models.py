@@ -55,9 +55,9 @@ class Vendor(models.Model):
     location = models.CharField(max_length=255, blank=True, null=True)
     place_id = models.CharField(max_length=255, blank=True, null=True)
     vendor_id = models.IntegerField(unique=True)
-    location_id = models.CharField(max_length=20)  # Unique ID for each location
+    location_id = models.CharField(max_length=20)  
     logo = models.ImageField(upload_to='vendor_logos/', blank=True, null=True)
-    ads = models.TextField(blank=True, null=True)    # Stores JSON string of paths
+    ads = models.TextField(blank=True, null=True)  
     menus = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

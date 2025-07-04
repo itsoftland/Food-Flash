@@ -7,14 +7,14 @@
 <link rel="stylesheet" href="{% static 'company/css/confirm_dialogue.css' %}">
 {% endblock %}
 
-{% block title %}Keypad Devices{% endblock %}
+{% block title %}Android Tvs{% endblock %}
 
 {% block content %}
 <section class="content-header">
   <div class="container-fluid">
     <div class="row mb-2 align-items-center justify-content-between">
       <div class="col-sm-6">
-        <h1 class="page-title">Keypad Devices</h1>
+        <h1 class="page-title">Android Tvs</h1>
       </div>
     </div>
   </div>
@@ -41,13 +41,13 @@
             <thead class="thead-light">
               <tr>
                 <th>Id</th>
-                <th>Serial No</th>
+                <th>Mac Address</th>
                 <th>Outlet Name</th>
                 <th>Created Time</th>
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="keypad-devices-table-body">
+            <tbody id="android-tvs-table-body">
               <!-- JS Injected Rows -->
             </tbody>
           </table>
@@ -61,5 +61,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'company/js/keypadDevices.js' %}"></script>
+<script type="module" src="{% static 'company/js/androidTvs.js' %}"></script>
 {% endblock %}

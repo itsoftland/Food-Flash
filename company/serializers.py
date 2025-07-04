@@ -12,8 +12,6 @@ class VendorSerializer(serializers.ModelSerializer):
         model = Vendor
         fields = ['id','vendor_id', 'name', 'location']  
 
-from rest_framework import serializers
-from vendors.models import Vendor
 
 class VendorDetailSerializer(serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
@@ -334,3 +332,21 @@ class DashboardMetricsSerializer(serializers.ModelSerializer):
     def get_unmapped_android_tvs(self, obj):
         unmapped = obj.android_device.filter(vendor__isnull=True).count()
         return unmapped
+
+class DeviceSerializer(serializers.ModelSerializer):
+    vendor = VendorSerializer(read_only=True)
+    class Meta:
+        model = Device
+        fields = ['id', 'serial_no', 'vendor', 'created_at', 'updated_at']
+
+class AndroidDeviceSerializer(serializers.ModelSerializer):
+    vendor = VendorSerializer(read_only=True)
+
+    class Meta:
+        model = AndroidDevice
+        fields = ['id', 'mac_address', 'vendor', 'created_at', 'updated_at']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['mac_address'] = representation.pop('mac_address', None)
+        return representation

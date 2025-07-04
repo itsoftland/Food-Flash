@@ -30,7 +30,8 @@ from .serializers import (VendorSerializer,
                           AdvertisementProfileAssignmentSerializer,
                           AdvertisementProfileMiniSerializer,
                           AdminOutletAutoDeleteSerializer,
-                          DashboardMetricsSerializer
+                          DashboardMetricsSerializer,
+                          DeviceSerializer,AndroidDeviceSerializer,
                           )
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,10 @@ def update_outlet_page(request):
 @login_required
 def keypad_devices(request):
     return render(request, 'company/keypad_devices.html')
+
+@login_required
+def android_tvs(request):
+    return render(request, 'company/android_tvs.html')
 
 @login_required
 def banners(request):
@@ -667,5 +672,162 @@ def dashboard_metrics(request):
             {"error": "Something went wrong.", "details": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_devices(request):
+    admin_outlet = getattr(request.user, 'admin_outlet', None)
+    if not admin_outlet:
+        return Response({"error": "AdminOutlet not associated with this user."}, status=404)
+
+    filter_type = request.GET.get('filter', 'all')  # Options: mapped, unmapped, all
+
+    if filter_type == 'mapped':
+        print("mapped devices")
+        devices = Device.objects.filter(admin_outlet=admin_outlet,vendor__isnull=False)
+    elif filter_type == 'unmapped':
+        devices = Device.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
+    else:  # 'all' or invalid filter
+        # Return both mapped (only for this admin_outlet) and unmapped devices
+        devices = Device.objects.filter(Q(admin_outlet=admin_outlet) | Q(admin_outlet__isnull=True))
+
+    serializer = DeviceSerializer(devices, many=True)
+    return Response({
+        "message": "Devices fetched successfully.",
+        "devices": serializer.data,
+        "count": devices.count(),
+        }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unmap_device(request, device_id):
+    try:
+        device = Device.objects.get(id=device_id)
+
+        # Permission check
+        admin_outlet = getattr(request.user, 'admin_outlet', None)
+        if device.admin_outlet != admin_outlet:
+            return Response({"error": "You do not have permission to modify this device."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Unlink vendor
+        device.vendor = None
+        device.save(update_fields=['vendor'])
+
+        return Response({"message": "Vendor unmapped from device successfully."}, status=status.HTTP_200_OK)
+
+    except Device.DoesNotExist:
+        return Response({"error": "Device not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def map_device(request, device_id):
+    admin_outlet = getattr(request.user, 'admin_outlet', None)
+    if not admin_outlet:
+        return Response({"error": "AdminOutlet not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+    vendor_id = request.data.get('vendor_id')
+    if not vendor_id:
+        return Response({"error": "vendor_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        device = Device.objects.get(id=device_id)
+    except Device.DoesNotExist:
+        return Response({"error": "Device not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if device.admin_outlet != admin_outlet:
+        return Response({"error": "You do not have permission to modify this device."}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        vendor = Vendor.objects.get(id=vendor_id)
+    except Vendor.DoesNotExist:
+        return Response({"error": "Vendor not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # ✅ Enforce same admin outlet
+    if vendor.admin_outlet != admin_outlet:
+        return Response({"error": "Vendor does not belong to your admin outlet."}, status=status.HTTP_403_FORBIDDEN)
+
+    device.vendor = vendor
+    device.save(update_fields=['vendor'])
+
+    return Response({"message": "Vendor mapped to device successfully."}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_android_tvs(request):
+    admin_outlet = getattr(request.user, 'admin_outlet', None)
+    if not admin_outlet:
+        return Response({"error": "AdminOutlet not associated with this user."}, status=404)
+
+    filter_type = request.GET.get('filter', 'all')  # Options: mapped, unmapped, all
+
+    if filter_type == 'mapped':
+        android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet,vendor__isnull=False)
+    elif filter_type == 'unmapped':
+        android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
+    else:  # 'all' or invalid filter
+        # Return both mapped (only for this admin_outlet) and unmapped devices
+        android_tvs = AndroidDevice.objects.filter(Q(admin_outlet=admin_outlet) | Q(admin_outlet__isnull=True))
+
+    serializer = AndroidDeviceSerializer(android_tvs, many=True)
+    return Response({
+        "message": "Android TV's fetched successfully.",
+        "android_tvs": serializer.data,
+        "count": android_tvs.count(),
+        }, status=status.HTTP_200_OK)
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unmap_android_tvs(request, device_id):
+    try:
+        android_tvs = AndroidDevice.objects.get(id=device_id)
+
+        # Permission check
+        admin_outlet = getattr(request.user, 'admin_outlet', None)
+        if android_tvs.admin_outlet != admin_outlet:
+            return Response({"error": "You do not have permission to modify this device."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Unlink vendor
+        android_tvs.vendor = None
+        android_tvs.save(update_fields=['vendor'])
+
+        return Response({"message": "Vendor unmapped from device successfully."}, status=status.HTTP_200_OK)
+
+    except AndroidDevice.DoesNotExist:
+        return Response({"error": "Android TV not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def map_android_tvs(request, device_id):
+    admin_outlet = getattr(request.user, 'admin_outlet', None)
+    if not admin_outlet:
+        return Response({"error": "AdminOutlet not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+    vendor_id = request.data.get('vendor_id')
+    if not vendor_id:
+        return Response({"error": "vendor_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        android_tvs = AndroidDevice.objects.get(id=device_id)
+    except AndroidDevice.DoesNotExist:
+        return Response({"error": "Android TV not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if android_tvs.admin_outlet != admin_outlet:
+        return Response({"error": "You do not have permission to modify this device."}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        vendor = Vendor.objects.get(id=vendor_id)
+    except Vendor.DoesNotExist:
+        return Response({"error": "Vendor not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # ✅ Enforce same admin outlet
+    if vendor.admin_outlet != admin_outlet:
+        return Response({"error": "Vendor does not belong to your admin outlet."}, status=status.HTTP_403_FORBIDDEN)
+
+    android_tvs.vendor = vendor
+    android_tvs.save(update_fields=['vendor'])
+
+    return Response({"message": "Android TV mapped to  Vendor successfully."}, status=status.HTTP_200_OK)
+    
 
 
