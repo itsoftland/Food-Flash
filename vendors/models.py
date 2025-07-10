@@ -92,7 +92,7 @@ class Order(models.Model):
     ]
 
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="orders")
-    device = models.ForeignKey(Device, on_delete=models.SET_NULL,null=True, blank=True, related_name="orders")
+    device = models.ForeignKey(Device, on_delete=models.SET_NULL,null=True, blank=True, related_name="device_orders")
     token_no = models.IntegerField(validators=[
             MinValueValidator(0),
             MaxValueValidator(9999)
@@ -168,7 +168,7 @@ class AdvertisementProfile(models.Model):
     date_start = models.DateField(blank=True, null=True)
     date_end = models.DateField(blank=True, null=True)
     days_active = models.JSONField(blank=True, default=list,null=True) 
-    priority = models.PositiveSmallIntegerField(default=1)  # 1–10
+    priority = models.PositiveSmallIntegerField(default=1)  # 1–5
     images = models.ManyToManyField(AdvertisementImage, related_name='profiles', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -212,6 +212,7 @@ class AdvertisementProfileAssignment(models.Model):
 class ArchivedOrder(models.Model):
     original_order_id = models.IntegerField()
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
+    device = models.ForeignKey(Device, on_delete=models.SET_NULL, null=True, blank=True)
     token_no = models.IntegerField()
     status = models.CharField(max_length=20)
     counter_no = models.IntegerField()

@@ -350,3 +350,35 @@ class AndroidDeviceSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['mac_address'] = representation.pop('mac_address', None)
         return representation
+
+from rest_framework import serializers
+from vendors.models import Order
+
+class OrderSerializer(serializers.ModelSerializer):
+    outlet_name = serializers.SerializerMethodField()
+    vendor_id = serializers.IntegerField(source='vendor.id')
+    vendor_name = serializers.CharField(source='vendor.name', read_only=True)
+    device_id = serializers.IntegerField(source='device.id', allow_null=True, read_only=True)
+    device_name = serializers.CharField(source='device.serial_no', allow_null=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'id',
+            'token_no',
+            'status',
+            'counter_no',
+            'shown_on_tv',
+            'notified_at',
+            'updated_by',
+            'created_at',
+            'updated_at',
+            'vendor_id',
+            'vendor_name',
+            'device_id',
+            'device_name',
+            'outlet_name',
+        ]
+
+    def get_outlet_name(self, obj):
+        return obj.vendor.admin_outlet.customer_name if obj.vendor and obj.vendor.admin_outlet else None

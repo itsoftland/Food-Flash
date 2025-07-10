@@ -157,20 +157,28 @@ def register_device(request):
     serial_no = request.data.get('serial_no')
     customer_id = request.data.get('customer_id')
 
+    request_ip = request.META.get('REMOTE_ADDR', 'Unknown')
+    user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
+    logger.info("Device registration attempt from IP: %s | User-Agent: %s", request_ip, user_agent)
+    logger.debug("Incoming data — Serial No: %s, Customer ID: %s", serial_no, customer_id)
+
     if not serial_no or not customer_id:
+        logger.warning("Missing fields: serial_no=%s, customer_id=%s", serial_no, customer_id)
         return Response({"error": "Fields 'serial_no' and 'customer_id' are required."}, status=400)
 
     try:
         # Step 1: Validate customer
         customer = AdminOutlet.objects.get(customer_id=customer_id)
-        
+        logger.info("Validated customer: %s", customer_id)
+
         try:
             # Step 2: Check if device exists with this serial_no
             existing_device = Device.objects.get(serial_no=serial_no)
+            logger.info("Device with serial %s already exists", serial_no)
 
             if existing_device.admin_outlet == customer:
-                # Same customer and same serial — already registered
                 if existing_device.vendor is not None:
+                    logger.info("Device already mapped to vendor: %s", existing_device.vendor.vendor_id)
                     return Response({
                         "status": "Device is already registered and mapped to vendor.",
                         "mapped": True,
@@ -178,6 +186,7 @@ def register_device(request):
                         "vendor_name": existing_device.vendor.name,
                     }, status=200)
                 else:
+                    logger.info("Device is registered but not mapped to any vendor.")
                     return Response({
                         "status": "Device is already registered but not yet mapped to a vendor.",
                         "mapped": False,
@@ -185,18 +194,19 @@ def register_device(request):
                         "vendor_name": None,
                     }, status=200)
             else:
-                # Serial exists but with a different customer
+                logger.warning("Device serial conflict: Already registered with another customer.")
                 return Response({
                     "error": "Serial number already registered with another customer."
                 }, status=409)
 
         except Device.DoesNotExist:
-            # Step 4: New device, create
+            # Step 4: New device, create it
             device = Device.objects.create(
                 serial_no=serial_no,
                 admin_outlet=customer,
-                vendor=None  # vendor can be assigned later
+                vendor=None
             )
+            logger.info("New device registered: %s for customer: %s", serial_no, customer_id)
             return Response({
                 "status": "Device is registered but not yet mapped to a vendor.",
                 "mapped": False,
@@ -205,7 +215,9 @@ def register_device(request):
             }, status=201)
 
     except AdminOutlet.DoesNotExist:
+        logger.error("Customer not found: %s", customer_id)
         return Response({"error": "Customer not found."}, status=404)
+
 
 
 @api_view(['POST'])
@@ -347,6 +359,8 @@ def update_order(request):
             # Update the order's status and counter number
             order.status = status_to_update
             order.counter_no = counter_no
+            order.device = device
+            # Save the order
             order.save()
         except Order.DoesNotExist:
             logger.info(f"No existing order found for token {token_no}. Creating a new order.")

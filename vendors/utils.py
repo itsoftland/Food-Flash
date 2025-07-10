@@ -55,6 +55,7 @@ def archive_order(order):
     ArchivedOrder.objects.create(
         original_order_id=order.id,
         vendor=order.vendor,
+        device=order.device,
         token_no=order.token_no,
         status=order.status,
         counter_no=order.counter_no,

@@ -170,6 +170,29 @@
                 <p>Configurations</p>
               </a>
             </li>
+            <li class="nav-item has-treeview {% if request.resolver_match.url_name == 'total_orders' or request.resolver_match.url_name == 'order_details' %}menu-open{% endif %}">
+              <a href="#" class="nav-link {% if request.resolver_match.url_name == 'total_orders' or request.resolver_match.url_name == 'order_details' %}active{% endif %}">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                  Analytics
+                  <i class="right fas fa-angle-down"></i> 
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{% url 'company:total_orders' %}" class="nav-link {% if request.resolver_match.url_name == 'total_orders' %}active{% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Total Orders</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'company:order_details' %}" class="nav-link {% if request.resolver_match.url_name == 'order_details' %}active{% endif %}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Order Details</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
           </ul>
         </nav>
       </div>

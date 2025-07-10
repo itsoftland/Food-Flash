@@ -101,14 +101,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!res.ok) {
               const err = await res.json();
-              alert(`Error: ${err.error || 'Unable to unlink device.'}`);
+              ModalService.showError(`Error: ${err.error || 'Unable to unlink device.'}`);
               return;
             }
+
             ModalService.showSuccess(`Device #${serialNo} unlinked successfully.`, () => {
               loadDevices(filterDropdown.value);
             });
           } catch (err) {
             console.error('Error unlinking device:', err);
+            ModalService.showError(`Unexpected error occurred while unlinking device.`);
           }
         } else {
           openMapDeviceModal(deviceId, serialNo);

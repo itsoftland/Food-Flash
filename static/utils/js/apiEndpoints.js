@@ -8,6 +8,10 @@ export const API_ENDPOINTS = {
   MAP_DEVICE: '/company/api/map_device/',           
   UNMAP_DEVICE: '/company/api/unmap_device/',     
   GET_ANDROID_TVS: '/company/api/get_android_tvs/',  
+  MAP_ANDROID_TVS: '/company/api/map_android_tvs/',
+  UNMAP_ANDROID_TVS: '/company/api/unmap_android_tvs/',
+  ORDER_COUNTS_SUMMARY: '/company/api/order_counts_summary/',
+  FILTERED_ORDERS: '/company/api/filtered_orders/',
   
   // Add more endpoints here
 };

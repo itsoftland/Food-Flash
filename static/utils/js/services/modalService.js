@@ -4,20 +4,30 @@ export const ModalService = (() => {
   const showError = (message = "An unknown error occurred.") => {
     const modalBody = document.getElementById('errorModalBody');
     modalBody.innerText = message;
-    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+
+    const errorModalEl = document.getElementById('errorModal');
+    const errorModal = new bootstrap.Modal(errorModalEl, {
+      backdrop: 'static',   // Prevent close on outside click
+      keyboard: false       // Prevent close on ESC key
+    });
+
     errorModal.show();
   };
+
   const showSuccess = (message = "Operation completed successfully.", onOkCallback = null) => {
     const modalBody = document.getElementById('successModalBody');
     const successModalEl = document.getElementById('successModal');
-    const successModal = new bootstrap.Modal(successModalEl);
+    const successModal = new bootstrap.Modal(successModalEl, {
+      backdrop: 'static',   // Prevent close on outside click
+      keyboard: false       // Prevent close on ESC key
+    });
 
     modalBody.innerText = message;
 
-    // Get OK button and remove previous click listener if any
+    // Replace OK button to remove any previous click listeners
     const okBtn = successModalEl.querySelector('.success-ok-btn');
     const newOkBtn = okBtn.cloneNode(true);
-    okBtn.parentNode.replaceChild(newOkBtn, okBtn); // Prevent multiple listeners
+    okBtn.parentNode.replaceChild(newOkBtn, okBtn);
 
     newOkBtn.addEventListener('click', () => {
       if (typeof onOkCallback === 'function') {
@@ -27,24 +37,23 @@ export const ModalService = (() => {
 
     successModal.show();
   };
+
   const showCustom = ({ title, body, onShown }) => {
     const modalEl = document.getElementById("customModal");
     modalEl.querySelector(".modal-title").innerHTML = title;
     modalEl.querySelector(".modal-body").innerHTML = body;
 
-    // Create modal with options: backdrop static, keyboard false
     const modal = new bootstrap.Modal(modalEl, {
-      backdrop: 'static',   // Do NOT close on outside click
-      keyboard: false       // Do NOT close on ESC key
+      backdrop: 'static',
+      keyboard: false
     });
 
     modal.show();
 
     if (typeof onShown === 'function') {
-      setTimeout(onShown, 100); // After DOM is rendered
+      setTimeout(onShown, 100);
     }
   };
-
 
   return {
     showError,

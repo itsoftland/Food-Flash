@@ -15,6 +15,8 @@ urlpatterns = [
     path('mapped_list/', views.mapped_list, name='mapped_list'),
     path('banners/', views.banners, name='banners'), 
     path('configurations/', views.configurations, name='configurations'), 
+    path('total_orders/', views.total_orders, name='total_orders'),
+    path('order_details/', views.order_details, name='order_details'),
     path('api/create_vendor/', views.create_vendor, name='create_vendor'),
     path('api/update_vendor/', views.update_vendor, name='update_vendor'),
     path('api/get_vendors/', views.get_vendors, name='get_vendors'),
@@ -37,6 +39,8 @@ urlpatterns = [
     path('api/get_vendor_details/', views.get_vendor_details, name='get_vendor_details'),
     path('api/get_outlet_creation_data/', views.get_outlet_creation_data, name='get_outlet_creation_data'),
     path('api/config/', views.config, name='config'), 
+    path('api/order_counts_summary/', views.order_counts_summary, name='order_counts_summary'),
+    path('api/filtered_orders/', views.filtered_orders, name='get_orders'),
     path('api/dashboard_metrics/', views.dashboard_metrics, name='dashboard_metrics'),  
 ]
  

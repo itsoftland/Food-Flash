@@ -95,20 +95,24 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (!confirmed) return;
 
           try {
-            const res = await fetchWithAutoRefresh(`${API_ENDPOINTS.UNMAP_DEVICE}${deviceId}/`, {
+            const res = await fetchWithAutoRefresh(`${API_ENDPOINTS.UNMAP_ANDROID_TVS}${deviceId}/`, {
               method: 'POST',
             });
 
             if (!res.ok) {
               const err = await res.json();
-              alert(`Error: ${err.error || 'Unable to unlink device.'}`);
+              ModalService.showError(`Error: ${err.error || 'Unable to unlink device.'}`);
               return;
             }
 
-            loadDevices(filterDropdown.value);
+            ModalService.showSuccess(`Device #${macAddress} unlinked successfully.`, () => {
+              loadDevices(filterDropdown.value);
+            });
           } catch (err) {
             console.error('Error unlinking device:', err);
+            ModalService.showError(`Unexpected error occurred while unlinking device.`);
           }
+
         } else {
           openMapDeviceModal(deviceId, macAddress);
         }
@@ -165,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
 
           try {
-            const res = await fetchWithAutoRefresh(`${API_ENDPOINTS.MAP_DEVICE}${deviceId}/`, {
+            const res = await fetchWithAutoRefresh(`${API_ENDPOINTS.MAP_ANDROID_TVS}${deviceId}/`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ vendor_id: vendorId }),

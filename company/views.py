@@ -8,6 +8,8 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from itertools import chain
+from operator import attrgetter
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
@@ -18,9 +20,12 @@ from rest_framework.response import Response
 from vendors.models import (Vendor, Device, AdminOutlet,
                             AndroidDevice,AdvertisementImage,
                             AdvertisementProfileAssignment,
-                            AdvertisementProfile)
+                            AdvertisementProfile,Order,
+                            ArchivedOrder)
 
 from static.utils.functions.validation import validate_fields
+from static.utils.functions.utils import get_time_ranges,get_filtered_date_range
+from static.utils.functions.pagination import get_paginated_data
 from .serializers import (VendorSerializer,
                           VendorDetailSerializer,
                           UnmappedVendorDetailSerializer,
@@ -32,6 +37,7 @@ from .serializers import (VendorSerializer,
                           AdminOutletAutoDeleteSerializer,
                           DashboardMetricsSerializer,
                           DeviceSerializer,AndroidDeviceSerializer,
+                          OrderSerializer
                           )
 
 logger = logging.getLogger(__name__)
@@ -84,7 +90,13 @@ def mapped_list(request):
 def configurations(request):
     return render(request, "company/configurations.html")
 
+@login_required
+def total_orders(request):
+    return render(request, 'company/analytics/total_orders.html')
 
+@login_required
+def order_details(request):
+    return render(request, 'company/analytics/order_details.html')
 
 @api_view(['GET']) 
 @permission_classes([IsAuthenticated])
@@ -828,6 +840,109 @@ def map_android_tvs(request, device_id):
     android_tvs.save(update_fields=['vendor'])
 
     return Response({"message": "Android TV mapped to  Vendor successfully."}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def order_counts_summary(request):
+    user = request.user
+    admin_outlet = getattr(user, 'admin_outlet', None)
+
+    if not admin_outlet:
+        return Response({'error': 'No admin outlet found for this user.'}, status=403)
+
+    vendors = admin_outlet.vendors.all()
     
+    start_today, start_week, start_month = get_time_ranges()
+
+    def count_orders_for_range(start_time):
+        return (
+            Order.objects.filter(vendor__in=vendors, created_at__gte=start_time).count() +
+            ArchivedOrder.objects.filter(vendor__in=vendors, created_at__gte=start_time).count()
+        )
+
+    return Response({
+        "orders_today": count_orders_for_range(start_today),
+        "orders_this_week": count_orders_for_range(start_week),
+        "orders_this_month": count_orders_for_range(start_month)
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def filtered_orders(request):
+    """ Fetches and filters both active and archived orders based on various query parameters.
+    """
+    try:
+        admin_outlet = request.user.admin_outlet
+    except AttributeError:
+        return Response({"error": "Admin outlet not linked to this user."}, status=403)
+
+    vendors_qs = admin_outlet.vendors.all()
+
+    # ✅ Prepare base queryset for both models
+    base_filter = {
+        'vendor__in': vendors_qs
+    }
+
+    # Optional filters
+    outlet_id = request.GET.get('outlet_id')
+    if outlet_id:
+        base_filter['vendor__id'] = outlet_id
+
+    device_id = request.GET.get('device_id')
+    if device_id:
+        base_filter['device__id'] = device_id
+
+    status = request.GET.get('status')
+    if status in ['preparing', 'ready']:
+        base_filter['status'] = status
+
+    shown = request.GET.get('shown_on_tv')
+
+    if shown == 'true':
+        base_filter['shown_on_tv'] = True
+    elif shown == 'false':
+        base_filter['shown_on_tv'] = False
+
+
+    notified = request.GET.get('notified')
+    if notified == 'true':
+        base_filter['notified_at__isnull'] = False
+    elif notified == 'false':
+        base_filter['notified_at__isnull'] = True
+
+    # ✅ Date filter
+    date_range = request.GET.get('range', 'today')
+    from_date = request.GET.get('from')
+    to_date = request.GET.get('to')
+    start, end = get_filtered_date_range(date_range, from_date, to_date)
+    if start and end:
+        base_filter['created_at__gte'] = start
+        base_filter['created_at__lt'] = end
+
+    # ✅ Apply same filter to both Order and ArchivedOrder
+    active_orders = Order.objects.filter(**base_filter)
+    archived_orders = ArchivedOrder.objects.filter(**base_filter)
+
+    # ✅ Combine both lists and sort by created_at descending
+    combined_orders = sorted(
+        chain(active_orders, archived_orders),
+        key=attrgetter('created_at'),
+        reverse=True
+    )
+    # ✅ Serialize the combined queryset
+    paginated_data = get_paginated_data(combined_orders, request, OrderSerializer)
+
+    return Response({
+        "data": paginated_data["data"],
+        "meta": {
+            "total": paginated_data["total"],
+            "page": paginated_data["page"],
+            "page_size": paginated_data["page_size"],
+            "has_next": paginated_data["has_next"],
+            "has_previous": paginated_data["has_previous"]
+        }
+    }, status=200)
+
 
 
