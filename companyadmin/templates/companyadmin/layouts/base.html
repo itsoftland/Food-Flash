@@ -65,19 +65,19 @@
             </a>
           </li>
 
-          {% comment %} <li class="nav-item">
+          {% comment %} {% comment %} <li class="nav-item">
             <a href="{% url 'company_list' %}" class="nav-link {% if request.resolver_match.url_name == 'company_list' %}active{% endif %}">
               <i class="nav-icon fas fa-list"></i>
               <p>Company List</p>
             </a>
-          </li>
+          </li> {% endcomment %}
 
           <li class="nav-item">
-            <a href="{% url 'vendor_management' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor_management' %}active{% endif %}">
-              <i class="nav-icon fas fa-user-cog"></i>
-              <p>Vendor Management</p>
+            <a href="{% url 'companyadmin:order_update' %}" class="nav-link {% if request.resolver_match.url_name == 'order_update' %}active{% endif %}">
+              <i class="nav-icon fa-solid fa-pen-to-square"></i>
+              <p>Order Update</p>
             </a>
-          </li> {% endcomment %}
+          </li>
         </ul>
       </nav>
     </div>

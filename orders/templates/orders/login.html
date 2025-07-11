@@ -10,6 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="{% static 'orders/images/food-flash-logo.ico' %}" type="image/x-icon">
   <link rel="stylesheet" href="{% static 'orders/css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'utils/css/modals.css' %}">
 </head>
 <body class="hold-transition login-page">
 
@@ -56,12 +57,12 @@
     </div>
   </div>
 </div>
-
+{% include "company/partials/modals.html" %}
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-<script src="{% static 'orders/js/login.js' %}"></script>
+<script type ="module" src="{% static 'orders/js/login.js' %}"></script>
 <script type ="module" src="{% static 'utils/js/utils.js' %}"></script>
 </body>
 </html>

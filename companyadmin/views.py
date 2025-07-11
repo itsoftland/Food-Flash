@@ -10,10 +10,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from orders.serializers import AdminOutletSerializer
 from vendors.models import Vendor,AdminOutlet
-
+@login_required
 def registration(request):
     cache.clear()
     return render(request, 'companyadmin/registration.html')
+
+@login_required
+def order_update(request):
+    cache.clear()
+    return render(request, 'companyadmin/update_order.html')
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

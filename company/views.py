@@ -915,6 +915,8 @@ def filtered_orders(request):
     date_range = request.GET.get('range', 'today')
     from_date = request.GET.get('from')
     to_date = request.GET.get('to')
+    if from_date and to_date:
+        print("Using custom date range from {} to {}".format(from_date, to_date))
     start, end = get_filtered_date_range(date_range, from_date, to_date)
     if start and end:
         base_filter['created_at__gte'] = start

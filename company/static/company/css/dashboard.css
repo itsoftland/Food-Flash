@@ -44,7 +44,7 @@
   background-color: var(--outlets);
 }
 
-.icon-circle.mapped-keypad-devices {
+.icon-circle.keypad-devices {
   background-color: var(--mapped-keypad-devices);
 }
 
@@ -52,7 +52,7 @@
   background-color: var(--unmapped-keypad-devices);
 }
 
-.icon-circle.mapped-android-tvs {
+.icon-circle.android-tvs {
   background-color: var(--mapped-android-tvs);
 }
 

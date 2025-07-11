@@ -7,4 +7,5 @@ urlpatterns = [
     path('api/product-registration/', views.product_registration, name='product-registration'),
     path('api/product-authentication/', views.product_authentication, name='product-authentication'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('order_update/', views.order_update, name='order_update'),
 ]

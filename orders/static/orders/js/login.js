@@ -1,5 +1,7 @@
+import { callProductAuthAPI } from '/static/utils/js/services/productAuthService.js';
+import { ModalService } from '/static/utils/js/services/modalService.js';
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async () => {
     const loginForm = document.getElementById('loginForm');
 
     loginForm.addEventListener('submit', async function (e) {
@@ -20,27 +22,46 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             const data = await response.json();
+            console.log('Login response:', data);
 
             if (!response.ok) {
                 alert(data.error || 'Login failed');
                 return;
             }
 
-            // Store data in localStorage
+            const role = data.user.role;
+
+            // Store tokens
             localStorage.setItem('access_token', data.access);
             localStorage.setItem('refresh_token', data.refresh);
             AppUtils.setCustomerName(data.user.username);
-            localStorage.setItem('role', data.user.role);
-            AppUtils.setCustomerId(data.user.customer_id || '');
+            localStorage.setItem('role', role);
+
+            // Only set customer_id if not Super Admin
+            if (role !== 'Company Admin') {
+                AppUtils.setCustomerId(data.user.customer_id || '');
+                console.log('✅ customer_id after setting:', localStorage.getItem('customer_id'));
+
+                // Validate license only for non-Super Admin users
+                const isAuthValid = await callProductAuthAPI();
+
+                if (!isAuthValid) {
+                    ModalService.showError("Your license has expired. Please click OK to return to login.", () => {
+                        window.location.href = '/login/';
+                    });
+                    return;
+                }
+            }
 
             // Redirect based on role
-            const role = data.user.role;
             if (role === 'Company Admin') {
                 window.location.href = '/companyadmin/dashboard/';
             } else if (role === 'Company') {
                 window.location.href = '/company/dashboard/';
             } else if (role === 'Outlet') {
                 window.location.href = '/vendor/dashboard/';
+            } else if (role === 'Super Admin') {
+                window.location.href = '/superadmin/dashboard/';
             } else {
                 alert('Unknown user role');
             }

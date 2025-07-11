@@ -12,6 +12,9 @@ export const API_ENDPOINTS = {
   UNMAP_ANDROID_TVS: '/company/api/unmap_android_tvs/',
   ORDER_COUNTS_SUMMARY: '/company/api/order_counts_summary/',
   FILTERED_ORDERS: '/company/api/filtered_orders/',
+  PRODUCT_AUTH_URL : '/companyadmin/api/product-authentication/',
+  COMPANY_UPDATE_URL : '/api/company-update/',
+
   
   // Add more endpoints here
 };

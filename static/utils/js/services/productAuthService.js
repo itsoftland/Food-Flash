@@ -1,57 +1,61 @@
-var PRODUCT_AUTH_URL = '/api/product-authentication/';
-var COMPANY_UPDATE_URL = '/api/company-update/';
 
-function getTodayDateString() {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-}
+import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService.js';
+import { API_ENDPOINTS} from '/static/utils/js/apiEndpoints.js';
 
-async function callProductAuthAPI() {
+/**
+ * Main function to check product authentication and update company info accordingly.
+ */
+export async function callProductAuthAPI() {
     try {
         const customerId = localStorage.getItem("customer_id");
-        console.log(customerId);
+        
+        console.log('Customer ID for auth check:', customerId);
         if (!customerId) {
             console.warn('No customerId found, skipping product auth check.');
-            return;
+            return false;
         }
 
-        const response = await fetch(PRODUCT_AUTH_URL, {
+        const response = await fetchWithAutoRefresh(API_ENDPOINTS.PRODUCT_AUTH_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': AppUtils.getCSRFToken()
             },
             credentials: 'include',
-            body: JSON.stringify({
-                CustomerId: customerId
-            })
+            body: JSON.stringify({ CustomerId: customerId })
         });
 
         if (!response.ok) throw new Error('Auth API failed');
-
         const result = await response.json();
+
         console.log('✅ Product Auth Response:', result);
 
-        if (result.Authenticationstatus === 'Expired') {
-            alert("Your license has expired.");
+        // Check for license expiration
+        if (result.Authenticationstatus === 'Your licence is expired. Please contact Admin !!!') {
+            await updateCompanyInfo({
+                ...result,
+                CustomerId: customerId
+            });
             localStorage.clear();
-            window.location.href = "/login/";
-            return;
+            return false; 
         }
 
         localStorage.setItem('lastAuthCheck', getTodayDateString());
-
-        // Send the returned data to company update API
+        AppUtils.setCustomerId(customerId);
         await updateCompanyInfo(result);
+        return true; // license valid
 
     } catch (error) {
         console.error('Auth API call failed:', error);
+        return false;
     }
 }
 
+
+
 async function updateCompanyInfo(data) {
     try {
-        const response = await fetch(COMPANY_UPDATE_URL, {
+        const response = await fetchWithAutoRefresh(API_ENDPOINTS.COMPANY_UPDATE_URL, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -73,7 +77,7 @@ async function updateCompanyInfo(data) {
                 keypad_device_count: data.KeypadDeviceCount,
                 led_display_count: data.LedDisplayCount,
                 outlet_count: data.OutletCount,
-                locations: data.Locations  // If stored as JSON string
+                locations: data.Locations
             })
         });
 
@@ -88,6 +92,10 @@ async function updateCompanyInfo(data) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    callProductAuthAPI();
-});
+/**
+ * Returns today's date in YYYY-MM-DD format.
+ */
+function getTodayDateString() {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+}

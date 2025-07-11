@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function setupOutletGreeting() {
   const welcomeInfoContainer = document.getElementById('welcome-info');
-  const outletName = localStorage.getItem('username') || 'Admin';
+  const outletName = localStorage.getItem('customer_name') || 'Admin';
   welcomeInfoContainer.innerHTML = `<span class="text-golden fw-bold">Welcome, ${outletName}</span>`;
 }
 async function getDashboardMetrics() {
@@ -27,10 +27,14 @@ async function getDashboardMetrics() {
     const data = await response.json();
 
     const iconMap = {
-      mapped_keypad_devices: "mobile-retro",
-      unmapped_keypad_devices: "ban",
-      mapped_android_tvs: "tv",
-      unmapped_android_tvs: "ban",
+      // mapped_keypad_devices: "mobile-retro",
+      // unmapped_keypad_devices: "ban",
+      // mapped_android_tvs: "tv",
+      // unmapped_android_tvs: "ban",
+      keypad_devices: "mobile-retro",
+      // unmapped_keypad_devices: "ban",
+      android_tvs: "tv",
+      // unmapped_android_tvs: "ban",
       outlets: "store",
     };
 
@@ -40,6 +44,7 @@ async function getDashboardMetrics() {
 
       const className = `icon-circle ${key.replaceAll('_', '-')}`;
       const formattedKey = key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      console.log(iconMap[key], key, value);
 
       card.innerHTML = `
         <div class="metric-card shadow-sm h-100">

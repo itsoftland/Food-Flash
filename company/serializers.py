@@ -298,24 +298,34 @@ class AdminOutletAutoDeleteSerializer(serializers.ModelSerializer):
         return super().to_internal_value(data)
 
 class DashboardMetricsSerializer(serializers.ModelSerializer):
-    unmapped_keypad_devices = serializers.SerializerMethodField()
-    mapped_keypad_devices = serializers.SerializerMethodField()
-    unmapped_android_tvs = serializers.SerializerMethodField()
-    mapped_android_tvs = serializers.SerializerMethodField()
+    keypad_devices = serializers.SerializerMethodField()
+    android_tvs = serializers.SerializerMethodField()
+    # unmapped_keypad_devices = serializers.SerializerMethodField()
+    # mapped_keypad_devices = serializers.SerializerMethodField()
+    # unmapped_android_tvs = serializers.SerializerMethodField()
+    # mapped_android_tvs = serializers.SerializerMethodField()
     outlets = serializers.SerializerMethodField()
 
     class Meta:
         model = AdminOutlet
         fields = [
             "outlets",
-            "mapped_keypad_devices",
-            "unmapped_keypad_devices", 
-            "mapped_android_tvs", 
-            "unmapped_android_tvs",  
+            # "mapped_keypad_devices",
+            # "unmapped_keypad_devices", 
+            # "mapped_android_tvs", 
+            # "unmapped_android_tvs", 
+            "android_tvs",
+            "keypad_devices"
         ]
 
     def get_outlets(self, obj):
         return obj.vendors.count() if hasattr(obj, 'vendors') else 0
+    
+    def get_keypad_devices(self, obj):
+        return obj.device.count() if hasattr(obj, 'device') else 0
+    
+    def get_android_tvs(self, obj):
+        return obj.android_device.count() if hasattr(obj, 'android_device') else 0
     
     def get_mapped_keypad_devices(self, obj):
         unmapped = obj.device.all().filter(vendor__isnull=False).count()

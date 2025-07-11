@@ -26,8 +26,8 @@ def get_filtered_date_range(date_range, from_date_str=None, to_date_str=None):
         return start_of_month, now
     elif date_range == 'custom':
         try:
-            from_dt = datetime.strptime(from_date_str, "%Y-%m-%d")
-            to_dt = datetime.strptime(to_date_str, "%Y-%m-%d") + timedelta(days=1)
+            from_dt = timezone.make_aware(datetime.strptime(from_date_str, "%Y-%m-%d"))
+            to_dt = timezone.make_aware(datetime.strptime(to_date_str, "%Y-%m-%d") + timedelta(days=1))
             return from_dt, to_dt
         except (ValueError, TypeError):
             return None, None
