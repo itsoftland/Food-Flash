@@ -70,7 +70,7 @@ def check_status(request):
 
     try:
         # Try to fetch the existing order by token_no
-        order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id)
+        order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id,updated_by='customer')
         vendor_serializer = VendorLogoSerializer(order.vendor, context={'request': request})
         logo_url = vendor_serializer.data.get('logo_url', '')
         data = {
@@ -97,6 +97,7 @@ def check_status(request):
                 'token_no': token_no,
                 'vendor': vendor.id,
                 'status': 'preparing',
+                'updated_by': 'customer',
             }
             serializer = OrdersSerializer(data=new_order_data)
             if serializer.is_valid():

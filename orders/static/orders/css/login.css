@@ -1,58 +1,79 @@
+/* Background */
+body.login-page {
+  background: url("/static/utils/Images/foodflash-login-bg.png") no-repeat center center fixed;
+  background-size: cover;
+  background-color: #f9f4ed; 
+}
 
-  body.login-page {
-    background-color: #f4f4f8; /* soft background */
-  }
-
-  .login-logo a {
-    color: #fb8b24; /* golden accent */
-    font-weight: 600;
-    font-size: 1.8rem;
-  }
-
-  .card {
-    border-radius: 1rem;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-  }
-
-  .login-card-body {
-    background-color: #ffffff;
-    border-radius: 1rem;
-    padding: 2rem;
-  }
-
-  .btn-primary {
-    background-color: #f0a934;
-    border-color: #f0a934;
-    border-radius: 0.5rem;
-  }
-
-  .btn-primary:hover {
-    background-color: #fb8b24;
-    border-color: #fb8b24;
-  }
-
-  .form-control {
-    border-radius: 0.5rem;
-  }
-
-  .input-group-text {
-    background-color: #f0f0f0;
-    border-radius: 0.5rem;
-    border: none;
-  }
-
-  .icheck-primary input[type="checkbox"] + label::before {
-    border-radius: 0.25rem;
-    border-color: #fb8b24;
-  }
-
-  .icheck-primary input[type="checkbox"]:checked + label::before {
-    background-color: #fb8b24;
-    border-color: #fb8b24;
-  }
+/* Logo Styling */
+.login-logo a {
+  color: #fb8b24; 
+  font-weight: 600;
+  font-size: 1.8rem;
+}
 
 .login-logo img {
   max-height: 200px;
   display: inline-block;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); /* Soft shadow */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Card Styling */
+.card {
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #f0a934; 
+}
+
+.login-card-body {
+  background-color: #ffdda3;
+  border-radius: 1rem;
+  padding: 2rem;
+}
+
+/* Form Controls */
+.form-control {
+  border-radius: 0.5rem;
+  border: 1px solid #e6b97e;      
+  background-color: #fff5e6;           
+  color: #5a4a3c;                      
+  box-shadow: none;
+}
+
+.input-group-text {
+  background-color: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+}
+
+/* Button */
+.btn-primary {
+  background-color: #f0a934;
+  border-color: #f0a934;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: #fb8b24;
+  border-color: #fb8b24;
+}
+
+/* Optional Checkbox */
+.icheck-primary input[type="checkbox"] + label::before {
+  border-radius: 0.25rem;
+  border-color: #fb8b24;
+}
+
+.icheck-primary input[type="checkbox"]:checked + label::before {
+  background-color: #fb8b24;
+  border-color: #fb8b24;
+}
+
+/* Login message */
+.login-box-msg {
+  font-size: 1.05rem;
+  color: #444;
+  margin-bottom: 1.5rem;
 }

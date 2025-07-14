@@ -87,8 +87,10 @@ class Order(models.Model):
         ('ready', 'Ready'),
     ]
     USER_CHOICES = [
-        ('client', 'Client'),
+        ('keypad_device', 'Keypad Device'),
         ('customer', 'Customer'),
+        ('manager', 'Manager'),
+        ('admin', 'Admin'),
     ]
 
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="orders")
@@ -101,7 +103,7 @@ class Order(models.Model):
     counter_no = models.IntegerField(default=1)
     shown_on_tv = models.BooleanField(default=False)
     notified_at = models.DateTimeField(null=True, blank=True, default=None)
-    updated_by = models.CharField(max_length=20, choices=USER_CHOICES, default='client')
+    updated_by = models.CharField(max_length=20, choices=USER_CHOICES, default='keypad_device')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

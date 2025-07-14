@@ -19,40 +19,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     let locationId = urlParams.get("location_id");
     const vendorFromQR = urlParams.get('vendor_id');
+    const tokenFromQR = urlParams.get('token_no');
     const toggleBtn = document.getElementById("toggleArrowBtn");
-    const adSlider = document.querySelector(".ad-slider");
     const pageWrapper = document.querySelector(".page-wrapper");
 
     let isAdVisible = true;
 
-    // toggleBtn.addEventListener("click", function () {
-    //     if (isAdVisible) {
-    //         adSlider.style.display = "none";
-    //         pageWrapper.style.top = "119px"; 
-    //         pageWrapper.style.borderTop = "1px solid #fdbf50";
-    //         toggleBtn.classList.add("rotated");
-    //     } else {
-    //         adSlider.style.display = "block";
-    //         pageWrapper.style.top = "270px";
-    //         toggleBtn.classList.remove("rotated");
-    //         pageWrapper.style.borderTop ="none";
-    //     }
-    //     isAdVisible = !isAdVisible;
-    // });
-    // toggleBtn.addEventListener("click", function () {
-    //     if (isAdVisible) {
-    //         adSlider.classList.add("hidden");
-    //         pageWrapper.style.top = "119px"; 
-    //         pageWrapper.style.borderTop = "1px solid #fdbf50";
-    //         toggleBtn.classList.add("rotated");
-    //     } else {
-    //         adSlider.classList.remove("hidden");
-    //         pageWrapper.style.top = "270px";
-    //         pageWrapper.style.borderTop = "none";
-    //         toggleBtn.classList.remove("rotated");
-    //     }
-    //     isAdVisible = !isAdVisible;
-    // });
+    // Initialize the ad slider visibility 
     toggleBtn.addEventListener("click", function () {
         const sliderWrapper = document.getElementById('ad-slider-wrapper');
 
@@ -286,6 +259,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         chatInput.value = cleanValue;
     });
     
+    // Show chat window if token is present
+    if (tokenFromQR) {
+        appendMessage(tokenFromQR, 'user');
+        chatInput.value = '';
+        fetchOrderStatusOnce(tokenFromQR);
+    } else {
+        // If no token, show the chat window without a token
+        showChatWindow({});
+    }
     // Send button logic
     sendButton.addEventListener('click', async function () {
         const message = chatInput.value.trim();
