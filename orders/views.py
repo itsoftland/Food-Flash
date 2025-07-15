@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from vendors.models import Order, Vendor, AdminOutlet, AdvertisementProfileAssignment
+from vendors.models import Order, Vendor, AdminOutlet, AdvertisementProfileAssignment, UserProfile
 from vendors.serializers import OrdersSerializer
 
 from .serializers import (
@@ -70,7 +70,7 @@ def check_status(request):
 
     try:
         # Try to fetch the existing order by token_no
-        order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id,updated_by='customer')
+        order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id)
         vendor_serializer = VendorLogoSerializer(order.vendor, context={'request': request})
         logo_url = vendor_serializer.data.get('logo_url', '')
         data = {
@@ -83,7 +83,8 @@ def check_status(request):
             "vendor_id": order.vendor.vendor_id,
             "location_id": order.vendor.location_id,
             "logo_url": logo_url,
-            "type": "foodstatus"
+            "type": "foodstatus",
+            'updated_by': 'customer',
         }
         
         return Response(data, status=status.HTTP_200_OK)
@@ -96,8 +97,12 @@ def check_status(request):
                 'name': vendor.name,
                 'token_no': token_no,
                 'vendor': vendor.id,
+                'location_id': vendor.location_id,
+                'counter_no': 0,  # Default counter number
+                'device': None,  # Assuming no device is linked for this case
                 'status': 'preparing',
                 'updated_by': 'customer',
+                "type": "foodstatus",
             }
             serializer = OrdersSerializer(data=new_order_data)
             if serializer.is_valid():
@@ -275,52 +280,82 @@ def login_view(request):
 def login_api_view(request):
     username = request.data.get('username')
     password = request.data.get('password')
+    requested_role = request.data.get('role')  # Only sent by manager/web apps
 
     if not username or not password:
         return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)  # Optional: keeps session alive for browser clients
+    if user is None:
+        return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
+    login(request, user)
+    refresh = RefreshToken.for_user(user)
 
-        role = None
-        customer_id = None
-
-        if user.is_superuser:
-            role = 'Company Admin'
+    # 1. Manager or Web user (role explicitly sent)
+    if requested_role in ['manager', 'web']:
+        try:
+            profile = UserProfile.objects.get(user=user, role=requested_role)
             return Response({
+                'message': 'Login successful',
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'username': user.username,
+                    'name': profile.name,
+                    'role': profile.role,
+                    'vendor_id': profile.vendor.id if profile.vendor else None,
+                    'vendor_name': profile.vendor.name if profile.vendor else None,
+                    'customer_id': profile.admin_outlet.customer_id if profile.admin_outlet else None,
+                    'outlet_name': profile.admin_outlet.customer_name if profile.admin_outlet else None,
+                }
+            }, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response({'error': f"This user does not have the '{requested_role}' role."}, status=status.HTTP_403_FORBIDDEN)
+
+    # 2. Superadmin
+    if user.is_superuser:
+        return Response({
             'message': 'Login successful',
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'user': {
                 'username': user.username,
-                'role': role,
+                'role': 'Super Admin',
             }
         }, status=status.HTTP_200_OK)
-        elif AdminOutlet.objects.filter(user=user).exists():
-            role = 'Company'
-            customer_id = user.admin_outlet.customer_id
-            request.session['customer_id'] = customer_id
-        elif Vendor.objects.filter(user=user).exists():
-            role = 'Outlet'
-        else:
-            return Response({'error': 'User type not recognized.'}, status=status.HTTP_403_FORBIDDEN)
 
+    # 3. Company Admin (AdminOutlet)
+    if user.is_staff and hasattr(user, 'admin_outlet'):
+        customer_id = user.admin_outlet.customer_id
+        request.session['customer_id'] = customer_id
         return Response({
             'message': 'Login successful',
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'user': {
                 'username': user.admin_outlet.customer_name,
-                'role': role,
+                'role': 'Company',
                 'customer_id': customer_id,
             }
         }, status=status.HTTP_200_OK)
 
-    return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+    # 4. Outlet Login (Vendor)
+    if Vendor.objects.filter(user=user).exists():
+        vendor = Vendor.objects.get(user=user)
+        return Response({
+            'message': 'Login successful',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': {
+                'username': vendor.name,
+                'role': 'Outlet',
+                'vendor_id': vendor.id
+            }
+        }, status=status.HTTP_200_OK)
+
+    return Response({'error': 'User type not recognized.'}, status=status.HTTP_403_FORBIDDEN)
+
 
 
 

@@ -80,11 +80,29 @@ class Device(models.Model):
 
     def __str__(self):
         return self.serial_no
+    
+class UserProfile(models.Model):
+    ROLE_CHOICES = [
+        ('manager', 'Manager (Android APK)'),
+        ('web', 'Web User'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile_roles')
+    name = models.CharField(max_length=255, blank=True, null=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,related_name='user_profiles')
+    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_profile')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role})"
 
 class Order(models.Model):
     STATUS_CHOICES = [
         ('preparing', 'Preparing'),
         ('ready', 'Ready'),
+        ('created', 'Created'),
     ]
     USER_CHOICES = [
         ('keypad_device', 'Keypad Device'),
@@ -95,6 +113,7 @@ class Order(models.Model):
 
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="orders")
     device = models.ForeignKey(Device, on_delete=models.SET_NULL,null=True, blank=True, related_name="device_orders")
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.SET_NULL,null=True, blank=True, related_name="user_profile_orders")
     token_no = models.IntegerField(validators=[
             MinValueValidator(0),
             MaxValueValidator(9999)
@@ -150,6 +169,14 @@ class AndroidDevice(models.Model):
     mac_address = models.CharField(max_length=255, blank=True, null=True,unique=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL,null=True, blank=True,related_name='android_devices')
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,related_name='android_device')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class AndroidAPK(models.Model):
+    token = models.CharField(max_length=255, unique=True)
+    mac_address = models.CharField(max_length=255, blank=True, null=True,unique=True)
+    admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,related_name='admin_outlet_apks')
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.SET_NULL,null=True, blank=True, related_name="user_profile_devices")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -215,6 +242,7 @@ class ArchivedOrder(models.Model):
     original_order_id = models.IntegerField()
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
     device = models.ForeignKey(Device, on_delete=models.SET_NULL, null=True, blank=True)
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.SET_NULL,null=True, blank=True)
     token_no = models.IntegerField()
     status = models.CharField(max_length=20)
     counter_no = models.IntegerField()
@@ -227,3 +255,6 @@ class ArchivedOrder(models.Model):
 
     def __str__(self):
         return f"Archived Token {self.token_no}"
+
+
+

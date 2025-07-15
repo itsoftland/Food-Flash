@@ -102,8 +102,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'password']
 
     def create(self, validated_data):
+        is_staff = self.context.get('is_staff', False)  # default False
         user = User(
-            username=validated_data['username']
+            username=validated_data['username'],
+            is_staff=is_staff,
+            is_active=True
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -114,8 +117,9 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Username already exists.")
         return value
 
+
 class AdminOutletSerializer(serializers.ModelSerializer):
-    user = UserSerializer()  # nested user serializer
+    user = UserSerializer()
 
     class Meta:
         model = AdminOutlet
@@ -123,7 +127,7 @@ class AdminOutletSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        user_serializer = UserSerializer(data=user_data)
+        user_serializer = UserSerializer(data=user_data, context={'is_staff': True})
         user_serializer.is_valid(raise_exception=True)
         user = user_serializer.save()
         admin_outlet = AdminOutlet.objects.create(user=user, **validated_data)

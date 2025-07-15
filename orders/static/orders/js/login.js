@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             localStorage.setItem('role', role);
 
             // Only set customer_id if not Super Admin
-            if (role !== 'Company Admin') {
+            if (role !== 'Super Admin') {
                 AppUtils.setCustomerId(data.user.customer_id || '');
                 console.log('✅ customer_id after setting:', localStorage.getItem('customer_id'));
 
@@ -54,14 +54,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Redirect based on role
-            if (role === 'Company Admin') {
+            if (role === 'Super Admin') {
                 window.location.href = '/companyadmin/dashboard/';
             } else if (role === 'Company') {
                 window.location.href = '/company/dashboard/';
             } else if (role === 'Outlet') {
                 window.location.href = '/vendor/dashboard/';
-            } else if (role === 'Super Admin') {
-                window.location.href = '/superadmin/dashboard/';
             } else {
                 alert('Unknown user role');
             }

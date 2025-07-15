@@ -56,6 +56,7 @@ def archive_order(order):
         original_order_id=order.id,
         vendor=order.vendor,
         device=order.device,
+        user_profile=order.user_profile,
         token_no=order.token_no,
         status=order.status,
         counter_no=order.counter_no,

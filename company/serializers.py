@@ -3,7 +3,8 @@ from vendors.models import (Vendor,AndroidDevice,
                             Device ,AdvertisementImage,
                             AdvertisementProfile,
                             AdvertisementProfileAssignment,
-                            AdminOutlet)
+                            AdminOutlet,UserProfile)
+from django.contrib.auth.models import User
 from django.db.models import Q
 import json
 
@@ -361,7 +362,6 @@ class AndroidDeviceSerializer(serializers.ModelSerializer):
         representation['mac_address'] = representation.pop('mac_address', None)
         return representation
 
-from rest_framework import serializers
 from vendors.models import Order
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -392,3 +392,74 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_outlet_name(self, obj):
         return obj.vendor.admin_outlet.customer_name if obj.vendor and obj.vendor.admin_outlet else None
+
+class UserProfileCreateSerializer(serializers.Serializer):
+    ROLE_CHOICES = [
+        ('manager', 'Manager (Android APK)'),
+        ('web', 'Web User'),
+        ('both', 'Both Manager and Web User'),
+    ]
+
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+    name = serializers.CharField()
+    role = serializers.ChoiceField(choices=ROLE_CHOICES)
+    customer_id = serializers.IntegerField()
+    vendor_id = serializers.IntegerField()
+
+    def validate_name(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Name cannot be empty or just spaces.")
+        return value
+
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        
+        if User.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError("Username already exists.")
+
+        # Validate AdminOutlet via customer_id
+        try:
+            data['admin_outlet'] = AdminOutlet.objects.get(customer_id=data['customer_id'])
+        except AdminOutlet.DoesNotExist:
+            raise serializers.ValidationError("AdminOutlet with the given customer_id not found.")
+
+        # Validate Vendor via vendor_id
+        try:
+            data['vendor'] = Vendor.objects.get(id=data['vendor_id'])
+        except Vendor.DoesNotExist:
+            raise serializers.ValidationError("Vendor with the given ID not found.")
+
+        return data
+
+    def create(self, validated_data):
+        username = validated_data['username']
+        password = validated_data['password']
+        role = validated_data['role']
+        admin_outlet = validated_data['admin_outlet']
+        vendor = validated_data['vendor']
+        name = validated_data['name']
+
+        # Create the user only after validation
+        user = User.objects.create_user(username=username, password=password)
+
+        # Decide roles to create
+        requested_roles = ['manager', 'web'] if role == 'both' else [role]
+
+        created_profiles = []
+        for r in requested_roles:
+            if UserProfile.objects.filter(user=user, role=r).exists():
+                raise serializers.ValidationError(f"User already has a '{r}' profile.")
+            profile = UserProfile.objects.create(
+                user=user,
+                name=name,
+                role=r,
+                admin_outlet=admin_outlet,
+                vendor=vendor
+            )
+            created_profiles.append(profile)
+
+        return created_profiles if len(created_profiles) > 1 else created_profiles[0]
+

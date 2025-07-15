@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .models import Order, Vendor, Device, AndroidDevice, PushSubscription, AdminOutlet
+from .models import Order, Vendor, Device, AndroidDevice, PushSubscription, AdminOutlet, AndroidAPK
 from .serializers import OrdersSerializer
 from orders.serializers import VendorLogoSerializer
 from .utils import send_push_notification, notify_web_push
@@ -266,6 +266,54 @@ def register_android_device(request):
 
     except AdminOutlet.DoesNotExist:
         return Response({"error": "Customer not found."}, status=404)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_android_apk(request):
+    token = request.data.get('token')
+    customer_id = request.data.get('customer_id') 
+    mac_address = request.data.get('mac_address')  
+
+    if not token or not customer_id or not mac_address: 
+        return Response({"error": "Fields 'token', 'customer_id', and 'mac_address' are required."}, status=400)
+
+    try:
+        admin_outlet = AdminOutlet.objects.get(customer_id=customer_id)
+
+        # Check if device already exists based on mac_address
+        device = AndroidAPK.objects.filter(mac_address=mac_address, admin_outlet=admin_outlet).first()
+
+        if device:
+            # Update the token if needed
+            device.token = token
+            device.save()
+        else:
+            # Create new AndroidAPK device
+            device = AndroidAPK.objects.create(
+                token=token,
+                mac_address=mac_address,
+                admin_outlet=admin_outlet
+            )
+
+        # Check if it's already mapped to a manager
+        if device.user_profile:
+            return Response({
+                "status": "Device is mapped to a manager.",
+                "mapped": True,
+                "manager_id": device.user_profile.id,
+                "manager_name": device.user_profile.name,
+            }, status=200)
+        else:
+            return Response({
+                "status": "Device is registered but not yet mapped to a manager.",
+                "mapped": False,
+                "manager_id": None,
+                "manager_name": None,
+            }, status=200)
+
+    except AdminOutlet.DoesNotExist:
+        return Response({"error": "Customer not found."}, status=404)
+
 
 from firebase_admin import messaging
 def send_firebase_admin_multicast(fcm_tokens, data_payload):

@@ -19,6 +19,7 @@ urlpatterns = [
     path('order_details/', views.order_details, name='order_details'),
     path('api/create_vendor/', views.create_vendor, name='create_vendor'),
     path('api/update_vendor/', views.update_vendor, name='update_vendor'),
+    path('api/create_user/', views.create_user, name='create_user'), 
     path('api/get_vendors/', views.get_vendors, name='get_vendors'),
     path('api/get_devices/', views.get_devices, name='get_devices'),
     path('api/unmap_device/<int:device_id>/', views.unmap_device, name='unmap_device'),

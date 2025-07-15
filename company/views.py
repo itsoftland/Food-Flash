@@ -37,7 +37,7 @@ from .serializers import (VendorSerializer,
                           AdminOutletAutoDeleteSerializer,
                           DashboardMetricsSerializer,
                           DeviceSerializer,AndroidDeviceSerializer,
-                          OrderSerializer
+                          OrderSerializer,UserProfileCreateSerializer
                           )
 
 logger = logging.getLogger(__name__)
@@ -388,6 +388,37 @@ def update_vendor(request):
         return Response({
             'error': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
+        
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_user(request):
+    serializer = UserProfileCreateSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        result = serializer.save()
+
+        # If multiple profiles (i.e., role == 'both')
+        if isinstance(result, list):
+            return Response({
+                "detail": "User created with both roles successfully.",
+                "username": result[0].user.username,
+                "roles": [profile.role for profile in result],
+                "vendor": result[0].vendor.name if result[0].vendor else None,
+                "admin_outlet": result[0].admin_outlet.customer_name if result[0].admin_outlet else None,
+            }, status=status.HTTP_201_CREATED)
+
+        # If single profile
+        user_profile = result
+        return Response({
+            "detail": "User created successfully.",
+            "username": user_profile.user.username,
+            "role": user_profile.role,
+            "vendor": user_profile.vendor.name if user_profile.vendor else None,
+            "admin_outlet": user_profile.admin_outlet.customer_name if user_profile.admin_outlet else None,
+        }, status=status.HTTP_201_CREATED)
+
+    # If validation fails
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
