@@ -15,6 +15,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from vendors.models import Order, Vendor, AdminOutlet, AdvertisementProfileAssignment, UserProfile
 from vendors.serializers import OrdersSerializer
 
+from .utils import send_to_managers
+from static.utils.functions.queries import get_vendor
+
+
 from .serializers import (
     AdminOutletSerializer,
     VendorLogoSerializer,
@@ -22,6 +26,9 @@ from .serializers import (
     FeedbackSerializer,
     VendorMenuSerializer
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 def outlet_selection(request):
     location_id = request.GET.get("location_id")
@@ -49,76 +56,118 @@ def check_status(request):
     token_no = request.GET.get('token_no')
     vendor_id = request.GET.get('vendor_id')
 
+    logger.info("check_status called with token_no: %s, vendor_id: %s", token_no, vendor_id)
+
     # Validate presence
     if not token_no:
+        logger.warning("Token number missing in request.")
         return Response({'error': 'Token number is required.'}, status=status.HTTP_400_BAD_REQUEST)
     if not vendor_id:
+        logger.warning("Vendor ID missing in request.")
         return Response({'error': 'Vendor ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Validate integer format
     try:
         token_no = int(token_no)
         if token_no <= 0:
+            logger.warning("Invalid token number: %s", token_no)
             return Response({'error': 'Token number must be a positive integer.'}, status=status.HTTP_400_BAD_REQUEST)
     except ValueError:
+        logger.warning("Non-integer token number: %s", token_no)
         return Response({'error': 'Token number must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
-
     try:
         vendor_id = int(vendor_id)
     except ValueError:
+        logger.warning("Non-integer vendor_id: %s", vendor_id)
         return Response({'error': 'Vendor ID must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Try to fetch the existing order by token_no
         order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id)
+        logger.info("Order found for token_no %s and vendor_id %s", token_no, vendor_id)
+
+        if order.status == 'created':
+            logger.info("Order status is 'created'; updating to 'preparing'")
+            order.status = 'preparing'
+            order.updated_by = 'customer'
+            order.save()
+
         vendor_serializer = VendorLogoSerializer(order.vendor, context={'request': request})
         logo_url = vendor_serializer.data.get('logo_url', '')
+
         data = {
             'name': order.vendor.name,
             'vendor': order.vendor.id,
             'token_no': order.token_no,
             'status': order.status,
             'counter_no': order.counter_no,
+            'device_id': order.device.id if order.device else None,
+            'device_serial_no': order.device.serial_no if order.device else None,   
+            'manager_id': order.user_profile.id if order.user_profile else None,
+            'manager_name': order.user_profile.name if order.user_profile else None,    
+            'vendor_id': order.vendor.vendor_id,
+            'location_id': order.vendor.location_id,
+            'logo_url': logo_url,
+            'type': 'foodstatus',
+            'updated_by': order.updated_by,
             'message': 'Order retrieved successfully.',
-            "vendor_id": order.vendor.vendor_id,
-            "location_id": order.vendor.location_id,
-            "logo_url": logo_url,
-            "type": "foodstatus",
-            'updated_by': 'customer',
         }
-        
+
+        logger.info("Sending update to managers for vendor_id %s", vendor_id)
+        send_to_managers(get_vendor(vendor_id), data)
+
         return Response(data, status=status.HTTP_200_OK)
 
     except Order.DoesNotExist:
+        logger.info("Order not found for token_no %s, creating new one.", token_no)
         try:
-            # Create new order with status 'preparing'
             vendor = Vendor.objects.get(vendor_id=vendor_id)
             new_order_data = {
                 'name': vendor.name,
                 'token_no': token_no,
                 'vendor': vendor.id,
                 'location_id': vendor.location_id,
-                'counter_no': 0,  # Default counter number
-                'device': None,  # Assuming no device is linked for this case
+                'counter_no': 1,
+                'device': None,
                 'status': 'preparing',
                 'updated_by': 'customer',
-                "type": "foodstatus",
+                'type': 'foodstatus',
             }
+
             serializer = OrdersSerializer(data=new_order_data)
             if serializer.is_valid():
-                serializer.save()
+                order = serializer.save()
                 data = serializer.data
                 data['message'] = 'Order created with status preparing.'
+
+                logger.info("New order created for token_no %s. Notifying managers.", token_no)
+                send_to_managers(vendor, {
+                    'token_no': token_no,
+                    'vendor_id': vendor.vendor_id,
+                    'location_id': vendor.location_id,
+                    'status': 'preparing',
+                    'updated_by': 'customer',
+                    'type': 'foodstatus',
+                    'message': 'New order created by customer.'
+                })
+
                 return Response(data, status=status.HTTP_201_CREATED)
             else:
-                return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                logger.warning("Order creation failed: %s", serializer.errors)
+                return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
         except Vendor.DoesNotExist:
-            return Response({"error": "Vendor not found."}, status=status.HTTP_404_NOT_FOUND)
+            logger.error("Vendor not found for vendor_id: %s", vendor_id)
+            return Response({'error': 'Vendor not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.exception("Unexpected error while creating new order: %s", str(e))
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     except Exception as e:
+        logger.exception("Unexpected error while fetching order: %s", str(e))
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -302,12 +351,13 @@ def login_api_view(request):
                 'refresh': str(refresh),
                 'user': {
                     'username': user.username,
-                    'name': profile.name,
                     'role': profile.role,
                     'vendor_id': profile.vendor.id if profile.vendor else None,
                     'vendor_name': profile.vendor.name if profile.vendor else None,
                     'customer_id': profile.admin_outlet.customer_id if profile.admin_outlet else None,
                     'outlet_name': profile.admin_outlet.customer_name if profile.admin_outlet else None,
+                    'manager_id': profile.id,
+                    'manager_name': profile.name,
                 }
             }, status=status.HTTP_200_OK)
         except UserProfile.DoesNotExist:
@@ -374,6 +424,27 @@ def outlet_dashboard(request):
 def logout_view(request):
     logout(request)
     return redirect('/login')
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_api_view(request):
+    refresh_token = request.data.get("refresh_token")
+    if not refresh_token:
+        return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+
+        # Optional session cleanup (only needed if you use Django session auth)
+        logout(request)
+        request.session.flush()
+
+        return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated]) 

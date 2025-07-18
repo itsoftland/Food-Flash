@@ -26,6 +26,7 @@ urlpatterns = [
     path('company/', include(('company.urls', 'company'), namespace='company')),
     path('companyadmin/', include(('companyadmin.urls', 'companyadmin'), namespace='companyadmin')),
     path('',include('orders.urls')),
+    path('manager/', include(('manager.urls','manager'),namespace='manager')),
     path('service-worker.js', (TemplateView.as_view(template_name="orders/service-worker.js", 
   content_type='application/javascript', )), name='service-worker.js'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

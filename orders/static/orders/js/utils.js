@@ -123,6 +123,20 @@ window.AppUtils = {
     getActiveVendor: function () {
         return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
     },
+    // ─────────────────────────────────────
+    // Token Management
+    // ─────────────────────────────────────
+
+    getToken: function () {
+        return localStorage.getItem('token') ? localStorage.getItem('token') : null;
+    },
+    setToken: function (token) {
+        if (token) {
+            localStorage.setItem('token', token);
+        } else {
+            localStorage.removeItem('token');
+        }
+    },
 
     // ─────────────────────────────────────
     // Notification Sound
@@ -245,6 +259,86 @@ window.AppUtils = {
             localStorage.setItem('browser_id', browserId);
         }
         return browserId;
-    }   
+    },
+    // ─────────────────────────────────────
+    // Device Detection
+    // ─────────────────────────────────────
+    getDeviceName: function () {
+        const ua = navigator.userAgent;
+        let deviceName = '';
+
+        const isMobile = {
+            Android: () => /Android/i.test(ua),
+            iOS: () => /iPhone|iPad|iPod/i.test(ua),
+            Windows: () => /IEMobile/i.test(ua),
+            Zebra: () => /TC70|TC55/i.test(ua),
+            Datalogic: () => /DL-AXIS/i.test(ua),
+            Bluebird: () => /EF500/i.test(ua),
+            Honeywell: () => /CT50/i.test(ua),
+            BlackBerry: () => /BlackBerry/i.test(ua),
+            any: function () {
+                return (
+                    this.Android() || this.iOS() || this.Windows() ||
+                    this.Zebra() || this.Datalogic() || this.Bluebird() ||
+                    this.Honeywell() || this.BlackBerry()
+                );
+            }
+        };
+
+        if (isMobile.Zebra()) deviceName = 'Zebra';
+        else if (isMobile.Datalogic()) deviceName = 'Datalogic';
+        else if (isMobile.Bluebird()) deviceName = 'Bluebird';
+        else if (isMobile.Honeywell()) deviceName = 'Honeywell';
+        else if (isMobile.BlackBerry()) deviceName = 'BlackBerry';
+        else if (isMobile.iOS()) deviceName = 'iOS';
+        else if (isMobile.Android()) {
+            const match = ua.match(/\((?:Linux; )?Android [^;]+; ([^)]+)\)/);
+            if (match && match[1]) {
+                deviceName = match[1].trim(); // Example: "Redmi Note 10", "SM-G991B"
+            } else {
+                deviceName = 'Android';
+            }
+        } else if (isMobile.Windows()) {
+            deviceName = 'Windows';
+        }
+
+        console.log('Device Name:', deviceName);
+        return deviceName;
+    },
+    getNotificationHelpPath: function () {
+        const model = this.getDeviceName();
+
+        if (/Samsung|SM-/i.test(model)) {
+            return "Settings > Apps > Your App > Notifications";
+        } else if (/Redmi|Mi|Xiaomi/i.test(model)) {
+            return "Settings > Notifications > Manage Notifications > Your App";
+        } else if (/Vivo/i.test(model)) {
+            return "Settings > Notifications and status bar > Notification management";
+        } else if (/Realme/i.test(model)) {
+            return "Settings > App Management > Your App > Notifications";
+        } else if (/Oppo/i.test(model)) {
+            return "Settings > App Management > Your App > Notification management";
+        } else if (/iPhone|iPad/i.test(model)) {
+            return "Settings > Notifications > Your App";
+        }
+
+        return "Please check device Settings > Apps > Your App > Notifications";
+    },
+
+    warnBackgroundRestrictions: function () {
+        const model = this.getDeviceName();
+
+        if (/Redmi|Mi|Xiaomi/i.test(model)) {
+            this.showToast("Set 'Battery Saver' to 'No restrictions' for this app under Battery & Performance.");
+        } else if (/Vivo|Oppo|Realme/i.test(model)) {
+            this.showToast("Enable 'Auto Start' and allow background activity for this app in system settings.");
+        }
+    },
+
+    openBrowserNotificationSettings: function () {
+        this.showToast("To enable notifications, go to your browser > Site Settings > Notifications.");
+    },
+
+
 };
 

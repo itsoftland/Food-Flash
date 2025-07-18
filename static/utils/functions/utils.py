@@ -32,3 +32,4 @@ def get_filtered_date_range(date_range, from_date_str=None, to_date_str=None):
         except (ValueError, TypeError):
             return None, None
     return None, None
+

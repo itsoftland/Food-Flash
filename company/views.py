@@ -732,7 +732,7 @@ def get_devices(request):
         devices = Device.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
     else:  # 'all' or invalid filter
         # Return both mapped (only for this admin_outlet) and unmapped devices
-        devices = Device.objects.filter(Q(admin_outlet=admin_outlet) | Q(admin_outlet__isnull=True))
+        devices = Device.objects.filter(admin_outlet=admin_outlet)
 
     serializer = DeviceSerializer(devices, many=True)
     return Response({
@@ -809,7 +809,7 @@ def get_android_tvs(request):
         android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
     else:  # 'all' or invalid filter
         # Return both mapped (only for this admin_outlet) and unmapped devices
-        android_tvs = AndroidDevice.objects.filter(Q(admin_outlet=admin_outlet) | Q(admin_outlet__isnull=True))
+        android_tvs = AndroidDevice.objects.filter(admin_outlet=admin_outlet)
 
     serializer = AndroidDeviceSerializer(android_tvs, many=True)
     return Response({

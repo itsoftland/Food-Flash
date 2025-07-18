@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'django.contrib.humanize',
+    'rest_framework_simplejwt.token_blacklist', 
 
     # Custom apps
     'orders',
@@ -162,6 +163,12 @@ LOGGING = {
             "filename": LOG_DIR / "orders.log",
             "formatter": "verbose",
         },
+        "managers_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": LOG_DIR / "managers.log",
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django": {
@@ -180,11 +187,16 @@ LOGGING = {
             "propagate": False,
         },
         "vendors.utils": {
-            "handlers": ["vendors_file"],
+            "handlers": ["vendors_file","managers_file"],
             "level": "INFO",
             "propagate": False,
         },
         "orders.views": {
+            "handlers": ["orders_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "orders.utils": {
             "handlers": ["orders_file"],
             "level": "INFO",
             "propagate": False,
@@ -194,6 +206,21 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "manager.views": {
+            "handlers": ["managers_file"],
+            "level": "INFO",
+            "propagate": False,
+            },
+        "static.utils.functions.queries": {
+            "handlers": ["orders_file","managers_file"],
+            "level": "INFO",
+            "propagate": False,     
+            },
+        "static.utils.functions.notifications": {
+            "handlers": ["orders_file","managers_file"],
+            "level": "INFO",
+            "propagate": False, 
+            },
     },
 }
 

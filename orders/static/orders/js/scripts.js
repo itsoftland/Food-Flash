@@ -25,6 +25,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     let isAdVisible = true;
 
+    if (tokenFromQR) {
+        console.log("Token from QR:", tokenFromQR);
+        AppUtils.setToken(tokenFromQR);
+    }
+
     // Initialize the ad slider visibility 
     toggleBtn.addEventListener("click", function () {
         const sliderWrapper = document.getElementById('ad-slider-wrapper');
@@ -262,7 +267,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Show chat window if token is present
     if (tokenFromQR) {
         appendMessage(tokenFromQR, 'user');
-        chatInput.value = '';
+        chatInput.value = tokenFromQR; // Set the input field with the token
+        const granted = await PermissionService.requestPermissions();
+        const path = AppUtils.getNotificationHelpPath();
+        AppUtils.showToast(`Notifications are blocked. Go to: ${path}`);
         fetchOrderStatusOnce(tokenFromQR);
     } else {
         // If no token, show the chat window without a token

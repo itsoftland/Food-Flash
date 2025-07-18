@@ -72,11 +72,14 @@ class Vendor(models.Model):
         return f"{self.name} - {self.admin_outlet.customer_name}"
 
 class Device(models.Model):
-    serial_no = models.CharField(max_length=255, unique=True)
+    serial_no = models.CharField(max_length=255)
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, related_name="devices",null=True,blank=True)
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,null=True,blank=True,related_name='device')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('serial_no', 'admin_outlet')
 
     def __str__(self):
         return self.serial_no
@@ -94,6 +97,7 @@ class UserProfile(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_profile')
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user.username} ({self.role})"
@@ -125,9 +129,10 @@ class Order(models.Model):
     updated_by = models.CharField(max_length=20, choices=USER_CHOICES, default='keypad_device')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    created_date = models.DateField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('token_no', 'vendor') 
+        unique_together = ('token_no', 'vendor','created_date') 
 
     def __str__(self):
         return f"Token {self.token_no}"
@@ -138,6 +143,8 @@ class PushSubscription(models.Model):
     p256dh = models.TextField()
     auth = models.TextField()
     tokens = models.ManyToManyField(Order, blank=True)  # Many-to-Many with orders
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Subscription for {self.browser_id}"
@@ -160,28 +167,38 @@ class Feedback(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)  
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Feedback for {self.vendor.name}"
 
 class AndroidDevice(models.Model):
     token = models.CharField(max_length=255, unique=True)
-    mac_address = models.CharField(max_length=255, blank=True, null=True,unique=True)
+    mac_address = models.CharField(max_length=255, blank=True, null=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL,null=True, blank=True,related_name='android_devices')
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,related_name='android_device')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('mac_address', 'admin_outlet')
 
 class AndroidAPK(models.Model):
     token = models.CharField(max_length=255, unique=True)
-    mac_address = models.CharField(max_length=255, blank=True, null=True,unique=True)
+    apk_version = models.CharField(max_length=255, blank=True, null=True)
+    mac_address = models.CharField(max_length=255, blank=True, null=True)
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE,related_name='admin_outlet_apks')
     user_profile = models.ForeignKey(UserProfile, on_delete=models.SET_NULL,null=True, blank=True, related_name="user_profile_devices")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('mac_address', 'admin_outlet')
 
 class SiteConfig(models.Model):
     maintenance_mode = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "Site Configuration"
@@ -190,6 +207,8 @@ class AdvertisementImage(models.Model):
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE, related_name='ad_images')
     image = models.ImageField(upload_to='ads/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class AdvertisementProfile(models.Model):
     admin_outlet = models.ForeignKey(AdminOutlet, on_delete=models.CASCADE, related_name='ad_profiles')
@@ -252,6 +271,7 @@ class ArchivedOrder(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     archived_at = models.DateTimeField(auto_now_add=True)
+    created_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"Archived Token {self.token_no}"

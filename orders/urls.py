@@ -2,14 +2,8 @@ from django.urls import path
 from .import views
 from django.urls import path
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,   # For login (access + refresh token)
     TokenRefreshView       # For refreshing access token
 )
-
-# urlpatterns = [
-#           # POST: username + password
-#          # POST: refresh token
-# ]
 
 urlpatterns = [
     path('home/', views.home, name='home'),
@@ -25,6 +19,7 @@ urlpatterns = [
     path('api/submit_feedback/', views.submit_feedback, name='submit-feedback'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/login/', views.login_api_view, name='login_api_view'), 
+    path('api/logout/', views.logout_api_view, name='logout_api_view'),
     path('login/', views.login_view, name='login_view'),
     path('logout/', views.logout_view, name='logout'),
     path('outlet_dashboard/', views.outlet_dashboard, name='outlet_dashboard'),

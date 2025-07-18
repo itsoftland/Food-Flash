@@ -8,7 +8,7 @@ from vendors.utils import archive_order
 
 # Setup logger
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def auto_clear_orders():
     try:

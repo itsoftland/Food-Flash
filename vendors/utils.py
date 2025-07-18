@@ -8,18 +8,37 @@ import logging
 logger = logging.getLogger(__name__)
 
 def notify_web_push(order, vendor, payload):
+    logger.info(f"🔔 Web Push Notification Initiated | Token: {order.token_no}, Vendor: {vendor.name} (ID: {vendor.id})")
+    logger.debug(f"Payload: {payload}")
+
     subscriptions = PushSubscription.objects.filter(tokens__token_no=order.token_no, tokens__vendor=vendor).distinct()
+    subscription_count = subscriptions.count()
+    logger.info(f"📦 Found {subscription_count} subscription(s) for token_no={order.token_no} and vendor_id={vendor.id}")
+
     errors = []
+
+    # 🔹 If no subscriptions found, return early with reason
+    if subscription_count == 0:
+        msg = f"No push subscriptions found for token_no={order.token_no} and vendor_id={vendor.id}"
+        logger.warning(f"⚠️ {msg}")
+        return [msg]  # Returning list to match expected type
+
     for sub in subscriptions:
         try:
+            logger.debug(f"Sending push to endpoint: {sub.endpoint}")
             send_push_notification({
                 "endpoint": sub.endpoint,
                 "keys": {"p256dh": sub.p256dh, "auth": sub.auth}
             }, payload)
+            logger.info(f"✅ Push sent to: {sub.endpoint}")
         except Exception as e:
-            logger.error(f"Push failed: {e}")
-            errors.append(str(e))
+            error_msg = f"❌ Push failed for endpoint {sub.endpoint}: {e}"
+            logger.error(error_msg)
+            errors.append(error_msg)
+
+    logger.info(f"📬 Notification completed with {len(errors)} error(s).")
     return errors
+
 
 def send_push_notification(subscription_info, payload):
     try:
@@ -65,4 +84,5 @@ def archive_order(order):
         updated_by=order.updated_by,
         created_at=order.created_at,
         updated_at=order.updated_at,
+        created_date=order.created_date
     )
