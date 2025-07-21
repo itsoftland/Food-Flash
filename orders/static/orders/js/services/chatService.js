@@ -97,6 +97,16 @@ export function appendMessage(text, sender, timestamp = null) {
     }
 
     messageRow.appendChild(messageBubble);
+    if (sender === 'server') {
+        // Add click event for selection
+        messageBubble.addEventListener('click', () => {
+            const isSelected = messageBubble.classList.contains('selected');
+            document.querySelectorAll('.message-bubble.server').forEach(el => el.classList.remove('selected'));
+            if (!isSelected) messageBubble.classList.add('selected');
+        });
+
+    }
+
     chatContainer.appendChild(messageRow);
     chatContainer.scrollTop = chatContainer.scrollHeight;
 

@@ -263,6 +263,19 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         chatInput.value = cleanValue;
     });
+    chatInput.addEventListener("focus", function () {
+        const selectedMessage = document.querySelector(".message-bubble.server.selected");
+
+        if (selectedMessage) {
+            chatInput.type = "text";
+            chatInput.placeholder = "Type your message..."; 
+        } else {
+            chatInput.type = "tel";
+            chatInput.placeholder = "Enter your Order No..."; 
+        }
+    });
+
+
     
     // Show chat window if token is present
     if (tokenFromQR) {
