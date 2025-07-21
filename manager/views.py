@@ -234,7 +234,7 @@ def get_today_orders(request):
 #         logger.exception("🔥 Unhandled exception in manager_order_update:")
 #         return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+from django.conf import settings
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -245,16 +245,23 @@ def manager_order_update(request):
         logger.debug(f"Request Data: {request.data}")
 
         data = request.data
-        token_no = data.get('token_no')
-        if not token_no:
-            logger.warning("⛔ token_no is required.")
-            return Response({"message": "token_no is required."}, status=status.HTTP_400_BAD_REQUEST)
+        required_fields = ['token_no', 'status']
+        missing = [f for f in required_fields if f not in data or data[f] in [None, ""]]
+
+        if missing:
+            logger.warning(f"⛔ Missing fields: {', '.join(missing)}")
+            return Response({"message": f"Missing fields: {', '.join(missing)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate token_no as int
         try:
-            token_no = int(data.get('token_no'))
+            token_no = int(data['token_no'])
         except (TypeError, ValueError):
             logger.warning("❌ token_no must be a valid integer.")
             return Response({"message": "token_no must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
 
+        status_to_update = data['status'].lower()
+
+        # Validate manager
         manager = getattr(request.user, 'profile_roles', None)
         if not manager or not manager.exists():
             logger.warning("⚠️ No manager profile found for the user.")
@@ -266,66 +273,81 @@ def manager_order_update(request):
             return Response({"message": "Manager does not have an associated vendor."}, status=status.HTTP_403_FORBIDDEN)
 
         vendor = manager.vendor
-        token_no = data['token_no']
-        status_to_update = "ready"
-        device = None  # Manager is not a customer device
-
         logger.info(f"🔧 Manager: {manager.name}, Vendor: {vendor.name} ({vendor.vendor_id}), Token: {token_no}, Status: {status_to_update}")
 
-        order = update_existing_order_by_manager(token_no, vendor, device, status_to_update, manager)
+        order = Order.objects.filter(token_no=token_no, vendor=vendor, created_date=timezone.now().date()).first()
         if not order:
-            logger.warning(f"❌ No order found with token_no: {token_no} for vendor {vendor.name}")
+            logger.warning(f"❌ No order found for token_no {token_no} today.")
             return Response({"message": f"Order with token_no {token_no} not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        logger.info(f"✅ Order found and updated: {order.id} — new status: {status_to_update}")
+        # Serialize vendor logo
+        vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
+        logo_url = vendor_serializer.data.get("logo_url", "")
+        if status_to_update == "ready":
+            body = f"Your order {token_no} status: {status_to_update.capitalize()}"
+        else:
+            body = f"Your order {token_no} has an update from the manager."
 
-        # 🔔 Notify Android TV (FCM)
-        fcm_success, fcm_info = notify_android_tv(vendor, data)
-        logger.info(f"📺 Android TV FCM sent | Success: {fcm_success} | Info: {fcm_info}")
 
-        # 🔔 Notify Customer (Web Push) — if "ready" and cooldown passed
-        push_errors = []
-        if status_to_update.lower() == "ready":
-            from django.conf import settings
-            cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 5)
-
-            if not order.notified_at or (timezone.now() - order.notified_at) > timedelta(seconds=cooldown):
-                vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
-                payload = {
-                    "title": "Order Update by Manager",
-                    "body": f"Your order {token_no} is now ready.",
-                    "token_no": token_no,
-                    "status": status_to_update,
-                    "counter_no": order.counter_no,
-                    "name": vendor.name,
-                    "vendor_id": vendor.vendor_id,
-                    "location_id": vendor.location_id,
-                    "logo_url": vendor_serializer.data.get("logo_url", ""),
-                    "type": "foodstatus"
-                }
-                logger.info(f"📤 Web push payload prepared. Sending...")
-                push_errors = notify_web_push(order, vendor, payload)
-                logger.info(f"📤 Web push completed with {len(push_errors)} error(s).")
-
-                order.notified_at = timezone.now()
-                order.save(update_fields=['notified_at'])
-                logger.info(f"🕒 Order {token_no} marked as notified at {order.notified_at}.")
-            else:
-                logger.info(f"⏳ Skipping web push. Cooldown active for token {token_no}.")
-
-        # 🧾 Final response message
-        response_msg = {
-            "success": True,
-            "message": "Order updated successfully.",
+        # Prepare common push payload
+        payload = {
+            "title": "Order Update by Manager",
+            "body": body,
             "token_no": token_no,
-            "android_tv": fcm_success,
-            "android_tv_info": fcm_info,
-            "web_push": not push_errors,
-            "web_push_info": push_errors,
+            "status": status_to_update,
+            "counter_no": order.counter_no,
+            "name": vendor.name,
+            "vendor_id": vendor.vendor_id,
+            "location_id": vendor.location_id,
+            "logo_url": logo_url,
+            "type": "foodstatus" if status_to_update == "ready" else "manager"
         }
 
-        logger.info(f"✅ Order {token_no} successfully updated and all notifications dispatched.")
-        return Response(response_msg, status=status.HTTP_200_OK)
+        android_tv_success = None
+        android_tv_info = None
+        push_errors = []
+
+        # ✅ IF status is "ready"
+        if status_to_update == "ready":
+            # 1. Notify Android TV
+            android_tv_success, android_tv_info = notify_android_tv(vendor, data)
+            logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
+
+            # 2. Update in DB
+            device = None  # Not a customer device
+            updated_order = update_existing_order_by_manager(token_no, vendor, device, status_to_update, manager)
+            if not updated_order:
+                logger.warning(f"❌ Failed to update order {token_no}")
+                return Response({"message": "Order update failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            logger.info(f"✅ Order {updated_order.id} updated to status: {status_to_update}")
+
+            # 3. Send Web Push (only if cooldown passed)
+            cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 5)
+            if not order.notified_at or (timezone.now() - order.notified_at) > timedelta(seconds=cooldown):
+                logger.info(f"📤 Sending web push...")
+                push_errors = notify_web_push(order, vendor, payload)
+                order.notified_at = timezone.now()
+                order.save(update_fields=["notified_at"])
+                logger.info(f"🕒 Order {token_no} marked as notified at {order.notified_at}")
+            else:
+                logger.info(f"⏳ Cooldown active. Skipping web push for {token_no}.")
+
+        # ⚠️ IF status is NOT "ready"
+        else:
+            logger.info("ℹ️ Status not 'ready' — skipping DB and Android TV. Sending web push with type 'manager'.")
+            push_errors = notify_web_push(order, vendor, payload)
+
+        # 📦 Final response
+        return Response({
+            "success": True,
+            "message": f"Order {'updated and ' if status_to_update == 'ready' else ''}notified successfully.",
+            "token_no": token_no,
+            "android_tv": android_tv_success,
+            "android_tv_info": android_tv_info,
+            "web_push": not push_errors,
+            "web_push_info": push_errors
+        }, status=status.HTTP_200_OK)
 
     except Exception as e:
         logger.exception("🔥 Unhandled exception in manager_order_update:")

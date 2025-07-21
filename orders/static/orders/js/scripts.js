@@ -215,54 +215,87 @@ document.addEventListener('DOMContentLoaded', async function() {
                         </div>
                     
                 `;
-
+                const managerMessageHTML = `
+                    <div class="response-title">📩 ${pushData.name || "Outlet"}</div>
+                    <div class="manager-message-body">
+                        <div class="manager-badge">Manager Notification</div>
+                        <div class="custom-manager-message">
+                            ${pushData.status || "Hello! Here's an update regarding your order."}
+                        </div>
+                    </div>
+                `;
+                console.log("Push Data Type:", pushData.type);
                 if (pushData.type =="offers"){
-                    appendMessage(offerMessageHTML, 'server');
-                }else{
-                if (pushData.status === "ready") {
+                    appendMessage(offerMessageHTML, 'server',null,'offers');
+                    AppUtils.notifyOrderReady(pushData); 
+                }else if (pushData.type === "manager") {
+                    appendMessage(managerMessageHTML, 'server',null, 'manager');
+                    AppUtils.notifyOrderReady(pushData); 
+                } else {
+                if (pushData.type === "foodstatus") {
                     AppUtils.notifyOrderReady(pushData); 
                     showNotificationModal(pushData,'push');
-                    appendMessage(messageHTML, 'server');
+                    appendMessage(messageHTML, 'server',null,'foodstatus');
                     }
-                    
                 }
-                
             }
         });
     }
 
-    chatInput.addEventListener("keydown", function(event) {
-        const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"];
+    document.addEventListener('click', (e) => {
+        // If the click is outside any .message-bubble
+        document.querySelectorAll('.message-bubble.server').forEach(el => el.classList.remove('selected'));
         
-        // Allow digits (0-9) and allowed control keys
+    });
+
+
+    chatInput.addEventListener("keydown", function(event) {
+        const selectedMessage = document.querySelector(".message-bubble.server.selected");
+
+        // If a message is selected, allow all input including Enter
+        if (selectedMessage) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendButton.click();
+            }
+            return; // Skip validation
+        }
+
+        const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"];
+
         if (
             (event.key >= "0" && event.key <= "9") ||
             allowedKeys.includes(event.key)
         ) {
-            // If 4 digits already present, block further input (except control keys)
             if (chatInput.value.length >= 4 && event.key >= "0" && event.key <= "9") {
                 event.preventDefault();
             }
-    
-            // Handle Enter key
+
             if (event.key === "Enter") {
                 event.preventDefault();
                 sendButton.click();
             }
         } else {
-            event.preventDefault(); // Block any other key
-            appendMessage("Please enter a valid 4-digit Order No.", "server");
+            event.preventDefault();
+            appendMessage("Please enter a valid 4-digit Order No.", "server", null);
         }
     });
+
     
     // Sanitize input on any indirect changes (e.g. autocomplete)
     chatInput.addEventListener("input", function(event) {
+        const selectedMessage = document.querySelector(".message-bubble.server.selected");
+
+        // Skip digit sanitization if replying
+        if (selectedMessage) return;
+
         let cleanValue = chatInput.value.replace(/[^0-9]/g, "").substring(0, 4);
         if (chatInput.value !== cleanValue) {
-            appendMessage("Only digits (0-9) are allowed.", "server");
+            appendMessage("Only digits (0-9) are allowed.", "server",null);
         }
         chatInput.value = cleanValue;
     });
+
     chatInput.addEventListener("focus", function () {
         const selectedMessage = document.querySelector(".message-bubble.server.selected");
 
@@ -279,7 +312,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Show chat window if token is present
     if (tokenFromQR) {
-        appendMessage(tokenFromQR, 'user');
+        appendMessage(tokenFromQR, 'user', null);
         chatInput.value = tokenFromQR; // Set the input field with the token
         const granted = await PermissionService.requestPermissions();
         const path = AppUtils.getNotificationHelpPath();
@@ -303,7 +336,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 IosPwaInstallService.showModal();
             }
 
-            appendMessage(message, 'user');
+            appendMessage(message, 'user', null);
             chatInput.value = '';
             fetchOrderStatusOnce(message);
         }
@@ -321,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
                 if (!response.ok) {
                     const errorMessage = responseData.error || "An unknown error occurred.";
-                    appendMessage(`❌ ${errorMessage}`, 'server');
+                    appendMessage(`❌ ${errorMessage}`, 'server', null);
                     throw new Error(`Server responded with error: ${errorMessage}`);
                 }
                 const data = responseData;
@@ -339,7 +372,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         <div class="badge">Token No: ${data.token_no || ""}</div>
                     </div>
                 `;
-                appendMessage(messageHTML, 'server');
+                appendMessage(messageHTML, 'server', null, 'foodstatus');
     
                 // If status is ready, notify user
                 if (data.status === "ready") {
@@ -354,7 +387,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             .catch(error => {
                 console.error("Error fetching order status:", error);
                 if (!error.handled) {
-                    appendMessage("⚠️ Something went wrong. Please try again.", 'server');
+                    appendMessage("⚠️ Something went wrong. Please try again.", 'server', null);
                 }
             });
     }

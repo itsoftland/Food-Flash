@@ -325,12 +325,16 @@ input[type="text"] {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); 
     transition: all 0.3s ease;
 }
+.message-bubble.server {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
 .message-bubble.server.selected {
     border: 2px solid #f0a934;
     background-color: #fff9ec;
-    box-shadow: 0 0 6px rgba(240, 169, 52, 0.4);
+    box-shadow: 0 0 12px rgba(240, 169, 52, 0.6);
+    transform: scale(1.03);
 }
-
 
 /* Message content */
 .message-content {

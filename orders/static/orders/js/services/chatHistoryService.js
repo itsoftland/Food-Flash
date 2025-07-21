@@ -12,7 +12,8 @@ export const ChatHistoryService = (() => {
             messages: messages.map(msg => ({
                 text: msg.text,
                 sender: msg.sender,
-                timestamp: msg.timestamp || Date.now()
+                timestamp: msg.timestamp || Date.now(),
+                type:msg.type || null
             }))
         };
         localStorage.setItem(key, JSON.stringify(data));

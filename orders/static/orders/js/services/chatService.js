@@ -27,7 +27,7 @@ export function handleOutletSelection(vendorId, vendor_logo, placeId) {
     window.isRestoringHistory = true;
     const cachedMessages = ChatHistoryService.load(vendorId) || [];
     cachedMessages.forEach(msg => {
-        appendMessage(msg.text, msg.sender, msg.timestamp);
+        appendMessage(msg.text, msg.sender, msg.timestamp, msg.type || null);
     });
     window.isRestoringHistory = false;
 }
@@ -62,7 +62,7 @@ export function showWelcomeMessage(outletName) {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-export function appendMessage(text, sender, timestamp = null) {
+export function appendMessage(text, sender, timestamp = null,type) {
     const chatContainer = document.getElementById("chat-container");
 
     const messageRow = document.createElement('div');
@@ -76,15 +76,18 @@ export function appendMessage(text, sender, timestamp = null) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('message-bubble', sender);
-    // <span class="message-check">&#10003;</span>
     messageBubble.innerHTML = `
     <div class="message-content">
+        <button class="reply-button" title="Reply">
+            <i class="fa-solid fa-reply"></i>
+        </button>
         ${text}
         <span class="message-timestamp">
             ${timeStamp} 
         </span>
     </div>
     `;
+
 
 
     if (sender === 'server') {
@@ -97,15 +100,25 @@ export function appendMessage(text, sender, timestamp = null) {
     }
 
     messageRow.appendChild(messageBubble);
-    if (sender === 'server') {
-        // Add click event for selection
-        messageBubble.addEventListener('click', () => {
-            const isSelected = messageBubble.classList.contains('selected');
-            document.querySelectorAll('.message-bubble.server').forEach(el => el.classList.remove('selected'));
-            if (!isSelected) messageBubble.classList.add('selected');
-        });
-
+    console.log("Sender:", sender, "Type:", type);
+    if (sender === 'server' && (type === 'foodstatus' || type === 'manager')) {
+        const replyBtn = messageBubble.querySelector('.reply-button');
+        if (replyBtn) {
+            replyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isSelected = messageBubble.classList.contains('selected');
+                document.querySelectorAll('.message-bubble.server').forEach(el => el.classList.remove('selected'));
+                if (!isSelected) messageBubble.classList.add('selected');
+                const inputBox = document.getElementById("chat-input");
+                if (inputBox) inputBox.focus();
+            });
+        }
+    } else {
+        // If not allowed, remove the reply button from the DOM
+        const replyBtn = messageBubble.querySelector('.reply-button');
+        if (replyBtn) replyBtn.remove();
     }
+
 
     chatContainer.appendChild(messageRow);
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -114,9 +127,10 @@ export function appendMessage(text, sender, timestamp = null) {
         const activeVendorId = localStorage.getItem("activeVendor");
         if (activeVendorId) {
             const existingMessages = ChatHistoryService.load(activeVendorId) || [];
-            existingMessages.push({ text, sender, timestamp: timeStamp });
+            existingMessages.push({ text, sender, timestamp: timeStamp, type: type || null }); // ✅ FIXED
             ChatHistoryService.save(activeVendorId, existingMessages);
         }
     }
+
     AppUtils.adjustChatResponsePadding();
 }
