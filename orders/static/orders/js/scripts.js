@@ -226,39 +226,38 @@ document.addEventListener('DOMContentLoaded', async function() {
                 `;
                 console.log("Push Data Type:", pushData.type);
                 if (pushData.type =="offers"){
-                    appendMessage(offerMessageHTML, 'server',null,'offers');
-                    AppUtils.notifyOrderReady(pushData); 
+                    appendMessage(offerMessageHTML, 'server',null,'offers','',pushData.message_id);
+                    AppUtils.playNotificationSound(); 
                 }else if (pushData.type === "manager") {
-                    appendMessage(managerMessageHTML, 'server',null, 'manager');
-                    AppUtils.notifyOrderReady(pushData); 
+                    appendMessage(managerMessageHTML, 'server',null, 'manager',pushData.token_no,pushData.message_id); 
+                    showNotificationModal(pushData, 'notification');
                 } else {
                 if (pushData.type === "foodstatus") {
                     AppUtils.notifyOrderReady(pushData); 
                     showNotificationModal(pushData,'push');
-                    appendMessage(messageHTML, 'server',null,'foodstatus');
+                    appendMessage(messageHTML, 'server',null,'foodstatus',pushData.token_no,pushData.message_id);
                     }
                 }
             }
         });
     }
 
-    document.addEventListener('click', (e) => {
-        // If the click is outside any .message-bubble
-        document.querySelectorAll('.message-bubble.server').forEach(el => el.classList.remove('selected'));
-        
-    });
-
+    // document.addEventListener('click', (e) => {
+    //     const isInsideBubble = e.target.closest('.message-bubble');
+    //     if (!isInsideBubble) {
+    //         document.querySelectorAll('.message-bubble.server.selected')
+    //             .forEach(el => el.classList.remove('selected'));
+    //     }
+    // });
 
     chatInput.addEventListener("keydown", function(event) {
-        const selectedMessage = document.querySelector(".message-bubble.server.selected");
-
-        // If a message is selected, allow all input including Enter
-        if (selectedMessage) {
+        console.log("Key:", event.key, "Value:", chatInput.value, "isReplyMode:", AppUtils.isReplyMode);
+        if (AppUtils.isReplyMode) {
             if (event.key === "Enter") {
                 event.preventDefault();
                 sendButton.click();
             }
-            return; // Skip validation
+            return;  // Allow all text if replying
         }
 
         const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"];
@@ -268,7 +267,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             allowedKeys.includes(event.key)
         ) {
             if (chatInput.value.length >= 4 && event.key >= "0" && event.key <= "9") {
-                event.preventDefault();
+                event.preventDefault();  // Only limit when NOT replying
             }
 
             if (event.key === "Enter") {
@@ -284,17 +283,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Sanitize input on any indirect changes (e.g. autocomplete)
     chatInput.addEventListener("input", function(event) {
-        const selectedMessage = document.querySelector(".message-bubble.server.selected");
-
-        // Skip digit sanitization if replying
-        if (selectedMessage) return;
+        if (AppUtils.isReplyMode) return;  // ✅ Skip restrictions while replying
 
         let cleanValue = chatInput.value.replace(/[^0-9]/g, "").substring(0, 4);
         if (chatInput.value !== cleanValue) {
-            appendMessage("Only digits (0-9) are allowed.", "server",null);
+            appendMessage("Only digits (0-9) are allowed.", "server", null);
         }
         chatInput.value = cleanValue;
     });
+
 
     chatInput.addEventListener("focus", function () {
         const selectedMessage = document.querySelector(".message-bubble.server.selected");
@@ -316,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         chatInput.value = tokenFromQR; // Set the input field with the token
         const granted = await PermissionService.requestPermissions();
         const path = AppUtils.getNotificationHelpPath();
-        AppUtils.showToast(`Notifications are blocked. Go to: ${path}`);
+        // AppUtils.showToast(`Notifications are blocked. Go to: ${path}`);
         fetchOrderStatusOnce(tokenFromQR);
     } else {
         // If no token, show the chat window without a token
@@ -325,71 +322,108 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Send button logic
     sendButton.addEventListener('click', async function () {
         const message = chatInput.value.trim();
-        if (message !== '') {
-            const granted = await PermissionService.requestPermissions();
+        if (message === '') return;
 
-            if (!granted) {
-                AppUtils.showToast("Notification not enabled. Proceeding without push alerts");
-            }
+        const granted = await PermissionService.requestPermissions();
+        if (!granted) {
+            AppUtils.showToast("Notification not enabled. Proceeding without push alerts");
+        }
 
-            if (IosPwaInstallService.shouldRePrompt()) {
-                IosPwaInstallService.showModal();
+        if (IosPwaInstallService.shouldRePrompt()) {
+            IosPwaInstallService.showModal();
+        }
+
+        // Detect if it's a reply to a selected server message
+        const selectedMessage = document.querySelector(".message-bubble.server.selected");
+
+        if (selectedMessage) {
+            const tokenNo = selectedMessage.dataset.tokenNo;
+            if (tokenNo) {
+                // This is a reply to a message with tokenNo
+                fetchOrderStatusOnce(tokenNo,message); // Attach token + reply inside this function
+            } else {
+                console.warn("Selected message has no token number.");
             }
 
             appendMessage(message, 'user', null);
-            chatInput.value = '';
-            fetchOrderStatusOnce(message);
+        } else {
+            // No message selected → assume user typed token number directly
+            fetchOrderStatusOnce(message); // Use message as tokenNo
+            appendMessage(message, 'user', null);
         }
+
+        chatInput.value = '';
+        AppUtils.isReplyMode = false; // Reset after sending
     });
 
 
+
     // Single check to confirm the order status
-    function fetchOrderStatusOnce(token) {
+    function fetchOrderStatusOnce(token, replyText = null) {
         const activeVendor = AppUtils.getActiveVendor();
         console.log("Active Vendor ID in order update:", activeVendor);
-    
-        fetch(`/check-status/?token_no=${token}&vendor_id=${activeVendor}`)
-            .then(async (response) => {
-                const responseData = await response.json();
-    
-                if (!response.ok) {
-                    const errorMessage = responseData.error || "An unknown error occurred.";
-                    appendMessage(`❌ ${errorMessage}`, 'server', null);
-                    throw new Error(`Server responded with error: ${errorMessage}`);
-                }
-                const data = responseData;
-                console.log(data);
-                const messageHTML = `
-                    <div class="response-title">${data.name || "Unknown"}</div>
-                    <div class="status">
-                        Status: 
-                        <span class="${data.status?.toLowerCase() === 'ready' ? 'ready-color' : 'preparing-color'}">
-                            ${data.status || "Unknown"}
-                        </span>
-                    </div>
-                    <div class="info-badges">
-                        <div class="badge">Counter No: ${data.counter_no || ""}</div>
-                        <div class="badge">Token No: ${data.token_no || ""}</div>
-                    </div>
-                `;
-                appendMessage(messageHTML, 'server', null, 'foodstatus');
-    
+        const payload = {
+            token_no: token,
+            vendor_id: activeVendor,
+        };
+
+        if (replyText) {
+            payload.reply_text = replyText;
+        }
+
+        console.log("Payload to send:", payload);
+        fetch('/check-status/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': AppUtils.getCSRFToken(),  // Optional if using CSRF protection in Django
+            },
+            body: JSON.stringify(payload),
+        })
+        // handle your response here
+        .then(async (response) => {
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                const errorMessage = responseData.error || "An unknown error occurred.";
+                appendMessage(`❌ ${errorMessage}`, 'server', null);
+                throw new Error(`Server responded with error: ${errorMessage}`);
+            }
+            const data = responseData;
+            console.log(data);
+            const messageHTML = `
+                <div class="response-title">${data.name || "Unknown"}</div>
+                <div class="status">
+                    Status: 
+                    <span class="${data.status?.toLowerCase() === 'ready' ? 'ready-color' : 'preparing-color'}">
+                        ${data.status || "Unknown"}
+                    </span>
+                </div>
+                <div class="info-badges">
+                    <div class="badge">Counter No: ${data.counter_no || ""}</div>
+                    <div class="badge">Token No: ${data.token_no || ""}</div>
+                </div>
+            `;
+            if (!replyText){
+
+                appendMessage(messageHTML, 'server', null, 'foodstatus',data.token_no);
                 // If status is ready, notify user
                 if (data.status === "ready") {
                     showNotificationModal(data,'usercheck');
                     AppUtils.notifyOrderReady(data);
                 }
-    
-                // Subscribe for push notifications
-                PushSubscriptionService.subscribe(token, data.vendor);
-                // subscribeToPushNotifications(token, data.vendor);
-            })
-            .catch(error => {
-                console.error("Error fetching order status:", error);
-                if (!error.handled) {
-                    appendMessage("⚠️ Something went wrong. Please try again.", 'server', null);
-                }
-            });
+            }
+
+            // Subscribe for push notifications
+            PushSubscriptionService.subscribe(token, data.vendor);
+            // subscribeToPushNotifications(token, data.vendor);
+        })
+        .catch(error => {
+            console.error("Error fetching order status:", error);
+            if (!error.handled) {
+                console.log("⚠️ Something went wrong. Please try again.", 'server', null);
+            }
+        });
     }
     
 

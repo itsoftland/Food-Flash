@@ -13,7 +13,9 @@ export const ChatHistoryService = (() => {
                 text: msg.text,
                 sender: msg.sender,
                 timestamp: msg.timestamp || Date.now(),
-                type:msg.type || null
+                type:msg.type || null,
+                token_no:msg.token_no
+
             }))
         };
         localStorage.setItem(key, JSON.stringify(data));

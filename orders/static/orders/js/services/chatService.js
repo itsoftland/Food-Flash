@@ -27,7 +27,7 @@ export function handleOutletSelection(vendorId, vendor_logo, placeId) {
     window.isRestoringHistory = true;
     const cachedMessages = ChatHistoryService.load(vendorId) || [];
     cachedMessages.forEach(msg => {
-        appendMessage(msg.text, msg.sender, msg.timestamp, msg.type || null);
+        appendMessage(msg.text, msg.sender, msg.timestamp, msg.type || null,msg.token_no);
     });
     window.isRestoringHistory = false;
 }
@@ -62,7 +62,7 @@ export function showWelcomeMessage(outletName) {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-export function appendMessage(text, sender, timestamp = null,type) {
+export function appendMessage(text, sender, timestamp = null,type,token_no) {
     const chatContainer = document.getElementById("chat-container");
 
     const messageRow = document.createElement('div');
@@ -76,6 +76,8 @@ export function appendMessage(text, sender, timestamp = null,type) {
 
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('message-bubble', sender);
+    
+    
     messageBubble.innerHTML = `
     <div class="message-content">
         <button class="reply-button" title="Reply">
@@ -87,8 +89,9 @@ export function appendMessage(text, sender, timestamp = null,type) {
         </span>
     </div>
     `;
-
-
+    if (token_no) {
+        messageBubble.dataset.tokenNo = token_no;
+    }
 
     if (sender === 'server') {
         const activeLogo = localStorage.getItem("activeVendorLogo") || '/static/images/default-logo.png';
@@ -107,17 +110,56 @@ export function appendMessage(text, sender, timestamp = null,type) {
             replyBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const isSelected = messageBubble.classList.contains('selected');
+
+                // Deselect all first
                 document.querySelectorAll('.message-bubble.server').forEach(el => el.classList.remove('selected'));
-                if (!isSelected) messageBubble.classList.add('selected');
+
+                // Toggle selection and reply mode
+                if (!isSelected) {
+                messageBubble.classList.add('selected');
+                AppUtils.isReplyMode = true;
+
+                // Change icon to close
+                const icon = replyBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-reply');
+                    icon.classList.add('fa-times');
+                    replyBtn.title = 'Cancel Reply';
+                    replyBtn.classList.add('active');
+                }
+
+                } else {
+                    messageBubble.classList.remove('selected');
+                    AppUtils.isReplyMode = false;
+
+                    // Change icon back to reply
+                    const icon = replyBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-reply');
+                        replyBtn.title = 'Reply';
+                        replyBtn.classList.remove('active');
+                    }
+                }
+
+
+                // Focus input
                 const inputBox = document.getElementById("chat-input");
                 if (inputBox) inputBox.focus();
+
+                // Optional: Store token number globally if needed
+                const tokenNo = messageBubble.dataset.tokenNo;
+                if (tokenNo) {
+                    console.log("Clicked Token No:", tokenNo);
+                }
+                console.log("Reply mode:", AppUtils.isReplyMode);
             });
         }
     } else {
-        // If not allowed, remove the reply button from the DOM
         const replyBtn = messageBubble.querySelector('.reply-button');
         if (replyBtn) replyBtn.remove();
     }
+
 
 
     chatContainer.appendChild(messageRow);
@@ -127,7 +169,7 @@ export function appendMessage(text, sender, timestamp = null,type) {
         const activeVendorId = localStorage.getItem("activeVendor");
         if (activeVendorId) {
             const existingMessages = ChatHistoryService.load(activeVendorId) || [];
-            existingMessages.push({ text, sender, timestamp: timeStamp, type: type || null }); // ✅ FIXED
+            existingMessages.push({ text, sender, timestamp: timeStamp, type: type || null,token_no}); // ✅ FIXED
             ChatHistoryService.save(activeVendorId, existingMessages);
         }
     }

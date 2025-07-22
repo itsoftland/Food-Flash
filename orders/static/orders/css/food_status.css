@@ -41,8 +41,8 @@
     color: #888;
     transition: color 0.3s;
 }
-.reply-button:hover {
-    color: #f0a934;
+.reply-button.active{
+    color: #e74c3c;
 }
 .message-content {
     position: relative;

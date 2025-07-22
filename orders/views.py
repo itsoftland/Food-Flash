@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from django.utils import timezone
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -12,11 +13,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from vendors.models import Order, Vendor, AdminOutlet, AdvertisementProfileAssignment, UserProfile
+from vendors.models import (Order, Vendor, AdminOutlet,
+                            AdvertisementProfileAssignment,
+                            UserProfile,ChatMessage)
 from vendors.serializers import OrdersSerializer
 
 from .utils import send_to_managers
 from static.utils.functions.queries import get_vendor
+
 
 
 from .serializers import (
@@ -50,43 +54,34 @@ def token_display(request):
     cache.clear()
     return render(request, 'orders/token_display.html')
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def check_status(request):
-    token_no = request.GET.get('token_no')
-    vendor_id = request.GET.get('vendor_id')
+    token_no = request.data.get('token_no')
+    vendor_id = request.data.get('vendor_id')
+    reply_text = request.data.get('reply_text')  # Optional
 
     logger.info("check_status called with token_no: %s, vendor_id: %s", token_no, vendor_id)
 
-    # Validate presence
+    # ───── Validations ─────
     if not token_no:
-        logger.warning("Token number missing in request.")
         return Response({'error': 'Token number is required.'}, status=status.HTTP_400_BAD_REQUEST)
     if not vendor_id:
-        logger.warning("Vendor ID missing in request.")
         return Response({'error': 'Vendor ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Validate integer format
     try:
         token_no = int(token_no)
+        vendor_id = int(vendor_id)
         if token_no <= 0:
-            logger.warning("Invalid token number: %s", token_no)
             return Response({'error': 'Token number must be a positive integer.'}, status=status.HTTP_400_BAD_REQUEST)
     except ValueError:
-        logger.warning("Non-integer token number: %s", token_no)
-        return Response({'error': 'Token number must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        vendor_id = int(vendor_id)
-    except ValueError:
-        logger.warning("Non-integer vendor_id: %s", vendor_id)
-        return Response({'error': 'Vendor ID must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Token number and Vendor ID must be integers.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id)
-        logger.info("Order found for token_no %s and vendor_id %s", token_no, vendor_id)
+        # ───── Existing Order ─────
+        order = Order.objects.get(token_no=token_no, vendor__vendor_id=vendor_id, created_date=timezone.now().date())
 
         if order.status == 'created':
-            logger.info("Order status is 'created'; updating to 'preparing'")
             order.status = 'preparing'
             order.updated_by = 'customer'
             order.save()
@@ -99,28 +94,54 @@ def check_status(request):
             'vendor': order.vendor.id,
             'token_no': order.token_no,
             'status': order.status,
-            'counter_no': order.counter_no,
+            'counter_no': order.counter_no or 1,
             'device_id': order.device.id if order.device else None,
-            'device_serial_no': order.device.serial_no if order.device else None,   
+            'device_serial_no': order.device.serial_no if order.device else None,
             'manager_id': order.user_profile.id if order.user_profile else None,
-            'manager_name': order.user_profile.name if order.user_profile else None,    
+            'manager_name': order.user_profile.name if order.user_profile else None,
             'vendor_id': order.vendor.vendor_id,
             'location_id': order.vendor.location_id,
             'logo_url': logo_url,
             'type': 'foodstatus',
             'updated_by': order.updated_by,
             'message': 'Order retrieved successfully.',
+            'reply_status': ''
         }
 
-        logger.info("Sending update to managers for vendor_id %s", vendor_id)
-        send_to_managers(get_vendor(vendor_id), data)
+        if reply_text:
+            data['message'] = "Reply message sent to managers."
+            data['type'] = 'user_reply'
+            data['reply_status'] = reply_text
+            MAX_MESSAGE_LENGTH = 200
 
+            if reply_text and len(reply_text) > MAX_MESSAGE_LENGTH:
+                return Response(
+                    {"error": f"Message too long. Limit is {MAX_MESSAGE_LENGTH} characters."},
+                    status=400
+                )
+            
+            try:
+                ChatMessage.objects.create(
+                    vendor=order.vendor,
+                    token_no=order.token_no,
+                    created_date=timezone.now().date(),
+                    sender='user',
+                    message_text=reply_text
+                )
+            except Exception as e:
+                logger.exception("Failed to store user chat message")
+
+
+        send_to_managers(order.vendor, data)
         return Response(data, status=status.HTTP_200_OK)
 
     except Order.DoesNotExist:
-        logger.info("Order not found for token_no %s, creating new one.", token_no)
+        # ───── New Order ─────
         try:
             vendor = Vendor.objects.get(vendor_id=vendor_id)
+            vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
+            logo_url = vendor_serializer.data.get('logo_url', '')
+
             new_order_data = {
                 'name': vendor.name,
                 'token_no': token_no,
@@ -136,38 +157,40 @@ def check_status(request):
             serializer = OrdersSerializer(data=new_order_data)
             if serializer.is_valid():
                 order = serializer.save()
-                data = serializer.data
-                data['message'] = 'Order created with status preparing.'
 
-                logger.info("New order created for token_no %s. Notifying managers.", token_no)
-                send_to_managers(vendor, {
+                data = {
+                    'name': vendor.name,
+                    'vendor': vendor.id,
                     'token_no': token_no,
+                    'status': 'preparing',
+                    'counter_no': 1,
+                    'device_id': None,
+                    'device_serial_no': None,
+                    'manager_id': None,
+                    'manager_name': None,
                     'vendor_id': vendor.vendor_id,
                     'location_id': vendor.location_id,
-                    'status': 'preparing',
-                    'updated_by': 'customer',
+                    'logo_url': logo_url,
                     'type': 'foodstatus',
-                    'message': 'New order created by customer.'
-                })
+                    'updated_by': 'customer',
+                    'message': 'Order created with status preparing.',
+                    'reply_status': ''
+                }
+                send_to_managers(vendor, data)
 
                 return Response(data, status=status.HTTP_201_CREATED)
             else:
-                logger.warning("Order creation failed: %s", serializer.errors)
                 return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         except Vendor.DoesNotExist:
-            logger.error("Vendor not found for vendor_id: %s", vendor_id)
             return Response({'error': 'Vendor not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.exception("Unexpected error while creating new order: %s", str(e))
+            logger.exception("Unexpected error while creating order.")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     except Exception as e:
-        logger.exception("Unexpected error while fetching order: %s", str(e))
+        logger.exception("Unexpected error while processing order.")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

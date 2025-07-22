@@ -10,6 +10,10 @@ window.AppUtils = {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.getAttribute("content") : "";
     },
+    // ─────────────────────────────────────
+    // Global Chat Flags
+    // ─────────────────────────────────────
+    isReplyMode: false, // <- this is your global flag
     key: 'activeLocation',
     async get() {
         // 1️⃣ Try localStorage
@@ -147,6 +151,10 @@ window.AppUtils = {
         notificationAudio.play().catch(err =>
             console.error('Error playing notification sound:', err)
         );
+        // Vibration if supported
+        if (navigator.vibrate) {
+            navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
+        }
     },
     // ─────────────────────────────────────
     // Viewport Utility
@@ -222,11 +230,6 @@ window.AppUtils = {
             // Speech synthesis
             const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
             speechSynthesis.speak(orderReadyMessage);
-
-            // Vibration if supported
-            if (navigator.vibrate) {
-                navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
-            }
         } catch (e) {
             console.error("Failed to notify order readiness", e);
         }

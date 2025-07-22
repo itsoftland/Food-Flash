@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+import uuid
 
 class AdminOutlet(models.Model):  
     user = models.OneToOneField(
@@ -276,5 +277,48 @@ class ArchivedOrder(models.Model):
     def __str__(self):
         return f"Archived Token {self.token_no}"
 
+class ChatMessage(models.Model):
+    SENDER_CHOICES = [
+        ('user', 'User'),       # foodflash user
+        ('manager', 'Manager'), # android apk
+    ]
 
+    message_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    # 👇 Link to vendor 
+    vendor = models.ForeignKey('Vendor', on_delete=models.CASCADE, related_name='chat_messages')
+
+    # 👇 Order context
+    token_no = models.IntegerField()
+    created_date = models.DateField()
+
+    # 👇 Identify sender
+    sender = models.CharField(max_length=10, choices=SENDER_CHOICES)
+
+    # 👇 Message content
+    message_text = models.TextField(blank=True, null=True)
+    audio_file = models.FileField(upload_to='chat/audio/', blank=True, null=True)
+
+    # 👇 Optional reply threading
+    reply_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies')
+
+    is_read = models.BooleanField(default=False)
+    is_send = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_audio(self):
+        return bool(self.audio_file)
+
+    def __str__(self):
+        return f"[{self.created_at}] {self.sender}: {'(audio)' if self.audio_file else self.message_text}"
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['vendor', 'token_no', 'created_date']),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['vendor', 'token_no', 'created_date', 'message_id'], name='unique_chat_message_per_order'),
+        ]
 

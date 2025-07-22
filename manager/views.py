@@ -9,11 +9,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from vendors.models import Order, Vendor, UserProfile
+from vendors.models import (Order, Vendor, UserProfile,
+                            ChatMessage)
 from vendors.serializers import OrdersSerializer
 from vendors.utils import notify_web_push
 
 from orders.serializers import VendorLogoSerializer
+from .serializers import ChatMessageSerializer  
 
 from static.utils.functions.utils import get_filtered_date_range
 from static.utils.functions.queries import update_existing_order_by_manager
@@ -134,106 +136,6 @@ def get_today_orders(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-
-# @api_view(['PATCH'])
-# @permission_classes([IsAuthenticated])
-# def manager_order_update(request):
-#     try:
-#         logger.info("📥 PATCH /update_order")
-#         logger.info(f"IP: {request.META.get('REMOTE_ADDR')}, UA: {request.META.get('HTTP_USER_AGENT')}")
-#         logger.debug(f"Request Data: {request.data}")
-
-#         data = request.data
-#         required_fields = ['token_no', 'status']
-#         missing = [f for f in required_fields if f not in data or data[f] in [None, ""]]
-
-
-#         if missing:
-#             logger.warning(f"⛔ Missing fields: {', '.join(missing)}")
-#             return Response({"message": f"Missing fields: {', '.join(missing)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-#         manager = getattr(request.user, 'profile_roles', None)
-#         if not manager or not manager.exists():
-#             logger.warning("⚠️ No manager profile found for the user.")
-#             return Response({"message": "User is not a manager."}, status=status.HTTP_403_FORBIDDEN)
-
-#         manager = manager.first()
-#         if not manager.vendor:
-#             logger.warning("⚠️ Manager does not have an associated vendor.")
-#             return Response({"message": "Manager does not have an associated vendor."}, status=status.HTTP_403_FORBIDDEN)
-        
-#         vendor = manager.vendor
-#         token_no = data['token_no']
-#         status_to_update = data['status']
-#         device = None  # ensure no device association
-
-#         logger.info(f"🔧 Manager: {manager.name}, Vendor: {vendor.name} ({vendor.vendor_id}), Token: {token_no}, Status: {status_to_update}")
-
-#         # Attempt order update
-#         order = update_existing_order_by_manager(token_no, vendor, device, status_to_update, manager)
-#         if not order:
-#             logger.warning(f"❌ No order found with token_no: {token_no} for vendor {vendor.name}")
-#             return Response({"message": f"Order with token_no {token_no} not found."}, status=status.HTTP_404_NOT_FOUND)
-
-#         logger.info(f"✅ Order found and updated: {order.id} — new status: {status_to_update}")
-
-#         # Android TV push
-#         fcm_result = notify_android_tv(vendor, data)
-#         logger.info(f"📺 Android TV FCM sent | Result: {fcm_result}")
-
-#         push_errors = []
-#         if status_to_update.lower() == "ready":
-#             from django.conf import settings
-#             cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 5)
-
-#             if not order.notified_at or (timezone.now() - order.notified_at) > timedelta(seconds=cooldown):
-#                 vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
-#                 payload = {
-#                     "title": "Order Update by Manager",
-#                     "body": f"Your order {token_no} is now ready.",
-#                     "token_no": token_no,
-#                     "status": status_to_update,
-#                     "counter_no": order.counter_no,
-#                     "name": vendor.name,
-#                     "vendor_id": vendor.vendor_id,
-#                     "location_id": vendor.location_id,
-#                     "logo_url": vendor_serializer.data.get("logo_url", ""),
-#                     "type": "foodstatus"
-#                 }
-#                 logger.info(f"📤 Web push payload prepared. Sending...")
-#                 push_errors = notify_web_push(order, vendor, payload)
-#                 logger.info(f"📤 Web push completed with {len(push_errors)} error(s).")
-                
-
-#                 order.notified_at = timezone.now()
-#                 order.save(update_fields=['notified_at'])
-#                 logger.info(f"🕒 Order {token_no} marked as notified at {order.notified_at}.")
-#             else:
-#                 logger.info(f"⏳ Skipping web push. Cooldown active for token {token_no}.")
-
-#         response_msg = {
-#             "success": True,
-#             "message": "Order updated and notifications sent.",
-#             "token_no": token_no,
-#             "push_errors": push_errors if push_errors else [],
-#         }
-
-#         if push_errors:
-#             logger.warning(f"⚠️ Partial push failures for order {token_no}: {push_errors}")
-#             response_msg.update({
-#                 "success": False,
-#                 "message": "Order updated. FCM sent. Some web pushes failed.",
-#                 "push_errors": push_errors
-#             })
-#             return Response(response_msg, status=status.HTTP_207_MULTI_STATUS)
-
-#         logger.info(f"✅ Order {token_no} successfully updated and notifications dispatched.")
-#         return Response(response_msg, status=status.HTTP_200_OK)
-
-#     except Exception as e:
-#         logger.exception("🔥 Unhandled exception in manager_order_update:")
-#         return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 from django.conf import settings
 
 @api_view(['PATCH'])
@@ -259,7 +161,7 @@ def manager_order_update(request):
             logger.warning("❌ token_no must be a valid integer.")
             return Response({"message": "token_no must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
 
-        status_to_update = data['status'].lower()
+        status_to_update = data['status']
 
         # Validate manager
         manager = getattr(request.user, 'profile_roles', None)
@@ -283,7 +185,7 @@ def manager_order_update(request):
         # Serialize vendor logo
         vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
         logo_url = vendor_serializer.data.get("logo_url", "")
-        if status_to_update == "ready":
+        if status_to_update.lower() == "ready":
             body = f"Your order {token_no} status: {status_to_update.capitalize()}"
         else:
             body = f"Your order {token_no} has an update from the manager."
@@ -294,13 +196,14 @@ def manager_order_update(request):
             "title": "Order Update by Manager",
             "body": body,
             "token_no": token_no,
-            "status": status_to_update,
+            "status": status_to_update.lower(),
             "counter_no": order.counter_no,
             "name": vendor.name,
             "vendor_id": vendor.vendor_id,
             "location_id": vendor.location_id,
             "logo_url": logo_url,
-            "type": "foodstatus" if status_to_update == "ready" else "manager"
+            "type": "foodstatus" if status_to_update == "ready" else "manager",
+            "message_id":None
         }
 
         android_tv_success = None
@@ -308,7 +211,7 @@ def manager_order_update(request):
         push_errors = []
 
         # ✅ IF status is "ready"
-        if status_to_update == "ready":
+        if status_to_update.lower() == "ready":
             # 1. Notify Android TV
             android_tv_success, android_tv_info = notify_android_tv(vendor, data)
             logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
@@ -335,8 +238,43 @@ def manager_order_update(request):
 
         # ⚠️ IF status is NOT "ready"
         else:
+            MAX_MESSAGE_LENGTH = 200
+
+            if status_to_update and len(status_to_update) > MAX_MESSAGE_LENGTH:
+                return Response(
+                    {"error": f"Message too long. Limit is {MAX_MESSAGE_LENGTH} characters."},
+                    status=400
+                )
             logger.info("ℹ️ Status not 'ready' — skipping DB and Android TV. Sending web push with type 'manager'.")
+            # 1. Save chat message first with is_send=True (optimistic approach)
+            chat_message = ChatMessage.objects.create(
+                vendor=vendor,
+                token_no=token_no,
+                created_date=timezone.now().date(),
+                sender='manager',
+                is_send=True,
+                message_text=status_to_update
+            )
+
+            # 2. Add message ID to payload
+            payload["message_id"] = chat_message.id
+
+            # 3. Try sending the web push
             push_errors = notify_web_push(order, vendor, payload)
+
+            if not push_errors:
+                logger.info(f"📤 Web push sent successfully for {token_no}")
+            else:
+                error_messages = "\n".join(
+                    f"{error.__class__.__name__}: {str(error)}" for error in push_errors
+                )
+                logger.warning(f"❌ Failed to send web push for {token_no}. Errors:\n{error_messages}")
+
+                # 4. Update the ChatMessage to is_send=False since push failed
+                chat_message.is_send = False
+                chat_message.save(update_fields=["is_send"])
+
+
 
         # 📦 Final response
         return Response({
@@ -352,3 +290,32 @@ def manager_order_update(request):
     except Exception as e:
         logger.exception("🔥 Unhandled exception in manager_order_update:")
         return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def chat_history(request):
+    vendor_id = request.GET.get('vendor_id')
+    token_no = request.GET.get('token_no')
+
+    # Validate input
+    if not vendor_id or not token_no:
+        return Response({"error": "vendor_id and token_no are required."}, status=400)
+
+    try:
+        vendor = Vendor.objects.get(id=int(vendor_id))
+    except Vendor.DoesNotExist:
+        return Response({"error": "Vendor not found."}, status=404)
+
+    try:
+        token_no = int(token_no)
+    except ValueError:
+        return Response({"error": "Invalid token_no."}, status=400)
+
+    messages = ChatMessage.objects.filter(
+        vendor=vendor,
+        token_no=token_no,
+        created_date=timezone.now().date()
+    ).order_by('created_at')
+
+    serializer = ChatMessageSerializer(messages, many=True)
+    return Response({"messages": serializer.data}, status=200)
