@@ -5,7 +5,7 @@ import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
 import { VendorUIService } from "./services/vendorUIService.js";
-import { updateChatOnPush,appendMessage } from "./services/chatService.js";
+import { updateChatOnPush,appendMessage,clearReplyMode } from "./services/chatService.js";
 import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -25,11 +25,34 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     let isAdVisible = true;
 
-    if (tokenFromQR) {
-        console.log("Token from QR:", tokenFromQR);
-        AppUtils.setToken(tokenFromQR);
+    // 1️⃣ Check URL param first
+    if (locationId) {
+        AppUtils.set(locationId); // Store it
+    } else {
+        // 2️⃣ Fallback to localStorage
+        locationId = AppUtils.get();
+
+        if (!locationId )  {
+            // 3️⃣ Ask for it / show error / redirect
+            AppUtils.showToast("No location ID found");
+            // Optionally redirect to a location selection page
+            window.location.href = "/";
+            throw new Error("Missing location ID");
+        }
     }
 
+    if (vendorFromQR) {
+        await AppUtils.setCurrentVendors(vendorFromQR);
+        // Optional: Clean the URL
+        const newUrl = window.location.origin + window.location.pathname;
+        history.replaceState(null, "", newUrl);
+    } else {
+        AddOutletService.init();
+    }
+    if (tokenFromQR) {
+        console.log("Token from QR:", tokenFromQR);
+        await AppUtils.setToken(tokenFromQR);
+    }
     // Initialize the ad slider visibility 
     toggleBtn.addEventListener("click", function () {
         const sliderWrapper = document.getElementById('ad-slider-wrapper');
@@ -49,32 +72,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         isAdVisible = !isAdVisible;
     });
 
-
-
-    // 1️⃣ Check URL param first
-    if (locationId) {
-        AppUtils.set(locationId); // Store it
-    } else {
-        // 2️⃣ Fallback to localStorage
-        locationId = AppUtils.get();
-
-        if (!locationId )  {
-            // 3️⃣ Ask for it / show error / redirect
-            AppUtils.showToast("No location ID found. Please select a location to proceed");
-            // Optionally redirect to a location selection page
-            window.location.href = "/";
-            throw new Error("Missing location ID");
-        }
-    }
-
-    if (vendorFromQR) {
-        AppUtils.setCurrentVendors(vendorFromQR);
-        // Optional: Clean the URL
-        const newUrl = window.location.origin + window.location.pathname;
-        history.replaceState(null, "", newUrl);
-    } else {
-        AddOutletService.init();
-    }
     MenuModalService.init();
     FeedbackService.init();
     IosPwaInstallService.init();
@@ -180,14 +177,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             });
         });
-        navigator.serviceWorker.addEventListener('message', (event) => {
+        navigator.serviceWorker.addEventListener('message', async (event) => {
             if (event.data && event.data.type === 'PUSH_STATUS_UPDATE') {
                 const pushData = event.data.payload;
                 console.log('Received push update via postMessage:', pushData);
                 let selectedVendors = JSON.parse(localStorage.getItem('selectedVendors')) || [];
                 // Check if the vendor is already in the list
                 if (!selectedVendors.includes(pushData.vendor_id)) {
-                    AppUtils.appendVendorIfNotExists(pushData.vendor_id);
+                    await AppUtils.appendVendorIfNotExists(pushData.vendor_id);
                     const vendorIds = AppUtils.getStoredVendors();
                     VendorUIService.init(vendorIds);
                 }
@@ -241,14 +238,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
-
-    // document.addEventListener('click', (e) => {
-    //     const isInsideBubble = e.target.closest('.message-bubble');
-    //     if (!isInsideBubble) {
-    //         document.querySelectorAll('.message-bubble.server.selected')
-    //             .forEach(el => el.classList.remove('selected'));
-    //     }
-    // });
 
     chatInput.addEventListener("keydown", function(event) {
         console.log("Key:", event.key, "Value:", chatInput.value, "isReplyMode:", AppUtils.isReplyMode);
@@ -314,7 +303,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const granted = await PermissionService.requestPermissions();
         const path = AppUtils.getNotificationHelpPath();
         // AppUtils.showToast(`Notifications are blocked. Go to: ${path}`);
-        fetchOrderStatusOnce(tokenFromQR);
+        await fetchOrderStatusOnce(tokenFromQR);
     } else {
         // If no token, show the chat window without a token
         showChatWindow({});
@@ -340,7 +329,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const tokenNo = selectedMessage.dataset.tokenNo;
             if (tokenNo) {
                 // This is a reply to a message with tokenNo
-                fetchOrderStatusOnce(tokenNo,message); // Attach token + reply inside this function
+                await fetchOrderStatusOnce(tokenNo,message); // Attach token + reply inside this function
             } else {
                 console.warn("Selected message has no token number.");
             }
@@ -348,19 +337,20 @@ document.addEventListener('DOMContentLoaded', async function() {
             appendMessage(message, 'user', null);
         } else {
             // No message selected → assume user typed token number directly
-            fetchOrderStatusOnce(message); // Use message as tokenNo
+            await fetchOrderStatusOnce(message); // Use message as tokenNo
             appendMessage(message, 'user', null);
         }
 
+        // ✅ Clear input
         chatInput.value = '';
-        AppUtils.isReplyMode = false; // Reset after sending
+        clearReplyMode(); 
     });
 
 
 
     // Single check to confirm the order status
-    function fetchOrderStatusOnce(token, replyText = null) {
-        const activeVendor = AppUtils.getActiveVendor();
+    async function fetchOrderStatusOnce(token, replyText = null) {
+        const activeVendor = await AppUtils.getActiveVendor();
         console.log("Active Vendor ID in order update:", activeVendor);
         const payload = {
             token_no: token,

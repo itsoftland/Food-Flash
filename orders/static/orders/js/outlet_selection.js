@@ -1,22 +1,68 @@
 // ─────────────────────────────────────
 // Early Redirect: Ensure ?location_id is in URL
 // ─────────────────────────────────────
-(async function redirectIfMissingLocationId() {
-    console.log("working")
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasLocationParam = urlParams.has("location_id");
+// (async function redirectIfMissingLocationId() {
+//     console.log("working")
+//     const urlParams = new URLSearchParams(window.location.search);
+//     const hasLocationParam = urlParams.has("location_id");
 
+//     if (!hasLocationParam) {
+//         const locationIdFromStorage = await AppUtils.get();
+//         if (locationIdFromStorage) {
+//             const newUrl = new URL(window.location.href);
+//             newUrl.searchParams.set("location_id", locationIdFromStorage);
+//             window.location.replace(newUrl.toString()); // Prevents DOM load before redirect
+//         } else {
+//             console.warn("No location_id found in URL, localStorage, or cookies.");
+//         }
+//     }
+// })();
+(async function redirectIfMissingLocationId() {
+    console.log("Checking for redirect conditions...");
+
+    const currentUrl = new URL(window.location.href);
+    const urlParams = currentUrl.searchParams;
+
+    const hasLocationParam = urlParams.has("location_id");
+    const hasVendorId = await AppUtils.getActiveVendor();
+    console.log('ActiveVendorid',hasVendorId)
+    const hasTokenNo = await AppUtils.getToken();
+
+    // ✅ Condition 1: If vendor_id and token_no are present → redirect to /home/
+    if (hasVendorId || hasTokenNo) {
+        console.log("Detected vendor_id or token_no in URL. Redirecting to /home/");
+
+        const locationId = hasLocationParam ? urlParams.get("location_id") : await AppUtils.get();
+
+        if (locationId) {
+            const newUrl = new URL(`${window.location.origin}/home/`);
+            newUrl.searchParams.set("location_id", locationId);
+            newUrl.searchParams.set("vendor_id",hasVendorId);
+            newUrl.searchParams.set("token_no", hasTokenNo);
+
+            window.location.replace(newUrl.toString());
+        } else {
+            console.warn("Missing location_id for home redirect.");
+        }
+
+        return;
+    }
+
+    // 🚨 Condition 2: If location_id is missing, try to retrieve and redirect
     if (!hasLocationParam) {
         const locationIdFromStorage = await AppUtils.get();
         if (locationIdFromStorage) {
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.set("location_id", locationIdFromStorage);
-            window.location.replace(newUrl.toString()); // Prevents DOM load before redirect
+            console.log("Redirecting with stored location_id:", locationIdFromStorage);
+            window.location.replace(newUrl.toString());
         } else {
-            console.warn("No location_id found in URL, localStorage, or cookies.");
+            console.warn("No location_id found in URL or storage.");
         }
     }
 })();
+
+
 
 // ─────────────────────────────────────
 // Main Logic: Run after DOM is ready
@@ -55,7 +101,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         AppUtils.set(locationId); // Stores in both localStorage and cookie
     } else {
         // Try to get from fallback (this path usually won't run due to early redirect)
-        locationId = AppUtils.get();
+        locationId = await AppUtils.get();
 
         if (!locationId) {
             AppUtils.showToast("Location ID is missing. Please scan or provide location.");

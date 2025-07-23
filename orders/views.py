@@ -36,15 +36,21 @@ logger = logging.getLogger(__name__)
 
 def outlet_selection(request):
     location_id = request.GET.get("location_id")
-    context = {}  # Add any extra context here if needed
+    context = {}
 
     response = render(request, "orders/landing_page.html", context)
 
     if location_id:
-        # Set cookie for 30 days (optional: domain='yourdomain.com' if needed)
-        response.set_cookie("location_id", location_id, max_age=30 * 24 * 60 * 60)
+        response.set_cookie(
+            "activeLocation",
+            location_id,
+            max_age=30 * 24 * 60 * 60,  # 30 days
+            samesite="Lax",            # Helps prevent CSRF
+            secure=request.is_secure() # Only for HTTPS
+        )
 
     return response
+
 
 def home(request):
     cache.clear()

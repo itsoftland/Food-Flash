@@ -129,17 +129,18 @@ export function appendMessage(text, sender, timestamp = null,type,token_no) {
                 }
 
                 } else {
-                    messageBubble.classList.remove('selected');
-                    AppUtils.isReplyMode = false;
+                    clearReplyMode();
+                    // messageBubble.classList.remove('selected');
+                    // AppUtils.isReplyMode = false;
 
-                    // Change icon back to reply
-                    const icon = replyBtn.querySelector('i');
-                    if (icon) {
-                        icon.classList.remove('fa-times');
-                        icon.classList.add('fa-reply');
-                        replyBtn.title = 'Reply';
-                        replyBtn.classList.remove('active');
-                    }
+                    // // Change icon back to reply
+                    // const icon = replyBtn.querySelector('i');
+                    // if (icon) {
+                    //     icon.classList.remove('fa-times');
+                    //     icon.classList.add('fa-reply');
+                    //     replyBtn.title = 'Reply';
+                    //     replyBtn.classList.remove('active');
+                    // }
                 }
 
 
@@ -175,4 +176,22 @@ export function appendMessage(text, sender, timestamp = null,type,token_no) {
     }
 
     AppUtils.adjustChatResponsePadding();
+}
+
+export function clearReplyMode() {
+    const selectedMessage = document.querySelector('.message-bubble.server.selected');
+    if (!selectedMessage) return;
+
+    selectedMessage.classList.remove('selected');
+    AppUtils.isReplyMode = false;
+
+    const replyBtn = selectedMessage.querySelector('.reply-button');
+    const icon = replyBtn?.querySelector('i');
+
+    if (replyBtn && icon) {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-reply');
+        replyBtn.title = 'Reply';
+        replyBtn.classList.remove('active');
+    }
 }

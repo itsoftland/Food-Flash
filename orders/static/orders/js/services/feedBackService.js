@@ -123,7 +123,7 @@ export const FeedbackService = (() => {
             return;
         }
 
-        const vendorId = AppUtils.getActiveVendor();
+        const vendorId = await AppUtils.getActiveVendor();
         submitBtn.disabled = true;
 
         try {

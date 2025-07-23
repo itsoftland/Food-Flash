@@ -95,8 +95,7 @@ window.AppUtils = {
         const outletName = localStorage.getItem('selectedOutletName');
         return outletName ? outletName : null;
     },
-
-    setCurrentVendors: function (vendorInput) {
+    setCurrentVendors: async function (vendorInput) {
         let newVendors = [];
 
         if (typeof vendorInput === 'string') {
@@ -106,41 +105,166 @@ window.AppUtils = {
         }
 
         const updatedList = Array.from(new Set(newVendors));
-        localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
+        const lastVendor = updatedList[updatedList.length - 1];
 
-        if (updatedList.length > 0) {
-            localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
+        // Store in localStorage
+        localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
+        if (lastVendor) {
+            localStorage.setItem('activeVendor', lastVendor);
         }
+
+        // Store in IndexedDB
+        try {
+            await idbSet('selectedVendors', updatedList);
+            if (lastVendor) {
+                await idbSet('activeVendor', lastVendor);
+            }
+        } catch (e) {
+            console.warn("[VendorStore] Failed to write to IndexedDB:", e);
+        }
+
+        // Store in cookies
+        this.setCookie('selectedVendors', JSON.stringify(updatedList));
+        if (lastVendor) {
+            this.setCookie('activeVendor', lastVendor);
+        }
+
+        console.log("[VendorStore] Vendors set successfully:", updatedList);
     },
-    appendVendorIfNotExists: function (vendorId) {
-        // Append the vendorId to the list
+    getActiveVendor: async function () {
+        let vendorId = localStorage.getItem('activeVendor');
+        if (vendorId) {
+            console.log("[VendorStore] Loaded from localStorage:", vendorId);
+            return parseInt(vendorId, 10);
+        }
+
+        try {
+            vendorId = await idbGet('activeVendor');
+            if (vendorId) {
+                console.log("[VendorStore] Loaded from IndexedDB:", vendorId);
+                localStorage.setItem('activeVendor', vendorId);
+                return parseInt(vendorId, 10);
+            }
+        } catch (e) {
+            console.warn("[VendorStore] IndexedDB read failed:", e);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 200));
+        vendorId = this.getCookie('activeVendor');
+        if (vendorId) {
+            console.log("[VendorStore] Loaded from Cookie:", vendorId);
+            localStorage.setItem('activeVendor', vendorId);
+            try { await idbSet('activeVendor', vendorId); } catch {}
+            return parseInt(vendorId, 10);
+        }
+
+        console.warn("[VendorStore] No activeVendor found.");
+        return null;
+    },
+
+    appendVendorIfNotExists: async function (vendorId) {
         let selectedVendors = JSON.parse(localStorage.getItem('selectedVendors')) || [];
         selectedVendors.push(vendorId);
 
-        // Update localStorage with the new list (ensure uniqueness)
         const updatedList = Array.from(new Set(selectedVendors));
         localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
-
-        // Optionally update activeVendor to the new vendorId
         localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
-    },    
-    getActiveVendor: function () {
-        return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
+
+        try {
+            await idbSet('selectedVendors', updatedList);
+            await idbSet('activeVendor', updatedList[updatedList.length - 1]);
+        } catch (e) {
+            console.warn("[VendorStore] IndexedDB write failed:", e);
+        }
+
+        this.setCookie('selectedVendors', JSON.stringify(updatedList));
+        this.setCookie('activeVendor', updatedList[updatedList.length - 1]);
     },
+    // setCurrentVendors: function (vendorInput) {
+    //     let newVendors = [];
+
+    //     if (typeof vendorInput === 'string') {
+    //         newVendors = vendorInput.split(',').map(v => parseInt(v.trim(), 10));
+    //     } else if (Array.isArray(vendorInput)) {
+    //         newVendors = vendorInput.map(v => parseInt(v, 10));
+    //     }
+
+    //     const updatedList = Array.from(new Set(newVendors));
+    //     localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
+
+    //     if (updatedList.length > 0) {
+    //         localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
+    //     }
+    // },
+    // appendVendorIfNotExists: function (vendorId) {
+    //     // Append the vendorId to the list
+    //     let selectedVendors = JSON.parse(localStorage.getItem('selectedVendors')) || [];
+    //     selectedVendors.push(vendorId);
+
+    //     // Update localStorage with the new list (ensure uniqueness)
+    //     const updatedList = Array.from(new Set(selectedVendors));
+    //     localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
+
+    //     // Optionally update activeVendor to the new vendorId
+    //     localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
+    // },    
+    // getActiveVendor: function () {
+    //     return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
+    // },
     // ─────────────────────────────────────
     // Token Management
     // ─────────────────────────────────────
-
-    getToken: function () {
-        return localStorage.getItem('token') ? localStorage.getItem('token') : null;
-    },
-    setToken: function (token) {
+    getToken: async function () {
+        let token = localStorage.getItem('token');
         if (token) {
-            localStorage.setItem('token', token);
-        } else {
-            localStorage.removeItem('token');
+            console.log("[TokenStore] Loaded from localStorage:", token);
+            return token;
         }
+
+        try {
+            token = await idbGet('token');
+            if (token) {
+                console.log("[TokenStore] Loaded from IndexedDB:", token);
+                localStorage.setItem('token', token);
+                return token;
+            }
+        } catch (e) {
+            console.warn("[TokenStore] IndexedDB read failed:", e);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 200));
+        token = this.getCookie('token');
+        if (token) {
+            console.log("[TokenStore] Loaded from Cookie:", token);
+            localStorage.setItem('token', token);
+            try { await idbSet('token', token); } catch {}
+            return token;
+        }
+
+        console.warn("[TokenStore] No token found.");
+        return null;
     },
+
+    setToken: async function (token) {
+        if (!token) return;
+        console.log("[TokenStore] Setting token:", token);
+
+        localStorage.setItem('token', token);
+        try { await idbSet('token', token); } catch (e) {
+            console.warn("[TokenStore] IndexedDB write failed:", e);
+        }
+        this.setCookie('token', token);
+    },
+    // getToken: function () {
+    //     return localStorage.getItem('token') ? localStorage.getItem('token') : null;
+    // },
+    // setToken: function (token) {
+    //     if (token) {
+    //         localStorage.setItem('token', token);
+    //     } else {
+    //         localStorage.removeItem('token');
+    //     }
+    // },
 
     // ─────────────────────────────────────
     // Notification Sound

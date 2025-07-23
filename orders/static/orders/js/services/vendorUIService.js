@@ -46,9 +46,9 @@ export const VendorUIService = {
         }
     },
 
-    renderVendorLogos(vendors) {
+    async renderVendorLogos(vendors) {
         const logoContainer = document.getElementById("vendor-logo-bar");
-        const activeVendorId = AppUtils.getActiveVendor();
+        const activeVendorId = await AppUtils.getActiveVendor();
 
         if (!logoContainer) return;
 
