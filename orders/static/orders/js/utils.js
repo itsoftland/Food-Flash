@@ -2,6 +2,7 @@ import { get as idbGet, set as idbSet } from "https://cdnjs.cloudflare.com/ajax/
 if (window.navigator.standalone) {
     console.log('Running in standalone mode');
 }
+
 window.AppUtils = {
     // ─────────────────────────────────────
     // CSRF Token

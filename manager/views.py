@@ -316,6 +316,14 @@ def chat_history(request):
         token_no=token_no,
         created_date=timezone.now().date()
     ).order_by('created_at')
+    # ✅ Mark only user messages as read
+    ChatMessage.objects.filter(
+        vendor=vendor,
+        token_no=token_no,
+        created_date=timezone.now().date(),
+        sender='user',
+        is_read=False
+    ).update(is_read=True)
 
     serializer = ChatMessageSerializer(messages, many=True)
     return Response({"messages": serializer.data}, status=200)

@@ -7,6 +7,7 @@ import { initNotificationModal, showNotificationModal } from './services/notific
 import { VendorUIService } from "./services/vendorUIService.js";
 import { updateChatOnPush,appendMessage,clearReplyMode } from "./services/chatService.js";
 import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
+// let pendingInitAfterPermission = null;
 
 document.addEventListener('DOMContentLoaded', async function() {
     AppUtils.initPaddingAdjustmentListeners();
@@ -295,21 +296,46 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
 
-    
+     // fallback handler
+
     // Show chat window if token is present
     if (tokenFromQR) {
-        appendMessage(tokenFromQR, 'user', null);
-        chatInput.value = tokenFromQR; // Set the input field with the token
         const granted = await PermissionService.requestPermissions();
-        const path = AppUtils.getNotificationHelpPath();
-        // AppUtils.showToast(`Notifications are blocked. Go to: ${path}`);
-        await fetchOrderStatusOnce(tokenFromQR);
+
+        if (granted) {
+            // ✅ Permission already granted — proceed immediately
+            appendMessage(tokenFromQR, 'user', null);
+            chatInput.value = tokenFromQR;
+            AppUtils.getNotificationHelpPath();
+            try {
+                    const check_status = await fetchOrderStatusOnce(tokenFromQR);
+                    console.log("Order status:", check_status);
+                } catch (err) {
+                    console.error("Failed to fetch status:", err);
+                }
+        } else {
+            // ⚠️ Permission not granted yet — defer logic
+           PermissionService.setDeferredCallback(async () => {
+                appendMessage(tokenFromQR, 'user', null);
+                chatInput.value = tokenFromQR;
+                AppUtils.getNotificationHelpPath();
+
+                try {
+                    const check_status = await fetchOrderStatusOnce(tokenFromQR);
+                    console.log("Order status:", check_status);
+                } catch (err) {
+                    console.error("Failed to fetch status:", err);
+                }
+            });
+        }
     } else {
-        // If no token, show the chat window without a token
+        // No token, just show chat window
         showChatWindow({});
     }
+
     // Send button logic
     sendButton.addEventListener('click', async function () {
+        console.log("button clicked")
         const message = chatInput.value.trim();
         if (message === '') return;
 

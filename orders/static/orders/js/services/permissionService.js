@@ -14,23 +14,24 @@ export const PermissionService = (() => {
     const requestPermissions = async () => {
         const current = Notification.permission;
         console.log("Current notification permission:", current);
-
         if (current === "granted") {
-            return true;
-        }
+                return true;
+            }
 
+        if (current === "default") {
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+                return true;
+            } else {
+                return false;
+            }
+        }
         if (current === "denied") {
             showDeniedModal();
             return false;
         }
 
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-            return true;
-        } else {
-            showDeniedModal();
-            return false;
-        }
+        
     };
 
     const showDeniedModal = () => {
@@ -45,13 +46,35 @@ export const PermissionService = (() => {
             AppUtils.showToast("You won’t receive real-time notifications unless enabled manually from browser settings");
         }
     };
+    let deferredCallback = null; // internal module-level variable
 
-    const handleAgree = () => {
+    const setDeferredCallback = (callback) => {
+        deferredCallback = callback;
+    };
+
+    const handleAgree = async () => {
         localStorage.setItem("permissionStatus", "granted");
         bootstrap.Modal.getInstance(document.getElementById("permissionModal"))?.hide();
-        requestPermissions();
-        playWelcomeMessage();
+
+        const granted = await requestPermissions();
+
+        if (granted) {
+            AppUtils.showToast("Notifications enabled");
+            if (typeof deferredCallback === "function") {
+                await deferredCallback();  // ✅ Run deferred logic
+                deferredCallback = null;
+            }
+            playWelcomeMessage();
+        }
     };
+
+
+    // const handleAgree = () => {
+    //     localStorage.setItem("permissionStatus", "granted");
+    //     bootstrap.Modal.getInstance(document.getElementById("permissionModal"))?.hide();
+    //     requestPermissions();
+    //     playWelcomeMessage();
+    // };
 
     const handleDeny = () => {
         localStorage.setItem("permissionStatus", "denied");
@@ -72,6 +95,7 @@ export const PermissionService = (() => {
     return {
         init: bindEvents,
         showModal,
-        requestPermissions
+        requestPermissions,
+        setDeferredCallback
     };
 })();

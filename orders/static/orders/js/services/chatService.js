@@ -1,5 +1,6 @@
 // static/js/chatService.js
 import {ChatHistoryService}  from "./chatHistoryService.js";
+
 export function updateChatOnPush(vendorId, logo_url, name) {
     document.querySelectorAll(".vendor-logo-wrapper").forEach(wrapper => {
         const logo = wrapper.querySelector("img");
@@ -116,31 +117,30 @@ export function appendMessage(text, sender, timestamp = null,type,token_no) {
 
                 // Toggle selection and reply mode
                 if (!isSelected) {
-                messageBubble.classList.add('selected');
-                AppUtils.isReplyMode = true;
+                    messageBubble.classList.add('selected');
+                    AppUtils.isReplyMode = true;
 
-                // Change icon to close
-                const icon = replyBtn.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('fa-reply');
-                    icon.classList.add('fa-times');
-                    replyBtn.title = 'Cancel Reply';
-                    replyBtn.classList.add('active');
-                }
+                    // Change icon to close
+                    const icon = replyBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-reply');
+                        icon.classList.add('fa-times');
+                        replyBtn.title = 'Cancel Reply';
+                        replyBtn.classList.add('active');
+                    }
 
                 } else {
-                    clearReplyMode();
-                    // messageBubble.classList.remove('selected');
-                    // AppUtils.isReplyMode = false;
+                    messageBubble.classList.remove('selected');
+                    AppUtils.isReplyMode = false;
 
-                    // // Change icon back to reply
-                    // const icon = replyBtn.querySelector('i');
-                    // if (icon) {
-                    //     icon.classList.remove('fa-times');
-                    //     icon.classList.add('fa-reply');
-                    //     replyBtn.title = 'Reply';
-                    //     replyBtn.classList.remove('active');
-                    // }
+                    // Change icon back to reply
+                    const icon = replyBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-reply');
+                        replyBtn.title = 'Reply';
+                        replyBtn.classList.remove('active');
+                    }
                 }
 
 
