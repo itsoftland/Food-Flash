@@ -7,8 +7,8 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('home/', views.home, name='home'),
-    path('token_display/',views.token_display,name='token_display'),
-    path('api/get_recent_orders/',views.get_recent_ready_orders,name='get_recent_orders'),
+    # path('token_display/',views.token_display,name='token_display'),
+    # path('api/get_recent_orders/',views.get_recent_ready_orders,name='get_recent_orders'),
     path('', views.outlet_selection, name="outlet_selection"),
     path('check-status/', views.check_status, name='check_status'),
     path('api/outlets/', views.get_outlets, name="get_outlets"),

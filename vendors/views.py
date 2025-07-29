@@ -1,52 +1,38 @@
 import json
 import logging
-from datetime import timedelta
 
 from django.core.cache import cache
-from django.shortcuts import render
-from django.utils import timezone
+# from django.shortcuts import render
+from django.utils.timezone import now, localtime
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework import serializers
 
-from .models import Order, Vendor, Device, AndroidDevice, PushSubscription, AdminOutlet, AndroidAPK
+from .models import (Order, Vendor, Device,
+                     AndroidDevice, PushSubscription,
+                     AdminOutlet, AndroidAPK)
+
 from .serializers import OrdersSerializer
 from orders.serializers import VendorLogoSerializer
 from .utils import send_push_notification, notify_web_push
+from firebase_admin import messaging
 
 logger = logging.getLogger(__name__)
-
-from django.utils.timezone import now, localtime
-from datetime import timedelta
-import threading
-
-_current_time_cache = {
-    "time": None,
-    "expires_at": None,
-    "lock": threading.Lock()
-}
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_current_time(request):
-    with _current_time_cache["lock"]:
-        current = now()
-        if (_current_time_cache["time"] is None or
-            _current_time_cache["expires_at"] < current):
-            
-            # Cache refresh
-            current_ist = localtime(current)  # IST as per TIME_ZONE
-            _current_time_cache["time"] = current_ist.strftime('%Y-%m-%d %H:%M:%S')
-            _current_time_cache["expires_at"] = current + timedelta(seconds=5)  # 5-sec cache
-        
-        return Response({'current_time': _current_time_cache["time"]})
+    current_ist = localtime(now())
+    formatted_time = current_ist.strftime('%Y-%m-%d %H:%M:%S')
+    return Response({'current_time': formatted_time})
 
 
-def manage_order(request):
-    cache.clear()
-    return render(request, 'order_management.html')
+# def manage_order(request):
+#     cache.clear()
+#     return render(request, 'order_management.html')
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -340,8 +326,6 @@ def register_android_apk(request):
         logger.error("Customer ID not found: %s", customer_id)
         return Response({"error": "Customer not found."}, status=404)
 
-
-from firebase_admin import messaging
 def send_firebase_admin_multicast(fcm_tokens, data_payload):
     """
     Sends a true Firebase Admin SDK multicast data+notification message to multiple devices.
@@ -380,163 +364,9 @@ def send_firebase_admin_multicast(fcm_tokens, data_payload):
     except Exception as e:
         logger.exception("Multicast FCM error")
         return False, {"error": str(e)}
-
-# @api_view(['PATCH'])
-# @permission_classes([AllowAny])
-# def update_order(request):
-#     try:
-#         ip = request.META.get('HTTP_X_FORWARDED_FOR')
-#         if ip:
-#             ip = ip.split(',')[0] 
-#         else:
-#             ip = request.META.get('REMOTE_ADDR', 'Unknown')
-#         request_ip = ip
-#         user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
-
-#         logger.info(f"Incoming PATCH /update_order API from IP: {request_ip}, User-Agent: {user_agent}")
-#         logger.info(f"Request Data: {request.data}")
-        
-#         data = request.data
-#         vendor_id = data.get('vendor_id')
-#         token_no = data.get('token_no')
-#         device_id = data.get('device_id')
-#         counter_no = data.get('counter_no')
-#         status_to_update = data.get('status', 'ready')
-
-#         required_fields = ['vendor_id', 'token_no', 'device_id', 'counter_no', 'status']
-#         missing_fields = [field for field in required_fields if not request.data.get(field)]
-#         if missing_fields:
-#             logger.warning(f"Missing required fields: {missing_fields}")
-#             return Response(
-#                 {"message": f"Missing fields: {', '.join(missing_fields)}"},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-
-#         # Step 1: Fetch vendor and device
-#         vendor = Vendor.objects.get(vendor_id=vendor_id)
-#         device = Device.objects.get(serial_no=device_id,vendor_id=vendor.id)
-        
-#         logger.info(f"Vendor and Device resolved — Vendor Name: {vendor.name}, Device ID: {device.id}")
-
-#         # Step 2: Send FCM notification with recent ready orders
-
-#         android_devices = AndroidDevice.objects.filter(vendor=vendor)
-        
-#         fcm_tokens = list(android_devices.values_list('token', flat=True))
-#         fcm_result = send_firebase_admin_multicast(fcm_tokens, json.dumps(data))
-#         logger.info(f"FCM Multicast Result: {fcm_result}")
-
-#         try:
-#             # Try to fetch the existing order
-#             order = Order.objects.get(token_no=token_no, vendor=vendor.id)
-#             logger.info(f"Existing Order found — Updating status to {status_to_update}")
-#             # Update the order's status and counter number
-#             order.status = status_to_update
-#             order.counter_no = counter_no
-#             order.device = device
-#             # Save the order
-#             order.save()
-#         except Order.DoesNotExist:
-#             logger.info(f"No existing order found for token {token_no}. Creating a new order.")
-#             # Order doesn't exist; create a new order with status "ready"
-#             new_order_data = {
-#                 'token_no': token_no,
-#                 'vendor': vendor.id,
-#                 'device': device.id,
-#                 'counter_no': counter_no,
-#                 'status': "ready"
-#             }
-#             serializer = OrdersSerializer(data=new_order_data)
-#             if serializer.is_valid():
-#                 logger.info(f"New Order created — Token: {token_no}, Vendor: {vendor.name}")
-#                 order = serializer.save()
-#             else:
-#                 logger.error(f"Order serializer errors: {serializer.errors}")
-#                 return Response(
-#                     {"message": serializer.errors},
-#                     status=status.HTTP_400_BAD_REQUEST
-#                 )
-
-#         # Step 3: Send web push (if cooldown allows)
-#         should_notify = (
-#             status_to_update.lower() == "ready" and (
-#                 not order.notified_at or
-#                 (timezone.now() - order.notified_at) > timedelta(seconds=1)
-#             )
-#         )
-
-#         push_errors = []
-#         if should_notify:
-#             vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
-#             logo_url = vendor_serializer.data.get('logo_url', '')
-
-#             payload = {
-#                 "title": "Order Update",
-#                 "body": f"Your order {token_no} is now ready.",
-#                 "token_no": token_no,
-#                 "status": status_to_update,
-#                 "counter_no": counter_no,
-#                 "name": vendor.name,
-#                 "vendor_id": vendor.vendor_id,
-#                 "location_id": vendor.location_id,
-#                 "logo_url": logo_url,
-#                 "type": "foodstatus"
-#             }
-            
-#             logger.debug(f"Prepared push payload: {payload}")
-            
-#             subscriptions = PushSubscription.objects.filter(tokens__token_no=token_no,tokens__vendor=vendor).distinct()
-            
-#             logger.info(f"Found {subscriptions.count()} web push subscriptions to notify.")
-            
-#             for subscription in subscriptions:
-#                 try:
-#                     logger.debug(f"Sending web push to endpoint: {subscription.endpoint}")
-#                     send_push_notification({
-#                         "endpoint": subscription.endpoint,
-#                         "keys": {
-#                             "p256dh": subscription.p256dh,
-#                             "auth": subscription.auth
-#                         }
-#                     }, payload)
-#                 except Exception as e:
-#                     logger.error(f"Error sending web push: {e}")
-#                     push_errors.append(str(e))
-
-#             # Step 4: Mark notified
-#             order.notified_at = timezone.now()
-#             order.save(update_fields=['notified_at'])
-            
-#             logger.info(f"Order {token_no} marked as notified at {order.notified_at}")
-
-#         # Step 5: Final response
-#         if push_errors:
-#             return Response(
-#                 {
-#                     "message": "Order updated. FCM sent. Some web pushes failed.",
-#                     "push_errors": push_errors
-#                 },
-#                 status=status.HTTP_207_MULTI_STATUS
-#             )
-            
-#         logger.info(f"Order {token_no} update completed successfully with notifications.")
-        
-#         return Response(
-#             {"message": "Order updated and notifications sent.", "token_no": token_no},
-#             status=status.HTTP_200_OK
-#         )
-
-#     except Exception as e:
-#         logger.exception("Exception occurred in update_order:")
-#         return Response(
-#             {"message": str(e)},
-#             status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#         )
+    
 def get_vendor(vendor_id):
     return Vendor.objects.get(vendor_id=vendor_id)
-
-def get_vendor_by_id(vendor_id):
-    return Vendor.objects.get(id=vendor_id)
 
 def get_device(device_id, vendor_id):
     return Device.objects.get(serial_no=device_id, vendor_id=vendor_id)
@@ -561,33 +391,11 @@ def create_or_update_order(token_no, vendor, device, counter_no, status):
             'status': status,
         }
         serializer = OrdersSerializer(data=order_data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            logger.error(f"Order creation failed: {serializer.errors}")
+            raise serializers.ValidationError(serializer.errors)
         order = serializer.save()
     return order
-
-# def create_or_update_order(token_no, vendor, device, counter_no, status,manager):
-#     order = get_order(token_no, vendor)
-#     if order:
-#         logger.info(f"Updating existing order {token_no}")
-#         order.status = status
-#         order.counter_no = counter_no
-#         order.device = device
-#         order.user_profile = manager
-#         order.save()
-#     else:
-#         logger.info(f"Creating new order {token_no}")
-#         order_data = {
-#             'token_no': token_no,
-#             'vendor': vendor.id,
-#             'device': device.id,
-#             'counter_no': counter_no,
-#             'status': status,
-#             'manager': manager
-#         }
-#         serializer = OrdersSerializer(data=order_data)
-#         serializer.is_valid(raise_exception=True)
-#         order = serializer.save()
-#     return order
 
 def notify_fcm(vendor, data):
     android_devices = AndroidDevice.objects.filter(vendor=vendor)
@@ -609,9 +417,16 @@ def update_order(request):
         if missing:
             logger.info(f"Missing fields: {', '.join(missing)}")
             return Response({"message": f"Missing fields: {', '.join(missing)}"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            vendor = get_vendor(data['vendor_id'])
+        except Vendor.DoesNotExist:
+            return Response({"message": "Vendor not found"}, status=404)
 
-        vendor = get_vendor(data['vendor_id'])
-        device = get_device(data['device_id'], vendor.id)
+        try:
+            device = get_device(data['device_id'], vendor.id)
+        except Device.DoesNotExist:
+            return Response({"message": "Device not found"}, status=404)
+
         status_to_update = data['status']
         token_no = data['token_no']
         counter_no = data['counter_no']
@@ -619,14 +434,20 @@ def update_order(request):
         logger.info(f"Resolved Vendor: {vendor.name}, Device: {device.serial_no}, Token No: {token_no}, Counter No: {counter_no}, Status: {status_to_update}")
 
         # FCM Push
-        fcm_result = notify_fcm(vendor, data)
-        logger.info(f"FCM sent. Result: {fcm_result}")
+        try:
+            fcm_result = notify_fcm(vendor, data)
+            logger.info(f"FCM sent. Result: {fcm_result}")
+        except Exception as e:
+            logger.exception("FCM sending failed")
+            fcm_result = {"error": str(e)}
 
         # Order Create or Update
         order = create_or_update_order(token_no, vendor, device, counter_no, status_to_update)
 
         push_errors = []
-        if status_to_update.lower() == "ready" and (not order.notified_at or (timezone.now() - order.notified_at) > timedelta(seconds=PUSH_COOLDOWN_SECONDS)):
+        if status_to_update.lower() == "ready" and (
+            not order.notified_at or (now() - order.notified_at).total_seconds() > PUSH_COOLDOWN_SECONDS
+        ):
             vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
             payload = {
                 "title": "Order Update",
@@ -640,8 +461,13 @@ def update_order(request):
                 "logo_url": vendor_serializer.data.get("logo_url", ""),
                 "type": "foodstatus"
             }
-            push_errors = notify_web_push(order, vendor, payload)
-            order.notified_at = timezone.now()
+            try:
+                push_errors = notify_web_push(order, vendor, payload)
+            except Exception as push_err:
+                logger.error(f"Web push failed: {str(push_err)}")
+                push_errors = [str(push_err)]
+
+            order.notified_at = now()
             order.save(update_fields=['notified_at'])
             logger.info(f"Marked order {token_no} as notified.")
 

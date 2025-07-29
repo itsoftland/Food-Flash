@@ -1,22 +1,6 @@
 // ─────────────────────────────────────
 // Early Redirect: Ensure ?location_id is in URL
 // ─────────────────────────────────────
-// (async function redirectIfMissingLocationId() {
-//     console.log("working")
-//     const urlParams = new URLSearchParams(window.location.search);
-//     const hasLocationParam = urlParams.has("location_id");
-
-//     if (!hasLocationParam) {
-//         const locationIdFromStorage = await AppUtils.get();
-//         if (locationIdFromStorage) {
-//             const newUrl = new URL(window.location.href);
-//             newUrl.searchParams.set("location_id", locationIdFromStorage);
-//             window.location.replace(newUrl.toString()); // Prevents DOM load before redirect
-//         } else {
-//             console.warn("No location_id found in URL, localStorage, or cookies.");
-//         }
-//     }
-// })();
 (async function redirectIfMissingLocationId() {
     console.log("Checking for redirect conditions...");
 

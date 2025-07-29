@@ -1,15 +1,16 @@
+import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { AddOutletService } from "./services/addOutletService.js"; 
 import { MenuModalService } from './services/menuModalService.js';
 import { FeedbackService } from "./services/feedBackService.js";
-import { IosPwaInstallService } from './services/iosPwaInstallService.js';
 import { PermissionService } from "./services/permissionService.js";
 import { initNotificationModal, showNotificationModal } from './services/notificationService.js';
 import { VendorUIService } from "./services/vendorUIService.js";
 import { updateChatOnPush,appendMessage,clearReplyMode } from "./services/chatService.js";
 import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
-// let pendingInitAfterPermission = null;
+
 
 document.addEventListener('DOMContentLoaded', async function() {
+    IosPwaInstallService.init();
     AppUtils.initPaddingAdjustmentListeners();
     const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'), {
         backdrop: 'static',
@@ -73,9 +74,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         isAdVisible = !isAdVisible;
     });
 
+    
     MenuModalService.init();
     FeedbackService.init();
-    IosPwaInstallService.init();
     PermissionService.init();
     PermissionService.showModal();
     

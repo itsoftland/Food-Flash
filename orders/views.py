@@ -56,9 +56,9 @@ def home(request):
     cache.clear()
     return render(request, 'orders/index.html')
 
-def token_display(request):
-    cache.clear()
-    return render(request, 'orders/token_display.html')
+# def token_display(request):
+#     cache.clear()
+#     return render(request, 'orders/token_display.html')
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -321,34 +321,34 @@ def submit_feedback(request):
     else:
         return Response({'success': False, 'errors': serializer.errors}, status=400)
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def get_recent_ready_orders(request):
-    try:
-        vendor_id = request.GET.get('vendor_id')
-        if not vendor_id:
-            return Response({"error": "vendor_id required"}, status=400)
+# @api_view(['GET'])
+# @permission_classes([AllowAny])
+# def get_recent_ready_orders(request):
+#     try:
+#         vendor_id = request.GET.get('vendor_id')
+#         if not vendor_id:
+#             return Response({"error": "vendor_id required"}, status=400)
 
-        # Filter recent 'ready' orders for the given vendor
-        recent_orders = Order.objects.filter(
-            vendor__vendor_id=vendor_id,
-            status='ready'
-        ).order_by('-updated_at')[:8]
+#         # Filter recent 'ready' orders for the given vendor
+#         recent_orders = Order.objects.filter(
+#             vendor__vendor_id=vendor_id,
+#             status='ready'
+#         ).order_by('-updated_at')[:8]
 
-        # Serialize and add 'is_new' field
-        data = []
-        for order in recent_orders:
-            serialized = OrdersSerializer(order, context={'request': request}).data
-            serialized['is_new'] = not order.shown_on_tv
-            data.append(serialized)
+#         # Serialize and add 'is_new' field
+#         data = []
+#         for order in recent_orders:
+#             serialized = OrdersSerializer(order, context={'request': request}).data
+#             serialized['is_new'] = not order.shown_on_tv
+#             data.append(serialized)
 
-        # Mark these orders as shown
-        Order.objects.filter(id__in=[order.id for order in recent_orders], shown_on_tv=False).update(shown_on_tv=True)
+#         # Mark these orders as shown
+#         Order.objects.filter(id__in=[order.id for order in recent_orders], shown_on_tv=False).update(shown_on_tv=True)
 
-        return Response(data, status=200)
+#         return Response(data, status=200)
 
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
+#     except Exception as e:
+#         return Response({"error": str(e)}, status=500)
 
 def login_view(request):
    return render(request, 'orders/login.html')

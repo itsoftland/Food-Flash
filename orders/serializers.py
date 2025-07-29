@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from vendors.models import Vendor, Feedback
+import logging
+
+logger = logging.getLogger(__name__)
 
 class VendorLogoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,12 +12,14 @@ class VendorLogoSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         request = self.context.get('request')
-        
-        if request and hasattr(instance.logo, 'url'):
-            url = request.build_absolute_uri(instance.logo.url)
-            # Force HTTPS
-            data['logo_url'] = url.replace("http://", "https://")
-        else:
+        try:
+            if request and hasattr(instance.logo, 'url'):
+                url = request.build_absolute_uri(instance.logo.url)
+                data['logo_url'] = url.replace("http://", "https://")
+            else:
+                data['logo_url'] = ''
+        except Exception as e:
+            logger.warning(f"Error building logo URL: {e}")
             data['logo_url'] = ''
         
         data.pop('logo')  # Optional: remove raw logo field

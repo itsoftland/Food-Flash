@@ -329,11 +329,13 @@ input[type="text"] {
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.message-bubble.server.selected {
+/* .message-bubble.server.selected {
     border: 2px solid #f0a934;
     background-color: #fff9ec;
-    box-shadow: 0 0 12px rgba(240, 169, 52, 0.6);
-    transform: scale(1.03);
+} */
+.message-bubble.server.selected {
+    border: 2px solid #1c7c54;       
+    background-color: #f4fbf8;
 }
 
 /* Message content */
