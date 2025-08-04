@@ -7,6 +7,8 @@ import { initNotificationModal, showNotificationModal } from './services/notific
 import { VendorUIService } from "./services/vendorUIService.js";
 import { updateChatOnPush,appendMessage,clearReplyMode } from "./services/chatService.js";
 import { PushSubscriptionService } from "./services/pushSubscriptionService.js";
+import { PushHealthMonitorService } from "./services/pushHealthMonitorService.js";
+
 
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -93,7 +95,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         VendorUIService.init(vendorIds);
     }
 
-    let notificationsEnabled = true;
     const isAndroid = /Android/i.test(navigator.userAgent);
     console.log("Android device:", isAndroid);    
     // Adjust viewport for mobile devices
@@ -132,6 +133,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         navigator.serviceWorker.register("/service-worker.js", { scope: '/' })
         .then((registration) => {
             console.log("Service Worker Registered:", registration);
+              if (registration.active) {
+                registration.active.postMessage({
+                type: "SET_BASE_URL",
+                baseUrl: window.location.origin,
+                });
+
+                registration.active.postMessage({
+                type: "UPDATE_LAST_PAGE",
+                url: window.location.href,
+                });
+            }     
         })
         .catch((error) => {
             console.error("Service Worker Registration Failed:", error);
@@ -180,7 +192,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         });
         navigator.serviceWorker.addEventListener('message', async (event) => {
-            if (event.data && event.data.type === 'PUSH_STATUS_UPDATE') {
+            if (event.data?.type === 'PUSH_RECEIVED') {
+                PushHealthMonitorService.recordPushReceived();
+            }
+            if (event.data?.type === 'PUSH_STATUS_UPDATE') {
                 const pushData = event.data.payload;
                 console.log('Received push update via postMessage:', pushData);
                 let selectedVendors = JSON.parse(localStorage.getItem('selectedVendors')) || [];
@@ -306,25 +321,25 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (granted) {
             // ✅ Permission already granted — proceed immediately
             appendMessage(tokenFromQR, 'user', null);
-            chatInput.value = tokenFromQR;
             AppUtils.getNotificationHelpPath();
             try {
                     const check_status = await fetchOrderStatusOnce(tokenFromQR);
                     console.log("Order status:", check_status);
                 } catch (err) {
+                    chatInput.value = tokenFromQR;
                     console.error("Failed to fetch status:", err);
                 }
         } else {
             // ⚠️ Permission not granted yet — defer logic
            PermissionService.setDeferredCallback(async () => {
                 appendMessage(tokenFromQR, 'user', null);
-                chatInput.value = tokenFromQR;
                 AppUtils.getNotificationHelpPath();
 
                 try {
                     const check_status = await fetchOrderStatusOnce(tokenFromQR);
                     console.log("Order status:", check_status);
                 } catch (err) {
+                    chatInput.value = tokenFromQR;
                     console.error("Failed to fetch status:", err);
                 }
             });
@@ -332,6 +347,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     } else {
         // No token, just show chat window
         showChatWindow({});
+        AppUtils.playWelcomeMessage();
     }
 
     // Send button logic
@@ -433,7 +449,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             // Subscribe for push notifications
             PushSubscriptionService.subscribe(token, data.vendor);
-            // subscribeToPushNotifications(token, data.vendor);
+            // Perform health monitoring
+            PushHealthMonitorService.startMonitor(token, data.vendor);
         })
         .catch(error => {
             console.error("Error fetching order status:", error);
@@ -443,32 +460,100 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-
     function showChatWindow(data) {
         const chatContainer = document.querySelector('.chat-container');
         const chatInput = document.getElementById('chat-input'); 
-    
+
         if (!chatContainer || !chatInput) return;
-    
+
         // Temporarily hide and show chat
         chatContainer.style.display = "none";
         setTimeout(() => {
             chatContainer.style.display = "block";
         }, 100);
-    
+
         // Auto-scroll
         setTimeout(() => {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }, 50);
-    
-        // Set token if available
-        if (data && data.token_no) {
-            chatInput.value = data.token_no;
-            chatInput.value = '';  
-        }
-    
+
         chatContainer.scrollIntoView({ behavior: "smooth" });
+
+        // ✅ Reuse the logic to render the push message
+        if (data) {
+            const messageHTML = `
+                <div class="response-title">${data.name || "Unknown"}</div>
+                <div class="status">
+                    Status: 
+                    <span class="${data.status?.toLowerCase() === 'ready' ? 'ready-color' : 'preparing-color'}">
+                        ${data.status || "Unknown"}
+                    </span>
+                </div>
+                <div class="info-badges">
+                    <div class="badge">Counter No: ${data.counter_no || ""}</div>
+                    <div class="badge">Token No: ${data.token_no || ""}</div>
+                </div>
+            `;
+
+            const offerMessageHTML = `
+                <div class="response-title">${data.name}</div>
+                <div class="response-title">🔥 ${data.title}</div>
+                <div style="color: #333; font-size: 15px;">
+                    ${data.body || "Delicious deals await. Come grab your favorite combo now!"}
+                </div>
+            `;
+
+            const managerMessageHTML = `
+                <div class="response-title">📩 ${data.name || "Outlet"}</div>
+                <div class="manager-message-body">
+                    <div class="manager-badge">Manager Notification</div>
+                    <div class="custom-manager-message">
+                        ${data.status || "Hello! Here's an update regarding your order."}
+                    </div>
+                </div>
+            `;
+
+            if (data.type === "offers") {
+                appendMessage(offerMessageHTML, 'server', null, 'offers', '', data.message_id);
+                AppUtils.playNotificationSound();
+            } else if (data.type === "manager") {
+                appendMessage(managerMessageHTML, 'server', null, 'manager', data.token_no, data.message_id);
+                showNotificationModal(data, 'notification');
+            } else if (data.type === "foodstatus") {
+                appendMessage(messageHTML, 'server', null, 'foodstatus', data.token_no, data.message_id);
+                showNotificationModal(data, 'push');
+                AppUtils.notifyOrderReady(data);
+            }
+        }
+
+        console.log("✅ Chat window is now open or refreshed.", data);
+    }
+
+    // function showChatWindow(data) {
+    //     const chatContainer = document.querySelector('.chat-container');
+    //     const chatInput = document.getElementById('chat-input'); 
     
-        console.log("Chat window is now open or refreshed.", data);
-    }    
+    //     if (!chatContainer || !chatInput) return;
+    
+    //     // Temporarily hide and show chat
+    //     chatContainer.style.display = "none";
+    //     setTimeout(() => {
+    //         chatContainer.style.display = "block";
+    //     }, 100);
+    
+    //     // Auto-scroll
+    //     setTimeout(() => {
+    //         chatContainer.scrollTop = chatContainer.scrollHeight;
+    //     }, 50);
+    
+    //     // Set token if available
+    //     if (data && data.token_no) {
+    //         chatInput.value = data.token_no;
+    //         chatInput.value = '';  
+    //     }
+    
+    //     chatContainer.scrollIntoView({ behavior: "smooth" });
+    
+    //     console.log("Chat window is now open or refreshed.", data);
+    // }    
 });

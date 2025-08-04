@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.conf import settings
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -136,13 +137,12 @@ def get_today_orders(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-from django.conf import settings
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def manager_order_update(request):
     try:
-        logger.info("📥 PATCH /update_order")
+        logger.info("📥 PATCH /manager_order_update")
         logger.info(f"IP: {request.META.get('REMOTE_ADDR')}, UA: {request.META.get('HTTP_USER_AGENT')}")
         logger.debug(f"Request Data: {request.data}")
 
@@ -162,6 +162,22 @@ def manager_order_update(request):
             return Response({"message": "token_no must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
 
         status_to_update = data['status']
+        # ✅ Determine action type (with backward compatibility)
+        action = request.data.get("action", "").strip().lower()
+
+        if action:
+            # New clients send explicit action
+            if action not in ["ready", "message", "delivered", "cancelled"]:
+                return Response({"message": "Invalid action type."}, status=status.HTTP_400_BAD_REQUEST)
+            action_type = action
+        else:
+            # Backward compatibility: infer from status text
+            lowered_status = status_to_update.lower()
+            if lowered_status in ["ready", "delivered", "cancelled"]:
+                action_type = lowered_status
+            else:
+                action_type = "message"  # Any other value is treated as a message
+
 
         # Validate manager
         manager = getattr(request.user, 'profile_roles', None)
@@ -190,7 +206,6 @@ def manager_order_update(request):
         else:
             body = f"Your order {token_no} has an update from the manager."
 
-
         # Prepare common push payload
         payload = {
             "title": "Order Update by Manager",
@@ -217,13 +232,13 @@ def manager_order_update(request):
             logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
 
             # 2. Update in DB
-            device = None  # Not a customer device
+            device = None  # Assuming device is not used in this context
             updated_order = update_existing_order_by_manager(token_no, vendor, device, status_to_update, manager)
             if not updated_order:
                 logger.warning(f"❌ Failed to update order {token_no}")
                 return Response({"message": "Order update failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            logger.info(f"✅ Order {updated_order.id} updated to status: {status_to_update}")
+            logger.info(f"✅ Order {updated_order.token_no} updated to status: {status_to_update}")
 
             # 3. Send Web Push (only if cooldown passed)
             cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 5)
@@ -258,6 +273,7 @@ def manager_order_update(request):
 
             # 2. Add message ID to payload
             payload["message_id"] = chat_message.id
+            payload["status"] = status_to_update
 
             # 3. Try sending the web push
             push_errors = notify_web_push(order, vendor, payload)
@@ -273,8 +289,6 @@ def manager_order_update(request):
                 # 4. Update the ChatMessage to is_send=False since push failed
                 chat_message.is_send = False
                 chat_message.save(update_fields=["is_send"])
-
-
 
         # 📦 Final response
         return Response({

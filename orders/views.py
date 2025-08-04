@@ -91,6 +91,9 @@ def check_status(request):
             order.status = 'preparing'
             order.updated_by = 'customer'
             order.save()
+        else:
+            order.updated_by = 'customer'
+            order.save()
 
         vendor_serializer = VendorLogoSerializer(order.vendor, context={'request': request})
         logo_url = vendor_serializer.data.get('logo_url', '')

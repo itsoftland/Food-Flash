@@ -21,18 +21,17 @@ def notify_web_push(order, vendor, payload):
     if subscription_count == 0:
         msg = f"No push subscriptions found for token_no={order.token_no} and vendor_id={vendor.id}"
         logger.warning(f"⚠️ {msg}")
-        return [msg]  # Returning list to match expected type
+        return None  # ✅ Return None instead of a message inside a list
 
     for sub in subscriptions:
-        try:
-            logger.debug(f"Sending push to endpoint: {sub.endpoint}")
-            send_push_notification({
-                "endpoint": sub.endpoint,
-                "keys": {"p256dh": sub.p256dh, "auth": sub.auth}
-            }, payload)
-            logger.info(f"✅ Push sent to: {sub.endpoint}")
-        except Exception as e:
-            error_msg = f"❌ Push failed for endpoint {sub.endpoint}: {e}"
+        logger.debug(f"Sending push to endpoint: {sub.endpoint}")
+        success = send_push_notification({
+            "endpoint": sub.endpoint,
+            "keys": {"p256dh": sub.p256dh, "auth": sub.auth}
+        }, payload)
+
+        if not success:
+            error_msg = f"❌ Push failed for endpoint {sub.endpoint}"
             logger.error(error_msg)
             errors.append(error_msg)
 

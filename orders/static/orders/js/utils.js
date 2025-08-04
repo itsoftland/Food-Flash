@@ -2,7 +2,8 @@ import { get as idbGet, set as idbSet } from "https://cdnjs.cloudflare.com/ajax/
 if (window.navigator.standalone) {
     console.log('Running in standalone mode');
 }
-
+// Global variable to store unlocked audio
+let unlockedNotificationAudio = null;
 window.AppUtils = {
     // ─────────────────────────────────────
     // CSRF Token
@@ -181,37 +182,6 @@ window.AppUtils = {
         this.setCookie('selectedVendors', JSON.stringify(updatedList));
         this.setCookie('activeVendor', updatedList[updatedList.length - 1]);
     },
-    // setCurrentVendors: function (vendorInput) {
-    //     let newVendors = [];
-
-    //     if (typeof vendorInput === 'string') {
-    //         newVendors = vendorInput.split(',').map(v => parseInt(v.trim(), 10));
-    //     } else if (Array.isArray(vendorInput)) {
-    //         newVendors = vendorInput.map(v => parseInt(v, 10));
-    //     }
-
-    //     const updatedList = Array.from(new Set(newVendors));
-    //     localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
-
-    //     if (updatedList.length > 0) {
-    //         localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
-    //     }
-    // },
-    // appendVendorIfNotExists: function (vendorId) {
-    //     // Append the vendorId to the list
-    //     let selectedVendors = JSON.parse(localStorage.getItem('selectedVendors')) || [];
-    //     selectedVendors.push(vendorId);
-
-    //     // Update localStorage with the new list (ensure uniqueness)
-    //     const updatedList = Array.from(new Set(selectedVendors));
-    //     localStorage.setItem('selectedVendors', JSON.stringify(updatedList));
-
-    //     // Optionally update activeVendor to the new vendorId
-    //     localStorage.setItem('activeVendor', updatedList[updatedList.length - 1]);
-    // },    
-    // getActiveVendor: function () {
-    //     return localStorage.getItem('activeVendor') ? parseInt(localStorage.getItem('activeVendor'), 10) : null;
-    // },
     // ─────────────────────────────────────
     // Token Management
     // ─────────────────────────────────────
@@ -256,31 +226,92 @@ window.AppUtils = {
         }
         this.setCookie('token', token);
     },
-    // getToken: function () {
-    //     return localStorage.getItem('token') ? localStorage.getItem('token') : null;
-    // },
-    // setToken: function (token) {
-    //     if (token) {
-    //         localStorage.setItem('token', token);
-    //     } else {
-    //         localStorage.removeItem('token');
-    //     }
-    // },
-
     // ─────────────────────────────────────
     // Notification Sound
     // ─────────────────────────────────────
-    playNotificationSound: function (volume = 1.0) {
-        const notificationAudio = new Audio('/static/orders/audio/0112.mp3');
-        notificationAudio.volume = Math.max(0, Math.min(volume, 1));
-        notificationAudio.play().catch(err =>
-            console.error('Error playing notification sound:', err)
-        );
+    // ============================================
+    // Unlock Notification Sound + Preferred Voice (iOS + Android)
+    // ============================================
+    unlockNotificationSound: function () {
+        console.log("[Unlock] Unlocking notification sound and TTS...");
+
+        // 🔊 Unlock notification sound
+        unlockedNotificationAudio = new Audio('/static/orders/audio/0112.mp3');
+        unlockedNotificationAudio.volume = 1.0;
+        unlockedNotificationAudio.muted = false;
+        unlockedNotificationAudio.playsInline = true;
+
+        unlockedNotificationAudio.play().then(() => {
+            unlockedNotificationAudio.pause();
+            unlockedNotificationAudio.currentTime = 0;
+            console.log('🔓 Notification sound unlocked.');
+        }).catch(err => {
+            console.warn('🔇 Sound unlock failed:', err);
+        });
+
+        // 🗣 Unlock speech synthesis for iOS + preload preferred voice
+        try {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const iosPreferredNames = ["Samantha", "Karen", "Moira"];
+            const androidPreferredNames = ["Google US English", "English (United States)"];
+
+            const voices = window.speechSynthesis.getVoices();
+
+            const preferredVoice = voices.find(v =>
+                v.lang.startsWith("en") &&
+                (isIOS
+                    ? iosPreferredNames.includes(v.name)
+                    : androidPreferredNames.includes(v.name))
+            ) || voices[0]; // fallback
+
+            console.log(`[TTS] Unlocking with preferred voice: ${preferredVoice?.name || "default"}`);
+
+            // Unlock utterance (silent but valid speech)
+            const unlockUtterance = new SpeechSynthesisUtterance("Voice ready");
+            unlockUtterance.voice = preferredVoice;
+            unlockUtterance.volume = 0; // Silent but still counts
+            window.speechSynthesis.speak(unlockUtterance);
+
+            console.log("🔓 Speech synthesis unlocked and preferred voice preloaded.");
+        } catch (e) {
+            console.warn("🔇 Speech synthesis unlock failed:", e);
+        }
+    },
+
+    // Use this in your existing method
+    playNotificationSound : function (volume = 1.0) {
+        if (unlockedNotificationAudio) {
+            unlockedNotificationAudio.volume = Math.max(0, Math.min(volume, 1));
+            unlockedNotificationAudio.currentTime = 0;
+            unlockedNotificationAudio.play().catch(err =>
+                console.error('Error playing notification sound:', err)
+            );
+        } else {
+            console.warn('🔕 Notification sound is not unlocked yet.');
+        }
+
         // Vibration if supported
         if (navigator.vibrate) {
+            console.log('🔔 Vibration triggered.');
             navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
         }
     },
+    playWelcomeMessage :function(){
+        const welcome = new SpeechSynthesisUtterance('Hi, Welcome. Please enter your token number to track your order.');
+        speechSynthesis.speak(welcome);
+    },
+
+    // playNotificationSound: function (volume = 1.0) {
+    //     const notificationAudio = new Audio('/static/orders/audio/0112.mp3');
+    //     notificationAudio.volume = Math.max(0, Math.min(volume, 1));
+    //     notificationAudio.play().catch(err =>
+    //         console.error('Error playing notification sound:', err)
+    //     );
+    //     // Vibration if supported
+    //     if (navigator.vibrate) {
+    //         navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
+    //     }
+    // },
     // ─────────────────────────────────────
     // Viewport Utility
     // ─────────────────────────────────────
@@ -350,15 +381,60 @@ window.AppUtils = {
     // ─────────────────────────────────────
     // Order Ready Notification (Persistent)
     // ─────────────────────────────────────
+    // notifyOrderReady: function(pushData) {
+    //     try {
+    //         // Speech synthesis
+    //         const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
+    //         speechSynthesis.speak(orderReadyMessage);
+    //     } catch (e) {
+    //         console.error("Failed to notify order readiness", e);
+    //     }
+    // },
+    // ============================================
+    // Unlock Notification Sound + Preferred Voice (iOS + Android)
+    // ============================================
     notifyOrderReady: function(pushData) {
         try {
-            // Speech synthesis
-            const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
-            speechSynthesis.speak(orderReadyMessage);
+            console.log(`[TTS] Speaking order ready message: Order ${pushData.token_no} - Counter ${pushData.counter_no}`);
+            const synth = window.speechSynthesis;
+
+            const message = `Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`;
+            const utterance = new SpeechSynthesisUtterance(message);
+
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const iosPreferredNames = ["Samantha", "Karen", "Moira"];
+            const androidPreferredNames = ["Google US English", "English (United States)"];
+
+            const voices = synth.getVoices();
+            console.log(`[TTS] Voices available: ${voices.length}`);
+
+            const preferredVoice = voices.find(v =>
+                v.lang.startsWith("en") &&
+                (isIOS
+                    ? iosPreferredNames.includes(v.name)
+                    : androidPreferredNames.includes(v.name))
+            ) || voices[0]; // fallback
+
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+                console.log(`[TTS] Using preferred voice: ${preferredVoice.name}`);
+            } else {
+                console.log("[TTS] Using default system voice.");
+            }
+
+            utterance.pitch = 1;
+            utterance.rate = 1;
+            utterance.volume = 1;
+
+            synth.cancel();
+            synth.speak(utterance);
+
         } catch (e) {
-            console.error("Failed to notify order readiness", e);
+            console.error("[TTS] Failed to notify order readiness:", e);
         }
     },
+    // ─────────────────────────────────────,
+
     /**
          * Convert a base64 VAPID public key to a Uint8Array
          * for use with the PushManager.subscribe() method.

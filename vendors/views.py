@@ -380,6 +380,7 @@ def create_or_update_order(token_no, vendor, device, counter_no, status):
         order.status = status
         order.counter_no = counter_no
         order.device = device
+        order.updated_by = "keypad_device"
         order.save()
     else:
         logger.info(f"Creating new order {token_no}")
@@ -402,7 +403,7 @@ def notify_fcm(vendor, data):
     tokens = list(android_devices.values_list('token', flat=True))
     return send_firebase_admin_multicast(tokens, json.dumps(data))
 
-PUSH_COOLDOWN_SECONDS = 1
+PUSH_COOLDOWN_SECONDS = 2
 
 @api_view(['PATCH'])
 @permission_classes([AllowAny])
@@ -466,20 +467,21 @@ def update_order(request):
             except Exception as push_err:
                 logger.error(f"Web push failed: {str(push_err)}")
                 push_errors = [str(push_err)]
-
+            
+            logger.info(f"Web push notifications sent. Errors: {push_errors}")
             order.notified_at = now()
             order.save(update_fields=['notified_at'])
             logger.info(f"Marked order {token_no} as notified.")
-
+            
         response_msg = {"message": "Order updated and notifications sent.", "token_no": token_no}
-        if push_errors:
-            response_msg.update({"message": "Order updated. FCM sent. Some web pushes failed.", "push_errors": push_errors})
-            return Response(response_msg, status=status.HTTP_207_MULTI_STATUS)
+        # if push_errors:
+        #     response_msg.update({"message": "Order updated. FCM sent. Some web pushes failed.", "push_errors": push_errors})
+        #     return Response(response_msg, status=status.HTTP_207_MULTI_STATUS)
 
         return Response(response_msg, status=status.HTTP_200_OK)
 
     except Exception as e:
-        logger.exception("Unhandled exception in update_order:")
+        logger.error(f"Exception message: {str(e)}")
         return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

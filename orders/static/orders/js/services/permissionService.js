@@ -54,6 +54,8 @@ export const PermissionService = (() => {
 
     const handleAgree = async () => {
         localStorage.setItem("permissionStatus", "granted");
+        AppUtils.unlockNotificationSound();  // safe time to preload and unlock
+        // Hide the modal after granting permission
         bootstrap.Modal.getInstance(document.getElementById("permissionModal"))?.hide();
 
         const granted = await requestPermissions();
@@ -64,7 +66,7 @@ export const PermissionService = (() => {
                 await deferredCallback();  // ✅ Run deferred logic
                 deferredCallback = null;
             }
-            playWelcomeMessage();
+            
         }
     };
 
@@ -85,11 +87,6 @@ export const PermissionService = (() => {
     const bindEvents = () => {
         document.getElementById("grant-permission")?.addEventListener("click", handleAgree);
         document.getElementById("deny-permission")?.addEventListener("click", handleDeny);
-    };
-
-    const playWelcomeMessage = () => {
-        const welcome = new SpeechSynthesisUtterance('Hi, Welcome. Please enter your token number to track your order.');
-        speechSynthesis.speak(welcome);
     };
 
     return {
