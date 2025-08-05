@@ -232,7 +232,7 @@ window.AppUtils = {
     // ============================================
     // Unlock Notification Sound + Preferred Voice (iOS + Android)
     // ============================================
-    unlockNotificationSound: function () {
+    unlockNotificationSound: async function () {
         console.log("[Unlock] Unlocking notification sound and TTS...");
 
         // 🔊 Unlock notification sound
@@ -252,10 +252,25 @@ window.AppUtils = {
         // 🗣 Unlock speech synthesis for iOS + preload preferred voice
         try {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/i.test(navigator.userAgent);
             const iosPreferredNames = ["Samantha", "Karen", "Moira"];
             const androidPreferredNames = ["Google US English", "English (United States)"];
 
-            const voices = window.speechSynthesis.getVoices();
+            let voices = window.speechSynthesis.getVoices();
+
+            // ✅ Wait for voices to load only on Android if none yet
+            if (isAndroid && voices.length === 0) {
+                console.log("[TTS] Waiting for voices to load on Android...");
+                voices = await new Promise(resolve => {
+                    window.speechSynthesis.onvoiceschanged = () => {
+                        const loadedVoices = window.speechSynthesis.getVoices();
+                        if (loadedVoices.length) {
+                            console.log(`[TTS] Voices loaded: ${loadedVoices.length}`);
+                            resolve(loadedVoices);
+                        }
+                    };
+                });
+            }
 
             const preferredVoice = voices.find(v =>
                 v.lang.startsWith("en") &&
@@ -277,6 +292,7 @@ window.AppUtils = {
             console.warn("🔇 Speech synthesis unlock failed:", e);
         }
     },
+
 
     // Use this in your existing method
     playNotificationSound : function (volume = 1.0) {
@@ -397,8 +413,21 @@ window.AppUtils = {
         try {
             console.log(`[TTS] Speaking order ready message: Order ${pushData.token_no} - Counter ${pushData.counter_no}`);
             const synth = window.speechSynthesis;
+            let message;
+            if (pushData.status === 'ready') {
+                message = `Your order number ${pushData.token_no} is ready at counter ${pushData.counter_no}. Please collect it.`;
+            } else if (pushData.status === 'cancelled') {
+                message = `Unfortunately, your order number ${pushData.token_no} has been cancelled.`;
+            } else if (pushData.status === 'delivered') {
+                message = `Your order number ${pushData.token_no} has been delivered. Thank you for choosing us.`;
+            } else if (pushData.status === 'preparing') {
+                message = `Your order number ${pushData.token_no} is currently being prepared. Please wait while we finish it.`;
+            }
+            else {
+                message = `Your order number ${pushData.token_no} has a new update. Please check the app for details.`;
+            }
 
-            const message = `Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`;
+            console.log(`[TTS] Message to speak: ${message}`);
             const utterance = new SpeechSynthesisUtterance(message);
 
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);

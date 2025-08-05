@@ -109,16 +109,30 @@ function showNotificationModal(pushData, source) {
 
     const modalHeader = document.querySelector('#notificationModal .modal-body h5');
     if (source === 'notification') {
-    const outletName = pushData.name || "the outlet";
-    const messages = [
-        `🛎️ <strong>You’ve got a new update from ${outletName}</strong><br>View the chat for details.`
-    ];
-    const randomIndex = Math.floor(Math.random() * messages.length);
-    modalHeader.innerHTML = messages[randomIndex];
+        const outletName = pushData.name || "the outlet";
+        const messages = [
+            `🛎️ <strong>You’ve got a new update from ${outletName}</strong><br>View the chat for details.`
+        ];
+        const randomIndex = Math.floor(Math.random() * messages.length);
+        modalHeader.innerHTML = messages[randomIndex];
     } else {
-        modalHeader.innerHTML = `
-            Order <strong>${pushData.token_no}</strong> for <strong>${pushData.name}</strong>
-            is now <strong>${pushData.status}</strong> at <strong>Counter ${pushData.counter_no}</strong>.`;
+        if (pushData.status === 'cancelled') {
+            modalHeader.innerHTML = `
+                Unfortunately, your order <strong>${pushData.token_no}</strong> for <strong>${pushData.name}</strong> 
+                has been cancelled. Please contact staff for assistance.`;
+        } else if (pushData.status === 'ready') {
+            modalHeader.innerHTML = `
+                Your Order <strong>${pushData.token_no}</strong> for <strong>${pushData.name}</strong>
+                is now <strong>${pushData.status}</strong> at <strong>Counter ${pushData.counter_no}</strong>.`;
+        } else if (pushData.status === 'preparing') {
+            modalHeader.innerHTML = `
+                Your Order <strong>${pushData.token_no}</strong> for <strong>${pushData.name}</strong>
+                is now <strong>${pushData.status}</strong>. Please wait while we finish it.`;
+        } else {
+            modalHeader.innerHTML = `
+                Your Order <strong>${pushData.token_no}</strong> for <strong>${pushData.name}</strong>
+                has been delivered. Thank you for choosing us!`;
+        }
     }
     const snoozeBtn = document.getElementById('disable-notifications');
     snoozeBtn.disabled = false;

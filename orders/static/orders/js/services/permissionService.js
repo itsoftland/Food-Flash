@@ -54,7 +54,7 @@ export const PermissionService = (() => {
 
     const handleAgree = async () => {
         localStorage.setItem("permissionStatus", "granted");
-        AppUtils.unlockNotificationSound();  // safe time to preload and unlock
+        await AppUtils.unlockNotificationSound();  // safe time to preload and unlock
         // Hide the modal after granting permission
         bootstrap.Modal.getInstance(document.getElementById("permissionModal"))?.hide();
 

@@ -161,6 +161,13 @@ export const MenuModalService = (() => {
                 } 
             });
         });
+        // 🔹 Detect clicks outside to remove active state
+        document.addEventListener('click', (event) => {
+            // Check if click is outside footer buttons and outside modals
+            if (!event.target.closest('.footer-button') && !event.target.closest('.modal')) {
+                buttons.forEach(btn => btn.classList.remove('active'));
+            }
+        });
     };
 
     return {

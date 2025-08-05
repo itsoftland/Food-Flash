@@ -358,7 +358,14 @@ input[type="text"] {
 
 }
 .preparing-color{
-    color: #2a2c41 !important;;
+    background-color:#ef6c00 !important;
+}
+.delivered-color {
+    background-color: #115087 !important; /* deep royal blue */
+}
+
+.cancelled-color {
+    background-color: #E13C3C !important; /* muted red */
 }
 .message-content .status{
       font-size: 1rem;

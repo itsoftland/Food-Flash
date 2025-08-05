@@ -163,21 +163,20 @@ def manager_order_update(request):
 
         status_to_update = data['status']
         # ✅ Determine action type (with backward compatibility)
-        action = request.data.get("action", "").strip().lower()
+        # action = request.data.get("action", "").strip().lower()
 
-        if action:
-            # New clients send explicit action
-            if action not in ["ready", "message", "delivered", "cancelled"]:
-                return Response({"message": "Invalid action type."}, status=status.HTTP_400_BAD_REQUEST)
-            action_type = action
-        else:
+        # if action:
+        #     # New clients send explicit action
+        #     if action not in ["ready", "message", "delivered", "cancelled"]:
+        #         return Response({"message": "Invalid action type."}, status=status.HTTP_400_BAD_REQUEST)
+        #     action_type = action
+        # else:
             # Backward compatibility: infer from status text
-            lowered_status = status_to_update.lower()
-            if lowered_status in ["ready", "delivered", "cancelled"]:
-                action_type = lowered_status
-            else:
-                action_type = "message"  # Any other value is treated as a message
-
+        lowered_status = status_to_update.lower()
+        if lowered_status in ["ready", "delivered", "cancelled"]:
+            action_type = lowered_status
+        else:
+            action_type = "message"  # Any other value is treated as a message
 
         # Validate manager
         manager = getattr(request.user, 'profile_roles', None)
@@ -201,10 +200,14 @@ def manager_order_update(request):
         # Serialize vendor logo
         vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
         logo_url = vendor_serializer.data.get("logo_url", "")
-        if status_to_update.lower() == "ready":
+        if action_type == "ready":
             body = f"Your order {token_no} status: {status_to_update.capitalize()}"
-        else:
+        elif action_type == "message":
             body = f"Your order {token_no} has an update from the manager."
+        elif action_type == "delivered":
+            body = f"Your order {token_no} has been delivered."
+        elif action_type == "cancelled":
+            body = f"Your order {token_no} has been cancelled."
 
         # Prepare common push payload
         payload = {
@@ -226,7 +229,7 @@ def manager_order_update(request):
         push_errors = []
 
         # ✅ IF status is "ready"
-        if status_to_update.lower() == "ready":
+        if action_type == "ready":
             # 1. Notify Android TV
             android_tv_success, android_tv_info = notify_android_tv(vendor, data)
             logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
@@ -241,7 +244,7 @@ def manager_order_update(request):
             logger.info(f"✅ Order {updated_order.token_no} updated to status: {status_to_update}")
 
             # 3. Send Web Push (only if cooldown passed)
-            cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 5)
+            cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 1)
             if not order.notified_at or (timezone.now() - order.notified_at) > timedelta(seconds=cooldown):
                 logger.info(f"📤 Sending web push...")
                 push_errors = notify_web_push(order, vendor, payload)
@@ -250,8 +253,23 @@ def manager_order_update(request):
                 logger.info(f"🕒 Order {token_no} marked as notified at {order.notified_at}")
             else:
                 logger.info(f"⏳ Cooldown active. Skipping web push for {token_no}.")
+        # ✅ IF status is "delivered"        
+        elif action_type == "delivered":
+            logger.info(f"🚚 Marking order {token_no} as delivered by manager {manager.name}")
+            updated_order = update_existing_order_by_manager(token_no, vendor, None, action_type, manager)
+            if updated_order:
+                payload["title"] = "Order Delivered"
+                payload["type"] = "foodstatus"
+                push_errors = notify_web_push(order, vendor, payload)
+        elif action_type == "cancelled":
+            logger.info(f"🗑️ Cancelling order {token_no} by manager {manager.name}")
+            updated_order = update_existing_order_by_manager(token_no, vendor, None, "cancelled", manager)
+            if updated_order:
+                payload["title"] = "Order Cancelled"
+                payload["type"] = "foodstatus"
+                push_errors = notify_web_push(order, vendor, payload)
 
-        # ⚠️ IF status is NOT "ready"
+        # IF status is "message" 
         else:
             MAX_MESSAGE_LENGTH = 200
 
@@ -293,7 +311,7 @@ def manager_order_update(request):
         # 📦 Final response
         return Response({
             "success": True,
-            "message": f"Order {'updated and ' if status_to_update == 'ready' else ''}notified successfully.",
+            "message": f"Order {'updated and ' if action_type == 'ready' else ''}notified successfully.",
             "token_no": token_no,
             "android_tv": android_tv_success,
             "android_tv_info": android_tv_info,

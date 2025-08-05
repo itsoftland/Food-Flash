@@ -208,11 +208,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                 updateChatOnPush(pushData.vendor_id,pushData.logo_url,pushData.name);
                 // Customize the chat message as needed. Here we assume pushData contains token_number and status.
                 
+                const statusClassMap = {
+                    preparing: 'preparing-color',
+                    ready: 'ready-color',
+                    delivered: 'delivered-color',
+                    cancelled: 'cancelled-color'
+                };
+
+                const statusKey = pushData?.status || 'unknown';
+                const statusClass = statusClassMap[statusKey] || 'unknown-color';
+
                 const messageHTML = `
                     <div class="response-title">${pushData.name || "Unknown"}</div>
                     <div class="status">
                         Status: 
-                        <span class="${pushData.status?.toLowerCase() === 'ready' ? 'ready-color' : 'preparing-color'}">
+                        <span class="${statusClass}">
                             ${pushData.status || "Unknown"}
                         </span>
                     </div>
@@ -221,6 +231,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         <div class="badge">Token No: ${pushData.token_no || ""}</div>
                     </div>
                 `;
+
                 const offerMessageHTML = `
                         <div class="response-title">${pushData.name}</div>
                         <div class="response-title">🔥 ${pushData.title}</div>
@@ -240,11 +251,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 `;
                 console.log("Push Data Type:", pushData.type);
                 if (pushData.type =="offers"){
-                    appendMessage(offerMessageHTML, 'server',null,'offers','',pushData.message_id);
-                    AppUtils.playNotificationSound(); 
+                    AppUtils.playNotificationSound();
+                    appendMessage(offerMessageHTML, 'server',null,'offers','',pushData.message_id); 
                 }else if (pushData.type === "manager") {
-                    appendMessage(managerMessageHTML, 'server',null, 'manager',pushData.token_no,pushData.message_id); 
+                    AppUtils.notifyOrderReady(pushData);
                     showNotificationModal(pushData, 'notification');
+                    appendMessage(managerMessageHTML, 'server',null, 'manager',pushData.token_no,pushData.message_id); 
                 } else {
                 if (pushData.type === "foodstatus") {
                     AppUtils.notifyOrderReady(pushData); 
@@ -316,34 +328,34 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Show chat window if token is present
     if (tokenFromQR) {
-        const granted = await PermissionService.requestPermissions();
+        // const granted = await PermissionService.requestPermissions();
 
-        if (granted) {
-            // ✅ Permission already granted — proceed immediately
+        // if (granted) {
+        //     // ✅ Permission already granted — proceed immediately
+        //     appendMessage(tokenFromQR, 'user', null);
+        //     AppUtils.getNotificationHelpPath();
+        //     try {
+        //             const check_status = await fetchOrderStatusOnce(tokenFromQR);
+        //             console.log("Order status:", check_status);
+        //         } catch (err) {
+        //             chatInput.value = tokenFromQR;
+        //             console.error("Failed to fetch status:", err);
+        //         }
+        // } else {
+        // ⚠️ Permission not granted yet — defer logic
+        PermissionService.setDeferredCallback(async () => {
             appendMessage(tokenFromQR, 'user', null);
             AppUtils.getNotificationHelpPath();
-            try {
-                    const check_status = await fetchOrderStatusOnce(tokenFromQR);
-                    console.log("Order status:", check_status);
-                } catch (err) {
-                    chatInput.value = tokenFromQR;
-                    console.error("Failed to fetch status:", err);
-                }
-        } else {
-            // ⚠️ Permission not granted yet — defer logic
-           PermissionService.setDeferredCallback(async () => {
-                appendMessage(tokenFromQR, 'user', null);
-                AppUtils.getNotificationHelpPath();
 
-                try {
-                    const check_status = await fetchOrderStatusOnce(tokenFromQR);
-                    console.log("Order status:", check_status);
-                } catch (err) {
-                    chatInput.value = tokenFromQR;
-                    console.error("Failed to fetch status:", err);
-                }
-            });
-        }
+            try {
+                const check_status = await fetchOrderStatusOnce(tokenFromQR);
+                console.log("Order status:", check_status);
+            } catch (err) {
+                chatInput.value = tokenFromQR;
+                console.error("Failed to fetch status:", err);
+            }
+        });
+        // }
     } else {
         // No token, just show chat window
         showChatWindow({});
@@ -424,27 +436,36 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             const data = responseData;
             console.log(data);
+            const statusClassMap = {
+                    preparing: 'preparing-color',
+                    ready: 'ready-color',
+                    delivered: 'delivered-color',
+                    cancelled: 'cancelled-color'
+                };
+
+            const statusKey = data?.status || 'unknown';
+            const statusClass = statusClassMap[statusKey] || 'unknown-color';
             const messageHTML = `
-                <div class="response-title">${data.name || "Unknown"}</div>
-                <div class="status">
-                    Status: 
-                    <span class="${data.status?.toLowerCase() === 'ready' ? 'ready-color' : 'preparing-color'}">
-                        ${data.status || "Unknown"}
-                    </span>
-                </div>
-                <div class="info-badges">
-                    <div class="badge">Counter No: ${data.counter_no || ""}</div>
-                    <div class="badge">Token No: ${data.token_no || ""}</div>
-                </div>
-            `;
+                    <div class="response-title">${data.name || "Unknown"}</div>
+                    <div class="status">
+                        Status: 
+                        <span class="${statusClass}">
+                            ${data.status || "Unknown"}
+                        </span>
+                    </div>
+                    <div class="info-badges">
+                        <div class="badge">Counter No: ${data.counter_no || ""}</div>
+                        <div class="badge">Token No: ${data.token_no || ""}</div>
+                    </div>
+                `;
             if (!replyText){
 
                 appendMessage(messageHTML, 'server', null, 'foodstatus',data.token_no);
                 // If status is ready, notify user
-                if (data.status === "ready") {
-                    showNotificationModal(data,'usercheck');
-                    AppUtils.notifyOrderReady(data);
-                }
+                // if (data.status === "ready") {
+                showNotificationModal(data,'usercheck');
+                AppUtils.notifyOrderReady(data);
+                // }
             }
 
             // Subscribe for push notifications
@@ -478,22 +499,31 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 50);
 
         chatContainer.scrollIntoView({ behavior: "smooth" });
+        const statusClassMap = {
+                    preparing: 'preparing-color',
+                    ready: 'ready-color',
+                    delivered: 'delivered-color',
+                    cancelled: 'cancelled-color'
+                };
+
+        const statusKey = data?.status || 'unknown';
+        const statusClass = statusClassMap[statusKey] || 'unknown-color';
 
         // ✅ Reuse the logic to render the push message
         if (data) {
             const messageHTML = `
-                <div class="response-title">${data.name || "Unknown"}</div>
-                <div class="status">
-                    Status: 
-                    <span class="${data.status?.toLowerCase() === 'ready' ? 'ready-color' : 'preparing-color'}">
-                        ${data.status || "Unknown"}
-                    </span>
-                </div>
-                <div class="info-badges">
-                    <div class="badge">Counter No: ${data.counter_no || ""}</div>
-                    <div class="badge">Token No: ${data.token_no || ""}</div>
-                </div>
-            `;
+                    <div class="response-title">${data.name || "Unknown"}</div>
+                    <div class="status">
+                        Status: 
+                        <span class="${statusClass}">
+                            ${data.status || "Unknown"}
+                        </span>
+                    </div>
+                    <div class="info-badges">
+                        <div class="badge">Counter No: ${data.counter_no || ""}</div>
+                        <div class="badge">Token No: ${data.token_no || ""}</div>
+                    </div>
+                `;
 
             const offerMessageHTML = `
                 <div class="response-title">${data.name}</div>
