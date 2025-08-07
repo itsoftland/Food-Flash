@@ -29,7 +29,6 @@ def get_current_time(request):
     formatted_time = current_ist.strftime('%Y-%m-%d %H:%M:%S')
     return Response({'current_time': formatted_time})
 
-
 # def manage_order(request):
 #     cache.clear()
 #     return render(request, 'order_management.html')

@@ -119,6 +119,7 @@ import requests
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def product_authentication(request):
+    print("Product Authentication",request.user)
     external_url = "http://202.88.237.210:8093/LicenceMgmt/public/api/ProductAuthentication"
 
     try:

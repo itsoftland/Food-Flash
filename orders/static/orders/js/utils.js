@@ -249,12 +249,13 @@ window.AppUtils = {
             console.warn('🔇 Sound unlock failed:', err);
         });
 
-        // 🗣 Unlock speech synthesis for iOS + preload preferred voice
+        // 🗣 Unlock speech synthesis
         try {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             const isAndroid = /Android/i.test(navigator.userAgent);
+
             const iosPreferredNames = ["Samantha", "Karen", "Moira"];
-            const androidPreferredNames = ["Google US English", "English (United States)"];
+            const androidPreferredNames = ["Assamese India", "Google US English", "English (United States)"];
 
             let voices = window.speechSynthesis.getVoices();
 
@@ -272,12 +273,33 @@ window.AppUtils = {
                 });
             }
 
-            const preferredVoice = voices.find(v =>
+            // 1️⃣ Try platform preferred names first
+            let preferredVoice = voices.find(v =>
                 v.lang.startsWith("en") &&
                 (isIOS
                     ? iosPreferredNames.includes(v.name)
                     : androidPreferredNames.includes(v.name))
-            ) || voices[0]; // fallback
+            );
+
+            // 2️⃣ If no match, try any English female voice
+            if (!preferredVoice) {
+                preferredVoice = voices.find(v =>
+                    v.lang.startsWith("en") &&
+                    (/female/i.test(v.name) ||
+                    /(Karen|Samantha|Moira)/i.test(v.name) ||
+                    /Google.*English.*Female/i.test(v.name))
+                );
+            }
+
+            // 3️⃣ If no match, try any English voice
+            if (!preferredVoice) {
+                preferredVoice = voices.find(v => v.lang.startsWith("en"));
+            }
+
+            // 4️⃣ If still no match, fallback to first available
+            if (!preferredVoice) {
+                preferredVoice = voices[0];
+            }
 
             console.log(`[TTS] Unlocking with preferred voice: ${preferredVoice?.name || "default"}`);
 
