@@ -328,34 +328,35 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Show chat window if token is present
     if (tokenFromQR) {
-        // const granted = await PermissionService.requestPermissions();
+        console.log("Token from QR:", tokenFromQR);
+        const permissionStatus = localStorage.getItem("permissionStatus")
 
-        // if (granted) {
-        //     // ✅ Permission already granted — proceed immediately
-        //     appendMessage(tokenFromQR, 'user', null);
-        //     AppUtils.getNotificationHelpPath();
-        //     try {
-        //             const check_status = await fetchOrderStatusOnce(tokenFromQR);
-        //             console.log("Order status:", check_status);
-        //         } catch (err) {
-        //             chatInput.value = tokenFromQR;
-        //             console.error("Failed to fetch status:", err);
-        //         }
-        // } else {
-        // ⚠️ Permission not granted yet — defer logic
-        PermissionService.setDeferredCallback(async () => {
+        if (permissionStatus === "granted") {
+            // ✅ Permission already granted — proceed immediately
             appendMessage(tokenFromQR, 'user', null);
             AppUtils.getNotificationHelpPath();
-
             try {
-                const check_status = await fetchOrderStatusOnce(tokenFromQR);
-                console.log("Order status:", check_status);
-            } catch (err) {
-                chatInput.value = tokenFromQR;
-                console.error("Failed to fetch status:", err);
-            }
-        });
-        // }
+                    const check_status = await fetchOrderStatusOnce(tokenFromQR);
+                    console.log("Order status:", check_status);
+                } catch (err) {
+                    chatInput.value = tokenFromQR;
+                    console.error("Failed to fetch status:", err);
+                }
+        } else {
+        // ⚠️ Permission not granted yet — defer logic
+            PermissionService.setDeferredCallback(async () => {
+                appendMessage(tokenFromQR, 'user', null);
+                AppUtils.getNotificationHelpPath();
+
+                try {
+                    const check_status = await fetchOrderStatusOnce(tokenFromQR);
+                    console.log("Order status:", check_status);
+                } catch (err) {
+                    chatInput.value = tokenFromQR;
+                    console.error("Failed to fetch status:", err);
+                }
+            });
+        }
     } else {
         // No token, just show chat window
         showChatWindow({});

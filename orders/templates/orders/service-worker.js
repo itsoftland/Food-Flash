@@ -44,7 +44,7 @@ self.addEventListener("push", (event) => {
     (async () => {
       try {
         const cache = await caches.open("push-store");
-        await cache.put(new Request(key), new Response(JSON.stringify(payload)));
+        {% comment %} await cache.put(new Request(key), new Response(JSON.stringify(payload))); {% endcomment %}
         console.log("[Service Worker] 💾 Push data cached:", key);
       } catch (err) {
         console.error("[Service Worker] ❌ Caching failed:", err);
@@ -89,53 +89,6 @@ self.addEventListener("push", (event) => {
     })()
   );
 });
-
-{% comment %} self.addEventListener("push", (event) => {
-  if (!event.data) return;
-
-  const payload = event.data.json();
-  const key = `push_${payload.token_no}`;
-
-  event.waitUntil(
-    (async () => {
-      try {
-        // 💾 Cache the payload
-        const cache = await caches.open("push-store");
-        await cache.put(new Request(key), new Response(JSON.stringify(payload)));
-        console.log("[Service Worker] 💾 Push data cached:", key);
-      } catch (err) {
-        console.error("[Service Worker] ❌ Caching failed:", err);
-      }
-
-      // 👀 Check for open tabs
-      const allClients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-
-      if (allClients.length > 0) {
-        console.log("[Service Worker] 🔁 Found open tab(s). Sending PUSH_STATUS_UPDATE via postMessage");
-        allClients.forEach((client) => {
-          client.postMessage({
-            type: "PUSH_STATUS_UPDATE",
-            payload,
-          });
-        });
-      } else {
-        const title = payload.title || "New Update";
-        const body = payload.body || "You have a new notification.";
-        console.log("[Service Worker] 🔕 No open tab. Showing system notification");
-
-        await self.registration.showNotification(title, {
-          body,
-          data: payload,
-          icon: "/static/orders/images/food-flash-logo.png",
-          badge: "/static/orders/images/food-flash-logo.png",
-          vibrate: [200, 100, 200],
-          tag: payload.token_no,
-          requireInteraction: true,
-        });
-      }
-    })()
-  );
-}); {% endcomment %}
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
