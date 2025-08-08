@@ -72,6 +72,19 @@ class Vendor(models.Model):
     def __str__(self):
         return f"{self.name} - {self.admin_outlet.customer_name}"
 
+class VendorConfig(models.Model):
+    vendor = models.OneToOneField(Vendor, on_delete=models.CASCADE, related_name="config")
+    token_display_limit = models.PositiveIntegerField(default=8)
+    mqtt_mode = models.CharField(
+        max_length=20,
+        choices=[
+            ("broadcast", "Broadcast to all TVs"),
+            ("individual", "Individual TV data"),
+            ("keypad", "Keypad-controlled TVs")
+        ],
+        default="broadcast"
+    )
+
 class Device(models.Model):
     serial_no = models.CharField(max_length=255)
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, related_name="devices",null=True,blank=True)

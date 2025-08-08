@@ -191,6 +191,21 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "vendors.mqtt_client": {
+            "handlers": ["vendors_file"],
+            "level": "INFO",
+            "propagate": False,
+        },  
+        "vendors.order_utils": {
+            "handlers": ["vendors_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "vendors.services.order_service": {
+            "handlers": ["vendors_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
         "orders.views": {
             "handlers": ["orders_file"],
             "level": "INFO",
