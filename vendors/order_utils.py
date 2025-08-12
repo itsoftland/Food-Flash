@@ -9,7 +9,7 @@ def get_last_tokens(vendor, limit):
     
     tokens = list(
         Order.objects.filter(vendor=vendor)
-        .order_by('-created_at')
+        .order_by('-updated_at')
         .values_list('token_no', flat=True)[:limit]
     )
     

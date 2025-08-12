@@ -1,8 +1,6 @@
 import json
 import logging
 
-from django.core.cache import cache
-# from django.shortcuts import render
 from django.utils.timezone import now, localtime
 
 from rest_framework import status
@@ -19,6 +17,7 @@ from .serializers import OrdersSerializer
 from orders.serializers import VendorLogoSerializer
 from .utils import send_push_notification, notify_web_push
 from firebase_admin import messaging
+from .mqtt_client import get_mqtt_config_for_vendor
 
 logger = logging.getLogger(__name__)
 
@@ -245,12 +244,15 @@ def register_android_device(request):
         # Check mapping to vendor
         if hasattr(device, 'vendor') and device.vendor is not None:
             logger.info("Device is mapped to vendor: %s (ID: %s)", device.vendor.name, device.vendor.vendor_id)
+
             return Response({
                 "status": "Device is mapped to vendor.",
                 "mapped": True,
                 "vendor_id": device.vendor.vendor_id,
                 "vendor_name": device.vendor.name,
+                "mqtt_config": get_mqtt_config_for_vendor(device.vendor)
             }, status=200)
+
         else:
             logger.info("Device registered but not mapped to a vendor.")
             return Response({
@@ -258,6 +260,7 @@ def register_android_device(request):
                 "mapped": False,
                 "vendor_id": None,
                 "vendor_name": None,
+                "mqtt_config": None
             }, status=200)
 
     except AdminOutlet.DoesNotExist:
@@ -511,14 +514,6 @@ def update_order(request):
         counter_no = data['counter_no']
 
         logger.info(f"Resolved Vendor: {vendor.name}, Device: {device.serial_no}, Token No: {token_no}, Counter No: {counter_no}, Status: {status_to_update}")
-        # FCM Push
-        try:
-            fcm_result = notify_fcm(vendor, data)
-            logger.info(f"FCM sent. Result: {fcm_result}")
-        except Exception as e:
-            logger.exception("FCM sending failed")
-            fcm_result = {"error": str(e)}
-
         # Order Create or Update
         order = create_or_update_order(token_no, vendor, device, counter_no, status_to_update)
 

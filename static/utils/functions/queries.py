@@ -1,18 +1,18 @@
 from vendors.models import Vendor,Order
-from django.utils import timezone
+from .utils import get_vendor_business_day_range
 
 import logging
 logger = logging.getLogger(__name__)
 
 def get_vendor(vendor_id):
     return Vendor.objects.get(vendor_id=vendor_id)
-
+ 
 def get_order(token_no, vendor):
-    today = timezone.localdate()
+    start_dt, end_dt = get_vendor_business_day_range(vendor)
     return Order.objects.filter(
         token_no=token_no,
         vendor=vendor,
-        created_date=today
+        created_at__range=(start_dt, end_dt)
     ).first()
 
 

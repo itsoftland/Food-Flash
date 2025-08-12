@@ -8,7 +8,6 @@ from vendors.utils import archive_order
 
 # Setup logger
 logger = logging.getLogger(__name__)
-# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def auto_clear_orders():
     try:
@@ -23,20 +22,20 @@ def auto_clear_orders():
         from vendors.models import AdminOutlet  # Local import to avoid circularity
         admin_outlets = AdminOutlet.objects.all()
 
-        for outlet in admin_outlets:
-            delete_hours = outlet.auto_delete_hours
+        for admin_outlet in admin_outlets:
+            delete_hours = admin_outlet.auto_delete_hours
 
             if delete_hours is None:
-                logger.info(f"Skipping outlet '{outlet.customer_name}' — auto-deletion disabled.")
+                logger.info(f"Skipping outlet '{admin_outlet.customer_name}' — auto-deletion disabled.")
                 continue
 
             if delete_hours < 2:
-                logger.warning(f"Outlet '{outlet.customer_name}' has invalid value ({delete_hours}h), using fallback 2h.")
+                logger.warning(f"Outlet '{admin_outlet.customer_name}' has invalid value ({delete_hours}h), using fallback 2h.")
                 delete_hours = 2  # enforce minimum of 2 hours
 
             delete_threshold = now - timedelta(hours=delete_hours)
 
-            vendors = outlet.vendors.all()
+            vendors = admin_outlet.vendors.all()
 
             for vendor in vendors:
                 orders_to_delete = Order.objects.filter(
@@ -48,7 +47,7 @@ def auto_clear_orders():
 
                 count = orders_to_delete.count()
                 if count > 0:
-                    logger.info(f"Deleting {count} orders for outlet '{outlet.customer_name}' (Vendor ID {vendor.id})")
+                    logger.info(f"Deleting {count} orders for outlet '{admin_outlet.customer_name}' (Vendor ID {vendor.id})")
 
                     for order in orders_to_delete:
                         logger.info(f"Archiving and deleting Order {order.token_no} (Vendor ID {vendor.id})")

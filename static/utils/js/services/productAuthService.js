@@ -43,6 +43,7 @@ export async function callProductAuthAPI() {
         localStorage.setItem('lastAuthCheck', getTodayDateString());
         AppUtils.setCustomerId(customerId);
         await updateCompanyInfo(result);
+        // updateConfig(result);
         return true; // license valid
 
     } catch (error) {
@@ -52,6 +53,30 @@ export async function callProductAuthAPI() {
 }
 
 
+// async function updateConfig(data) {
+//     try {
+//         const response = await fetchWithAutoRefresh(API_ENDPOINTS.CONFIG, {
+//             method: 'PUT',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'X-CSRFToken': AppUtils.getCSRFToken()
+//             },
+//             credentials: 'include',
+//             body: JSON.stringify({
+//                 display_mode: data.DisplayMode,  
+//             })
+//         });
+
+//         const result = await response.json();
+//         if (!response.ok) {
+//             console.error('❌ Config update failed:', result);
+//         } else {
+//             console.log('✅ Config updated:', result);
+//         }
+//     } catch (error) {
+//         console.error('Config update request failed:', error);
+//     }
+// }
 
 async function updateCompanyInfo(data) {
     try {
@@ -77,7 +102,8 @@ async function updateCompanyInfo(data) {
                 keypad_device_count: data.KeypadDeviceCount,
                 led_display_count: data.LedDisplayCount,
                 outlet_count: data.OutletCount,
-                locations: data.Locations
+                locations: data.Locations,
+                displaymode: data.DisplayMode, 
             })
         });
 

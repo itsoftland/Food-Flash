@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Vendor, Order, Device, PushSubscription, AdminOutlet
+from .models import (Vendor, Order, Device,
+                     PushSubscription, AdminOutlet,
+                     MqttServerConfig)
 
 @admin.register(AdminOutlet)
 class AdminOutletAdmin(admin.ModelAdmin):
@@ -29,66 +31,17 @@ class PushSubscriptionAdmin(admin.ModelAdmin):
         return ", ".join(str(order.token_no) for order in obj.tokens.all())
     display_tokens.short_description = 'Tokens'
 
+@admin.register(MqttServerConfig)
+class MqttServerConfigAdmin(admin.ModelAdmin):
+    list_display = ("name", "host", "port", "username", "qos")
+
 from django.contrib import admin
-from django.shortcuts import render, redirect
-from django.urls import path
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import json
+from .models import VendorConfig
 
-from .models import Vendor
-from .forms import VendorFileUploadForm
+@admin.register(VendorConfig)
+class VendorConfigAdmin(admin.ModelAdmin):
+    list_display = ("vendor", "business_day_start_hour", "timezone")
+    list_filter = ("timezone",)
+    search_fields = ("vendor__name",)
 
-@admin.register(Vendor)
-class VendorAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'vendor_id')
-    
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('upload-files/', self.admin_site.admin_view(self.upload_files_view), name='vendor-upload-files'),
-        ]
-        return custom_urls + urls
-
-    def upload_files_view(self, request):
-        form = VendorFileUploadForm(request.POST or None, request.FILES or None)
-
-        if request.method == 'POST':
-            print("POST DATA:", request.POST)
-            print("FILES:", request.FILES)
-            if not form.is_valid():
-                print("FORM ERRORS:", form.errors)
-                print("IS FORM VALID:", form.is_valid())
-
-            vendor = form.cleaned_data['vendor']
-            ads_files = request.FILES.getlist('ads_files')
-            menus_files = request.FILES.getlist('menus_files')
-
-            ads_paths = json.loads(vendor.ads or "[]")
-            menus_paths = json.loads(vendor.menus or "[]")
-
-            for file in ads_files:
-                path = default_storage.save('ads/' + file.name, ContentFile(file.read()))
-                ads_paths.append(path)
-
-            for file in menus_files:
-                path = default_storage.save('menus/' + file.name, ContentFile(file.read()))
-                menus_paths.append(path)
-
-            vendor.ads = json.dumps(ads_paths)
-            vendor.menus = json.dumps(menus_paths)
-            vendor.save()
-            
-
-            self.message_user(request, "Files uploaded successfully.")
-            return redirect("..")
-
-        # 🛠 Fix: Add admin context to avoid KeyError
-        context = {
-            **self.admin_site.each_context(request),  # ✅ This adds 'available_apps' and other admin vars
-            'form': form,
-            'title': "Upload Vendor Files (Testing)",
-        }
-
-        return render(request, 'admin/vendor_upload_files.html', context)
 

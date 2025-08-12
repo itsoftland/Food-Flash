@@ -4,11 +4,31 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 import uuid
+import pytz
 
+class MqttServerConfig(models.Model):
+    name = models.CharField(max_length=100, help_text="Friendly name for MQTT server")
+    host = models.CharField(max_length=255)
+    port = models.PositiveIntegerField(default=1883)
+    username = models.CharField(max_length=100, blank=True, null=True)
+    password = models.CharField(max_length=100, blank=True, null=True)
+    qos = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.name} ({self.host}:{self.port})"
+    
 class AdminOutlet(models.Model):  
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='admin_outlet',
         null=True, blank=True
+    )
+    mqtt_server = models.ForeignKey(
+        MqttServerConfig,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        default=1,
+        related_name="admin_outlets"
     )
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     gst_number = models.CharField(max_length=100, blank=True, null=True)
@@ -84,6 +104,13 @@ class VendorConfig(models.Model):
         ],
         default="broadcast"
     )
+    business_day_start_hour = models.PositiveSmallIntegerField(default=0)
+    timezone = models.CharField(
+        max_length=50,
+        choices=[(tz, tz) for tz in pytz.all_timezones], 
+        default="UTC"
+    )
+
 
 class Device(models.Model):
     serial_no = models.CharField(max_length=255)

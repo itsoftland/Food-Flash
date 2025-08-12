@@ -236,6 +236,11 @@ LOGGING = {
             "level": "INFO",
             "propagate": False, 
             },
+        "static.utils.functions.utils": {
+            "handlers": ["orders_file","managers_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
 }
 

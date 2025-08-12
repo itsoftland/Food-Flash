@@ -1,7 +1,6 @@
 import logging
 from datetime import timedelta
 
-from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.conf import settings
 
@@ -9,6 +8,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 
 from vendors.models import (Order, Vendor, UserProfile,
                             ChatMessage)
@@ -18,32 +18,30 @@ from vendors.utils import notify_web_push
 from orders.serializers import VendorLogoSerializer
 from .serializers import ChatMessageSerializer  
 
-from static.utils.functions.utils import get_filtered_date_range
+from .utils.utils import get_manager_vendor
+from static.utils.functions.utils import (get_vendor_current_time,
+                                          get_vendor_business_day_range)
 from static.utils.functions.queries import update_existing_order_by_manager
 from static.utils.functions.notifications import notify_android_tv
 
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_order_by_manager(request):
     token_no = request.data.get('token_no')
-    vendor_id = request.data.get('vendor_id')
-    manager_id = request.data.get('manager_id')  
-
     # Validate inputs
-    if not token_no or not vendor_id or not manager_id:
-        return Response({'error': 'token_no, vendor_id, and manager_id are required.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not token_no :
+        return Response({'error': 'token_no is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         token_no = int(token_no)
-        vendor_id = int(vendor_id)
-        manager_id = int(manager_id)
     except ValueError:
         return Response({'error': 'All fields must be valid integers.'}, status=status.HTTP_400_BAD_REQUEST)
-    vendor = Vendor.objects.get(id=vendor_id)
+    # Get vendor from logged-in manager
+    vendor = get_manager_vendor(request.user)
     # Dynamically build the base URL
     base_url = request.build_absolute_uri('/')  
     # Build the tracking URL (assuming 'home/' is always part of it)
@@ -51,7 +49,12 @@ def create_order_by_manager(request):
 
     # Check if order already exists
     try:
-        order = Order.objects.get(token_no=token_no, vendor__id=vendor_id)
+        start_dt, end_dt = get_vendor_business_day_range(vendor)
+
+        if not start_dt or not end_dt:
+            logger.warning(f"[get_today_orders] Invalid date range for vendor_id={vendor.id}")
+            return Response({"error": "Invalid date range"}, status=400)
+        order = Order.objects.filter(token_no=token_no, vendor=vendor, created_at__range=(start_dt, end_dt)).first()
         
         return Response({
             'message': 'Order already exists for this token number.',
@@ -77,8 +80,6 @@ def create_order_by_manager(request):
 
     # Create new order
     try:
-        manager = UserProfile.objects.filter(id=manager_id).first()
-
         new_order_data = {
             'name': vendor.name,
             'token_no': token_no,
@@ -89,7 +90,7 @@ def create_order_by_manager(request):
             'updated_by': 'manager',
             'status': 'created',
             'type': 'foodstatus',
-            'manager_id': manager.id
+            'manager_id': request.user.id
         }
 
         serializer = OrdersSerializer(data=new_order_data)
@@ -112,42 +113,50 @@ def create_order_by_manager(request):
 @permission_classes([IsAuthenticated])
 def get_today_orders(request):
     try:
-        vendor_id = request.GET.get('vendor_id')
-        if not vendor_id:
-            return Response({"error": "vendor_id required"}, status=400)
+        logger.info(f"[get_today_orders] Request started by user={request.user.username}")
 
-        # Use your utility to get start and end of "today"
-        start_dt, end_dt = get_filtered_date_range('today')
+        # Get vendor from logged-in manager
+        vendor = get_manager_vendor(request.user)
+        logger.info(f"[get_today_orders] Vendor resolved: id={vendor.id}, name={vendor.name}")
+
+         # Get business day range in UTC
+        start_dt, end_dt = get_vendor_business_day_range(vendor)
 
         if not start_dt or not end_dt:
+            logger.warning(f"[get_today_orders] Invalid date range for vendor_id={vendor.id}")
             return Response({"error": "Invalid date range"}, status=400)
 
-        # Filter orders created today
+        # Fetch orders for today
         todays_orders = Order.objects.filter(
-            vendor__id=vendor_id,
+            vendor=vendor,
             created_at__range=(start_dt, end_dt)
         ).order_by('-updated_at')
+        logger.info(f"[get_today_orders] Found {todays_orders.count()} orders for vendor_id={vendor.id}")
 
+        # Serialize
         data = OrdersSerializer(todays_orders, many=True, context={'request': request}).data
+
+        logger.info(f"[get_today_orders] Returning {len(data)} orders for user={request.user.username}")
         return Response({
             "message": "Today's orders retrieved successfully.",
             "count": len(data),
-            "detail":data,
-            }, status=status.HTTP_200_OK)
+            "detail": data,
+        }, status=status.HTTP_200_OK)
 
     except Exception as e:
+        logger.exception(f"[get_today_orders] Error occurred for user={request.user.username}: {e}")
         return Response({"error": str(e)}, status=500)
+
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def manager_order_update(request):
     try:
         logger.info("📥 PATCH /manager_order_update")
-        logger.info(f"IP: {request.META.get('REMOTE_ADDR')}, UA: {request.META.get('HTTP_USER_AGENT')}")
         logger.debug(f"Request Data: {request.data}")
 
         data = request.data
-        required_fields = ['token_no', 'status']
+        required_fields = ['token_no','status','action']
         missing = [f for f in required_fields if f not in data or data[f] in [None, ""]]
 
         if missing:
@@ -162,21 +171,13 @@ def manager_order_update(request):
             return Response({"message": "token_no must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
 
         status_to_update = data['status']
-        # ✅ Determine action type (with backward compatibility)
-        # action = request.data.get("action", "").strip().lower()
+        action = request.data.get("action", "").lower()
 
-        # if action:
-        #     # New clients send explicit action
-        #     if action not in ["ready", "message", "delivered", "cancelled"]:
-        #         return Response({"message": "Invalid action type."}, status=status.HTTP_400_BAD_REQUEST)
-        #     action_type = action
-        # else:
-            # Backward compatibility: infer from status text
-        lowered_status = status_to_update.lower()
-        if lowered_status in ["ready", "delivered", "cancelled"]:
-            action_type = lowered_status
-        else:
-            action_type = "message"  # Any other value is treated as a message
+        if action:
+            # New clients send explicit action
+            if action not in ["ready", "message", "delivered", "cancelled"]:
+                return Response({"message": "Invalid action type."}, status=status.HTTP_400_BAD_REQUEST)
+            action_type = action
 
         # Validate manager
         manager = getattr(request.user, 'profile_roles', None)
@@ -192,7 +193,14 @@ def manager_order_update(request):
         vendor = manager.vendor
         logger.info(f"🔧 Manager: {manager.name}, Vendor: {vendor.name} ({vendor.vendor_id}), Token: {token_no}, Status: {status_to_update}")
 
-        order = Order.objects.filter(token_no=token_no, vendor=vendor, created_date=timezone.now().date()).first()
+        # Get business day range in UTC
+        start_dt, end_dt = get_vendor_business_day_range(vendor)
+
+        if not start_dt or not end_dt:
+            logger.warning(f"[get_today_orders] Invalid date range for vendor_id={vendor.id}")
+            return Response({"error": "Invalid date range"}, status=400)
+        
+        order = Order.objects.filter(token_no=token_no, vendor=vendor, created_at__range=(start_dt, end_dt)).first()
         if not order:
             logger.warning(f"❌ No order found for token_no {token_no} today.")
             return Response({"message": f"Order with token_no {token_no} not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -200,6 +208,10 @@ def manager_order_update(request):
         # Serialize vendor logo
         vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
         logo_url = vendor_serializer.data.get("logo_url", "")
+        if not logo_url:
+            logger.warning(f"⚠️ No logo URL found for vendor {vendor.name}. Using default logo.")
+            return Response({"message": "Vendor logo not found."}, status=status.HTTP_404_NOT_FOUND)
+        
         if action_type == "ready":
             body = f"Your order {token_no} status: {status_to_update.capitalize()}"
         elif action_type == "message":
@@ -207,7 +219,7 @@ def manager_order_update(request):
         elif action_type == "delivered":
             body = f"Your order {token_no} has been delivered."
         elif action_type == "cancelled":
-            body = f"Your order {token_no} has been cancelled."
+            body = f"Unfortunately Your order {token_no} has been cancelled."
 
         # Prepare common push payload
         payload = {
@@ -283,7 +295,7 @@ def manager_order_update(request):
             chat_message = ChatMessage.objects.create(
                 vendor=vendor,
                 token_no=token_no,
-                created_date=timezone.now().date(),
+                created_date=get_vendor_current_time(vendor).date(),
                 sender='manager',
                 is_send=True,
                 message_text=status_to_update
