@@ -16,6 +16,7 @@ from .models import (Order, Vendor, Device,
 from .serializers import OrdersSerializer
 from orders.serializers import VendorLogoSerializer
 from .utils import send_push_notification, notify_web_push
+from static.utils.functions.queries import get_order
 from firebase_admin import messaging
 from .mqtt_client import get_mqtt_config_for_vendor
 
@@ -250,7 +251,7 @@ def register_android_device(request):
                 "mapped": True,
                 "vendor_id": device.vendor.vendor_id,
                 "vendor_name": device.vendor.name,
-                "mqtt_config": get_mqtt_config_for_vendor(device.vendor)
+                "mqtt_config": get_mqtt_config_for_vendor(device.vendor,device)
             }, status=200)
 
         else:
@@ -373,8 +374,7 @@ def get_vendor(vendor_id):
 def get_device(device_id, vendor_id):
     return Device.objects.get(serial_no=device_id, vendor_id=vendor_id)
 
-def get_order(token_no, vendor):
-    return Order.objects.filter(token_no=token_no, vendor=vendor).first()
+
 def create_or_update_order(token_no, vendor, device, counter_no, status):
     order = get_order(token_no, vendor)
     if order:

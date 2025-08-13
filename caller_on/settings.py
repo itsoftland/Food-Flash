@@ -129,6 +129,120 @@ SIMPLE_JWT = {
 LOG_DIR = BASE_DIR / 'foodflash_logs'
 os.makedirs(LOG_DIR, exist_ok=True)
 
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "verbose": {
+#             "format": "[{asctime}] {levelname} {name} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "handlers": {
+#         "file": {
+#             "level": "ERROR",
+#             "class": "logging.FileHandler",
+#             "filename": LOG_DIR / "error.log",
+#             "formatter": "verbose",
+#         },
+#         "requests_file": {
+#             "level": "INFO",
+#             "class": "logging.FileHandler",
+#             "filename": LOG_DIR / "requests.log",
+#             "formatter": "verbose",
+#         },
+#         "vendors_file": {
+#             "level": "INFO",
+#             "class": "logging.FileHandler",
+#             "filename": LOG_DIR / "vendors.log",
+#             "formatter": "verbose",
+#         },
+#         "orders_file": {
+#             "level": "INFO",
+#             "class": "logging.FileHandler",
+#             "filename": LOG_DIR / "orders.log",
+#             "formatter": "verbose",
+#         },
+#         "managers_file": {
+#             "level": "INFO",
+#             "class": "logging.FileHandler",
+#             "filename": LOG_DIR / "managers.log",
+#             "formatter": "verbose",
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["file"],
+#             "level": "ERROR",
+#             "propagate": True,
+#         },
+#         "django.request": {
+#             "handlers": ["requests_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "vendors.views": {
+#             "handlers": ["vendors_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "vendors.utils": {
+#             "handlers": ["vendors_file","managers_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "vendors.mqtt_client": {
+#             "handlers": ["vendors_file","managers_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },  
+#         "vendors.order_utils": {
+#             "handlers": ["vendors_file", "managers_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "vendors.services.order_service": {
+#             "handlers": ["vendors_file", "managers_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "orders.views": {
+#             "handlers": ["orders_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "orders.utils": {
+#             "handlers": ["orders_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "orders.scheduler": {
+#             "handlers": ["orders_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#         "manager.views": {
+#             "handlers": ["managers_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#             },
+#         "static.utils.functions.queries": {
+#             "handlers": ["orders_file","managers_file"],
+#             "level": "INFO",
+#             "propagate": False,     
+#             },
+#         "static.utils.functions.notifications": {
+#             "handlers": ["orders_file","managers_file"],
+#             "level": "INFO",
+#             "propagate": False, 
+#             },
+#         "static.utils.functions.utils": {
+#             "handlers": ["orders_file","managers_file"],
+#             "level": "INFO",
+#             "propagate": False,
+#         },
+#     },
+# }
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -140,31 +254,31 @@ LOGGING = {
     },
     "handlers": {
         "file": {
-            "level": "ERROR",
+            "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": LOG_DIR / "error.log",
             "formatter": "verbose",
         },
         "requests_file": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": LOG_DIR / "requests.log",
             "formatter": "verbose",
         },
         "vendors_file": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": LOG_DIR / "vendors.log",
             "formatter": "verbose",
         },
         "orders_file": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": LOG_DIR / "orders.log",
             "formatter": "verbose",
         },
         "managers_file": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": LOG_DIR / "managers.log",
             "formatter": "verbose",
@@ -173,76 +287,77 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["file"],
-            "level": "ERROR",
+            "level": "ERROR",  # keep Django internals quieter
             "propagate": True,
         },
         "django.request": {
             "handlers": ["requests_file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": False,
         },
         "vendors.views": {
             "handlers": ["vendors_file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": False,
         },
         "vendors.utils": {
-            "handlers": ["vendors_file","managers_file"],
-            "level": "INFO",
+            "handlers": ["vendors_file", "managers_file"],
+            "level": "DEBUG",
             "propagate": False,
         },
         "vendors.mqtt_client": {
-            "handlers": ["vendors_file"],
-            "level": "INFO",
+            "handlers": ["vendors_file", "managers_file"],
+            "level": "DEBUG",
             "propagate": False,
-        },  
+        },
         "vendors.order_utils": {
-            "handlers": ["vendors_file"],
-            "level": "INFO",
+            "handlers": ["vendors_file", "managers_file"],
+            "level": "DEBUG",
             "propagate": False,
         },
         "vendors.services.order_service": {
-            "handlers": ["vendors_file"],
-            "level": "INFO",
+            "handlers": ["vendors_file", "managers_file"],
+            "level": "DEBUG",
             "propagate": False,
         },
         "orders.views": {
             "handlers": ["orders_file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": False,
         },
         "orders.utils": {
             "handlers": ["orders_file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": False,
         },
         "orders.scheduler": {
             "handlers": ["orders_file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": False,
         },
         "manager.views": {
             "handlers": ["managers_file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": False,
-            },
+        },
         "static.utils.functions.queries": {
-            "handlers": ["orders_file","managers_file"],
-            "level": "INFO",
-            "propagate": False,     
-            },
+            "handlers": ["orders_file", "managers_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
         "static.utils.functions.notifications": {
-            "handlers": ["orders_file","managers_file"],
-            "level": "INFO",
-            "propagate": False, 
-            },
+            "handlers": ["orders_file", "managers_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
         "static.utils.functions.utils": {
-            "handlers": ["orders_file","managers_file"],
-            "level": "INFO",
+            "handlers": ["orders_file", "managers_file"],
+            "level": "DEBUG",
             "propagate": False,
         },
     },
 }
+
 
 # === PASSWORD VALIDATION ===
 AUTH_PASSWORD_VALIDATORS = [

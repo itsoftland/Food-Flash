@@ -13,6 +13,7 @@ class MqttServerConfig(models.Model):
     username = models.CharField(max_length=100, blank=True, null=True)
     password = models.CharField(max_length=100, blank=True, null=True)
     qos = models.PositiveSmallIntegerField(default=0)
+    tls = models.BooleanField(default=False, help_text="Use TLS for secure connection")
 
     def __str__(self):
         return f"{self.name} ({self.host}:{self.port})"
@@ -98,9 +99,9 @@ class VendorConfig(models.Model):
     mqtt_mode = models.CharField(
         max_length=20,
         choices=[
-            ("broadcast", "Broadcast to all TVs"),
-            ("individual", "Individual TV data"),
-            ("keypad", "Keypad-controlled TVs")
+            ("All", "Broadcast to all TVs"),
+            ("Individual", "Individual TV data"),
+            # ("keypad", "Keypad-controlled TVs")
         ],
         default="broadcast"
     )
@@ -170,10 +171,7 @@ class Order(models.Model):
     updated_by = models.CharField(max_length=20, choices=USER_CHOICES, default='keypad_device')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_date = models.DateField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ('token_no', 'vendor','created_date') 
+    created_date = models.DateField(auto_now_add=True) 
 
     def __str__(self):
         return f"Token {self.token_no}"

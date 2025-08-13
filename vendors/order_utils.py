@@ -8,7 +8,7 @@ def get_last_tokens(vendor, limit):
     logger.info(f"🔍 Fetching last {limit} token(s) for Vendor: {vendor} (ID: {vendor.id if hasattr(vendor, 'id') else 'N/A'})")
     
     tokens = list(
-        Order.objects.filter(vendor=vendor)
+        Order.objects.filter(vendor=vendor,status='ready')
         .order_by('-updated_at')
         .values_list('token_no', flat=True)[:limit]
     )

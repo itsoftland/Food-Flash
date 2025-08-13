@@ -26,20 +26,20 @@ def send_order_update(vendor):
     logger.debug(f"Payload: {payload}")
 
     if config.mqtt_mode == "All":
-        topic = f"FF/{vendor.vendor_id}/ALL"
-        logger.info(f"→ Topic: {topic}")
-        publish_mqtt(vendor,topic, payload)
+        # topic = f"FF/{vendor.vendor_id}/ALL"
+        # logger.info(f"→ Topic: {topic}")
+        publish_mqtt(vendor,payload)
 
     elif config.mqtt_mode == "Individual":
         for device in vendor.devices.all():
-            topic = f"FF/{vendor.vendor_id}/{device.device_id}"
-            logger.info(f"→ Topic: {topic} (Device: {device.device_id})")
-            publish_mqtt(topic, payload)
+            # topic = f"FF/{vendor.vendor_id}/{device.device_id}"
+            # logger.info(f"→ Topic: {topic} (Device: {device.device_id})")
+            publish_mqtt(vendor, payload)
 
     elif config.mqtt_mode == "Keypad":
         for device in vendor.devices.all():
-            topic = f"foodflash/vendor/{vendor.vendor_id}/keypad/{device.label}"
-            logger.info(f"→ Topic: {topic} (Keypad Label: {device.label})")
-            publish_mqtt(topic, payload)
+            # topic = f"foodflash/vendor/{vendor.vendor_id}/keypad/{device.label}"
+            # logger.info(f"→ Topic: {topic} (Keypad Label: {device.label})")
+            publish_mqtt(vendor, payload)
 
     

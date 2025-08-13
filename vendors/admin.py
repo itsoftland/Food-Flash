@@ -33,7 +33,7 @@ class PushSubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(MqttServerConfig)
 class MqttServerConfigAdmin(admin.ModelAdmin):
-    list_display = ("name", "host", "port", "username", "qos")
+    list_display = ("name", "host", "port", "username", "qos", "tls")
 
 from django.contrib import admin
 from .models import VendorConfig
