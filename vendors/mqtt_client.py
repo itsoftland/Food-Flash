@@ -1,12 +1,12 @@
 # vendors/mqtt_client.py
 import json
 import ssl
-import time
 import logging
 import paho.mqtt.client as mqtt
 
 logger = logging.getLogger(__name__)
 
+mqtt_clients = {}
 
 def get_mqtt_topic(vendor, device=None):
     """
@@ -53,62 +53,6 @@ def get_mqtt_config_for_vendor(vendor, device=None):
         "tls": getattr(mqtt_server, "tls", False) if mqtt_server else False
     }
 
-# def publish_mqtt(vendor,payload):
-#     cfg = get_mqtt_config_for_vendor(vendor)
-
-#     if not cfg.get("host") or not cfg.get("topic"):
-#         logger.error(f"🚨 No valid MQTT configuration found for vendor: {vendor}")
-#         return
-
-#     try:
-#         logger.info(f"📡 Connecting to MQTT Broker {cfg['host']}:{cfg['port']}")
-#         client = mqtt.Client()
-
-#         # Authentication
-#         if cfg.get("username") and cfg.get("password"):
-#             client.username_pw_set(cfg["username"], cfg["password"])
-#             logger.debug(f"🔑 Using MQTT authentication for user '{cfg['username']}'")
-
-#         # TLS setup if needed
-#         if int(cfg["port"]) == 8883:
-#             logger.info("🔐 Enabling TLS for secure MQTT connection")
-#             client.tls_set(
-#                 ca_certs="/etc/ssl/certs/ca-certificates.crt",
-#                 certfile=None,
-#                 keyfile=None,
-#                 cert_reqs=ssl.CERT_REQUIRED,
-#                 tls_version=ssl.PROTOCOL_TLS,
-#                 ciphers=None
-#             )
-#             client.tls_insecure_set(False)
-
-#         # Connect first, then start loop
-#         client.connect(cfg["host"], int(cfg["port"]), 60)
-#         client.loop_start()
-
-#         logger.info(f"📤 Publishing to topic: {cfg['topic']} | QoS: {cfg['qos']}")
-#         logger.debug(f"Payload: {json.dumps(payload)}")
-
-#         result = client.publish(cfg.get("topic"), json.dumps(payload), qos=int(cfg["qos"]))
-#         result.wait_for_publish()
-
-#         if result.rc == mqtt.MQTT_ERR_SUCCESS:
-#             logger.info("✅ MQTT message published successfully")
-#         else:
-#             logger.error(f"❌ MQTT publish failed with code: {result.rc}")
-
-#     except Exception as e:
-#         logger.exception(f"🚨 MQTT publish error: {e}")
-#     finally:
-#         try:
-#             client.loop_stop()
-#             client.disconnect()
-#             logger.debug("🔌 Disconnected from MQTT broker")
-#         except Exception as e:
-#             logger.warning(f"⚠️ Error while disconnecting MQTT: {e}")
-
-mqtt_clients = {}  # cache per vendor to keep persistent connections
-
 def get_or_create_client(cfg):
     key = f"{cfg['host']}:{cfg['port']}:{cfg.get('username')}"
     if key in mqtt_clients and mqtt_clients[key].is_connected():
@@ -121,12 +65,12 @@ def get_or_create_client(cfg):
     
     if int(cfg["port"]) == 8883 or cfg.get("tls"):
         client.tls_set(
-            ca_certs="/etc/ssl/certs/ca-certificates.crt",
-            certfile=None,
-            keyfile=None,
+            # ca_certs="/etc/ssl/certs/ca-certificates.crt",
+            # certfile=None,
+            # keyfile=None,
             cert_reqs=ssl.CERT_REQUIRED,
             tls_version=ssl.PROTOCOL_TLS,
-            ciphers=None
+            # ciphers=None
         )
         client.tls_insecure_set(False)
     

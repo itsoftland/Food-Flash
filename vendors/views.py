@@ -516,7 +516,13 @@ def update_order(request):
         logger.info(f"Resolved Vendor: {vendor.name}, Device: {device.serial_no}, Token No: {token_no}, Counter No: {counter_no}, Status: {status_to_update}")
         # Order Create or Update
         order = create_or_update_order(token_no, vendor, device, counter_no, status_to_update)
-
+        # FCM Push
+        try:
+            fcm_result = notify_fcm(vendor, data)
+            logger.info(f"FCM sent. Result: {fcm_result}")
+        except Exception as e:
+            logger.exception("FCM sending failed")
+            fcm_result = {"error": str(e)}
         # MQTT Publish
         from vendors.services.order_service import send_order_update
         # Publish MQTT update

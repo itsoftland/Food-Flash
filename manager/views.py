@@ -407,7 +407,7 @@ def device_call(request):
         start_dt, end_dt = get_vendor_business_day_range(vendor)
 
         if not start_dt or not end_dt:
-            logger.warning(f"[get_today_orders] Invalid date range for vendor_id={vendor.id}")
+            logger.warning(f"Invalid date range for vendor_id={vendor.id}")
             return Response({"error": "Invalid date range"}, status=400)
         
         order = Order.objects.filter(token_no=token_no, vendor=vendor, created_at__range=(start_dt, end_dt)).first()
