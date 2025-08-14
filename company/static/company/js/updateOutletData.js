@@ -2,6 +2,7 @@ import { fetchWithAutoRefresh } from '/static/utils/js/services/authFetchService
 import { MenuFileManagerService } from './services/menuService.js';
 import { OutletUpdateService } from './services/updateOutletService.js';
 import { ModalService } from '/static/utils/js/services/modalService.js';
+import getFriendlyFieldLabels from '/static/utils/js/formFieldLabelService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -148,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           window.location.href = "/company/outlets/";
         });
       } else {
-        const userFriendlyMessage = getFriendlyFieldLabels(result, fieldLabelMap);
+        const userFriendlyMessage = getFriendlyFieldLabels(result);
         ModalService.showError(userFriendlyMessage);
       }
     } catch (err) {

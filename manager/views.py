@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from vendors.models import (Order,ChatMessage)
 from vendors.serializers import OrdersSerializer
 from vendors.utils import notify_web_push
+from vendors.services.order_service import send_order_update
 
 from orders.serializers import VendorLogoSerializer
 from .serializers import ChatMessageSerializer  
@@ -22,6 +23,7 @@ from static.utils.functions.utils import (get_vendor_current_time,
                                           get_vendor_business_day_range)
 from static.utils.functions.queries import update_existing_order_by_manager
 from static.utils.functions.notifications import notify_android_tv
+
 
 
 logger = logging.getLogger(__name__)
@@ -375,7 +377,7 @@ def device_call(request):
         logger.debug(f"Request Data: {request.data}")
 
         data = request.data
-        required_fields = ['token_no','counter_no']
+        required_fields = ['token_no','counter_no','status']
         missing = [f for f in required_fields if f not in data or data[f] in [None, ""]]
 
         if missing:
@@ -409,22 +411,26 @@ def device_call(request):
         if not start_dt or not end_dt:
             logger.warning(f"Invalid date range for vendor_id={vendor.id}")
             return Response({"error": "Invalid date range"}, status=400)
-        
-        order = Order.objects.filter(token_no=token_no, vendor=vendor, created_at__range=(start_dt, end_dt)).first()
+        status_to_update = data['status']
+        # 2. Update in DB
+        device = None  # Assuming device is not used in this context
+        order = update_existing_order_by_manager(token_no, vendor, device, "ready", manager)
         if not order:
-            logger.warning(f"❌ No order found for token_no {token_no} today.")
-            return Response({"message": f"Order with token_no {token_no} not found."}, status=status.HTTP_404_NOT_FOUND)
+            logger.warning(f"❌ Failed to update order {token_no}")
+            return Response({"message": "Order update failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        logger.info(f"✅ Order {order.token_no} updated to status: ready")
         # Serialize vendor logo
         vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
         logo_url = vendor_serializer.data.get("logo_url", "")
         if not logo_url:
             logger.warning(f"⚠️ No logo URL found for vendor {vendor.name}. Using default logo.")
             return Response({"message": "Vendor logo not found."}, status=status.HTTP_404_NOT_FOUND)
+
         # Prepare common push payload
         payload = {
             "title": "Order Update by Manager",
-            "body": f"Your order {token_no} status: Ready for pickup at counter {data['counter_no']}",
+            "body": f"Your order {token_no} is ready for pickup at counter {data['counter_no']}.",
             "token_no": token_no,
             "status": "ready",
             "counter_no": order.counter_no,
@@ -440,11 +446,7 @@ def device_call(request):
         android_tv_info = None
         push_errors = []
 
-       
-        # 1. Notify Android TV
-        # MQTT Publish
-        from vendors.services.order_service import send_order_update
-        # Publish MQTT update
+       # MQTT Publish
         logger.info(f"Sending MQTT update for vendor {vendor.vendor_id} with token {token_no}")
         # Ensure the vendor has a config with mqtt_mode set
         if not hasattr(vendor, 'config') or not vendor.config.mqtt_mode:
@@ -454,17 +456,11 @@ def device_call(request):
         # Send order update via MQTT
         logger.info(f"Sending order update via MQTT for vendor {vendor.vendor_id}")
         send_order_update(vendor)
+        # Notify Android TV
+        android_tv_success, android_tv_info = notify_android_tv(vendor, data)
+        logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
 
-        # 2. Update in DB
-        device = None  # Assuming device is not used in this context
-        updated_order = update_existing_order_by_manager(token_no, vendor, device, "ready", manager)
-        if not updated_order:
-            logger.warning(f"❌ Failed to update order {token_no}")
-            return Response({"message": "Order update failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        logger.info(f"✅ Order {updated_order.token_no} updated to status: ready")
-
-        # 3. Send Web Push (only if cooldown passed)
+        # Send Web Push (only if cooldown passed)
         cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 1)
         if not order.notified_at or (timezone.now() - order.notified_at) > timedelta(seconds=cooldown):
             logger.info(f"📤 Sending web push...")
@@ -474,6 +470,7 @@ def device_call(request):
             logger.info(f"🕒 Order {token_no} marked as notified at {order.notified_at}")
         else:
             logger.info(f"⏳ Cooldown active. Skipping web push for {token_no}.")
+
 
         # 📦 Final response
         return Response({

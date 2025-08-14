@@ -16,13 +16,16 @@
 <body class="hold-transition login-page">
 
 <div class="login-box">
-  <div class="login-logo">
+  {% comment %} <div class="login-logo">
     <a href="#"><img src="{% static 'orders/images/foodflashlogo.png' %}" alt="Logo" style="max-width: 200px;"></a>
-  </div>
+  </div> {% endcomment %}
 
   <div class="card">
     <div class="card-body login-card-body">
-      <p class="login-box-msg">Sign in to start your session</p>
+      <div class="login-logo">
+        <a href="#"><img src="{% static 'orders/images/foodflashlogo.webp' %}" alt="Logo" style="max-width: 200px;"></a>
+      </div>
+      {% comment %} <p class="login-box-msg">Sign in to start your session</p> {% endcomment %}
 
       <form method="POST" id= "loginForm">
         {% csrf_token %}

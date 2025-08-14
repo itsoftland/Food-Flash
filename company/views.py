@@ -198,8 +198,7 @@ def generate_unique_vendor_id():
         
 @api_view(['POST'])
 @validate_fields(['customer_id', 'name', 'location', 'place_id',
-                  'location_id','logo','menu_files','device_mapping[]',
-                  'tv_mapping[]', 'alias_name'])
+                  'location_id','logo','menu_files','alias_name'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
 @transaction.atomic

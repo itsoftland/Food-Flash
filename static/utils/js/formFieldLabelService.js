@@ -2,11 +2,14 @@
 
 // Field-to-label map
 const fieldLabelMap = {
-  place_id: "Outlet Location",
-  logo: "Logo Image",
-  menu_files: "Menu Upload",
+  place_id: "Google Review Link",
+  logoInput: "Logo Image",
+  menuFilesInput: "Menu Upload",
   device_mapping: "Device Mapping",
   tv_mapping: "TV Mapping",
+  locationSelect: "Location",
+  name: "Outlet Name",
+  alias: "Alias Name",
   token_no: "Token Number",
   counter_no: "Counter Number",
   // Add more mappings as needed

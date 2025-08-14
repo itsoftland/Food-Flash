@@ -49,16 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('tv_mapping[]', option.value);
       });
 
-      const fieldLabelMap = {
-        place_id: "Outlet Location",
-        logo: "Logo Image",
-        menu_files: "Menu Upload",
-        device_mapping: "Device Mapping",
-        tv_mapping: "TV Mapping",
-        token_no: "Token Number",
-        counter_no: "Counter Number",
-        // Add more fields as needed
-      };
       console.log(formData)
   
       try {
@@ -79,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
           window.location.href = "/company/outlets/";
         });
         } else {
-          const userFriendlyMessage = getFriendlyFieldLabels(result, fieldLabelMap);
+          const userFriendlyMessage = getFriendlyFieldLabels(result);
           ModalService.showError(userFriendlyMessage);
         }
       } catch (err) {
