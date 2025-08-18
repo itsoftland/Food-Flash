@@ -20,6 +20,7 @@ from .serializers import ChatMessageSerializer
 
 from .utils.utils import get_manager_vendor
 from static.utils.functions.utils import (get_vendor_current_time,
+                                          get_vendor_current_date,
                                           get_vendor_business_day_range)
 from static.utils.functions.queries import update_existing_order_by_manager
 from static.utils.functions.notifications import notify_android_tv
@@ -349,7 +350,7 @@ def chat_history(request):
 
     logger.info(f"[chat_history] Vendor resolved: id={vendor.id}, name={vendor.name}")
 
-    today_date = get_vendor_current_time(vendor).date()
+    today_date = get_vendor_current_date(vendor)
 
     # Mark only user messages as read
     ChatMessage.objects.filter(
@@ -414,7 +415,7 @@ def device_call(request):
         status_to_update = data['status']
         # 2. Update in DB
         device = None  # Assuming device is not used in this context
-        order = update_existing_order_by_manager(token_no, vendor, device, "ready", manager)
+        order = update_existing_order_by_manager(token_no, vendor, device, status_to_update, manager)
         if not order:
             logger.warning(f"❌ Failed to update order {token_no}")
             return Response({"message": "Order update failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

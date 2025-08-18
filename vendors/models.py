@@ -103,7 +103,7 @@ class VendorConfig(models.Model):
             ("Individual", "Individual TV data"),
             # ("keypad", "Keypad-controlled TVs")
         ],
-        default="broadcast"
+        default="All"
     )
     business_day_start_hour = models.PositiveSmallIntegerField(default=0)
     timezone = models.CharField(

@@ -14,7 +14,7 @@ body.login-page::before {
   width: 100%;
   height: 100%;
   background: inherit;  
-  filter: blur(2px);    
+/*   filter: blur(2px);     */
   z-index: -1;          
 }
 

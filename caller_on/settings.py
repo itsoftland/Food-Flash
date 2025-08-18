@@ -31,6 +31,10 @@ VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY")
 VAPID_CLAIMS = {
     "sub": "mailto:sanju.softland@gmail.com"
 }
+# === LICENSE PORTAL URL ===
+
+LICENSE_PORTAL_URL = os.getenv("LICENSE_PORTAL_URL", "http://licencemanagement.softlandindia.net/public/login")
+
 
 # === APPLICATIONS ===
 INSTALLED_APPS = [

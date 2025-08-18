@@ -1,15 +1,20 @@
 import json
 import requests
+
 from django.core.cache import cache
 from django.shortcuts import render, redirect
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+
 from rest_framework.decorators import api_view,permission_classes 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+
 from orders.serializers import AdminOutletSerializer
 from vendors.models import Vendor,AdminOutlet
+
 @login_required
 def registration(request):
     cache.clear()
@@ -23,7 +28,8 @@ def order_update(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def product_registration(request):
-    external_url = "http://202.88.237.210:8093/LicenceMgmt/public/api/ProductRegistration"
+    product_registration_url = getattr(settings, "LICENSE_PORTAL_URL")
+    external_url = product_registration_url + "api/ProductRegistration"
 
     try:
         # Forward the received JSON payload to the external API
@@ -45,8 +51,6 @@ def product_registration(request):
             {"error": "Failed to contact external Product Registration API", "details": str(e)},
             status=status.HTTP_502_BAD_GATEWAY
         )
-
-
 
 def preprocess_request_data(data):
     return {
@@ -110,18 +114,12 @@ def register_company(request):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework import status
-import requests
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def product_authentication(request):
-    print("Product Authentication",request.user)
-    external_url = "http://202.88.237.210:8093/LicenceMgmt/public/api/ProductAuthentication"
-
+    product_authentication_url = getattr(settings, "LICENSE_PORTAL_URL")
+    external_url = product_authentication_url + "api/ProductAuthentication"
+    print(f"External URL: {external_url}")
     try:
         # Forward the received JSON payload to the external API
         response = requests.post(

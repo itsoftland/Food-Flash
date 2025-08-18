@@ -725,7 +725,6 @@ def get_devices(request):
     filter_type = request.GET.get('filter', 'all')  # Options: mapped, unmapped, all
 
     if filter_type == 'mapped':
-        print("mapped devices")
         devices = Device.objects.filter(admin_outlet=admin_outlet,vendor__isnull=False)
     elif filter_type == 'unmapped':
         devices = Device.objects.filter(admin_outlet=admin_outlet, vendor__isnull=True)
@@ -945,8 +944,7 @@ def filtered_orders(request):
     date_range = request.GET.get('range', 'today')
     from_date = request.GET.get('from')
     to_date = request.GET.get('to')
-    if from_date and to_date:
-        print("Using custom date range from {} to {}".format(from_date, to_date))
+    
     start, end = get_filtered_date_range(date_range, from_date, to_date)
     if start and end:
         base_filter['created_at__gte'] = start
