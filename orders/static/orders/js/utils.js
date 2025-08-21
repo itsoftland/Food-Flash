@@ -338,18 +338,6 @@ window.AppUtils = {
         const welcome = new SpeechSynthesisUtterance('Hi, Welcome. Please enter your token number to track your order.');
         speechSynthesis.speak(welcome);
     },
-
-    // playNotificationSound: function (volume = 1.0) {
-    //     const notificationAudio = new Audio('/static/orders/audio/0112.mp3');
-    //     notificationAudio.volume = Math.max(0, Math.min(volume, 1));
-    //     notificationAudio.play().catch(err =>
-    //         console.error('Error playing notification sound:', err)
-    //     );
-    //     // Vibration if supported
-    //     if (navigator.vibrate) {
-    //         navigator.vibrate([500, 200, 500, 200, 500, 200, 500]);
-    //     }
-    // },
     // ─────────────────────────────────────
     // Viewport Utility
     // ─────────────────────────────────────
@@ -416,18 +404,6 @@ window.AppUtils = {
             return {};
         }
     },
-    // ─────────────────────────────────────
-    // Order Ready Notification (Persistent)
-    // ─────────────────────────────────────
-    // notifyOrderReady: function(pushData) {
-    //     try {
-    //         // Speech synthesis
-    //         const orderReadyMessage = new SpeechSynthesisUtterance(`Your Order ${pushData.token_no} is Ready at Counter ${pushData.counter_no}`);
-    //         speechSynthesis.speak(orderReadyMessage);
-    //     } catch (e) {
-    //         console.error("Failed to notify order readiness", e);
-    //     }
-    // },
     // ============================================
     // Unlock Notification Sound + Preferred Voice (iOS + Android)
     // ============================================

@@ -446,6 +446,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             const statusKey = data?.status || 'unknown';
             const statusClass = statusClassMap[statusKey] || 'unknown-color';
+            console.log("Status Class:", statusClass);
             const messageHTML = `
                     <div class="response-title">${data.name || "Unknown"}</div>
                     <div class="status">

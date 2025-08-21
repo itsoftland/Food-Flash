@@ -190,13 +190,13 @@ def manager_order_update(request):
             return Response({"message": "Manager does not have an associated vendor."}, status=status.HTTP_403_FORBIDDEN)
 
         vendor = manager.vendor
-        logger.info(f"🔧 Manager: {manager.name}, Vendor: {vendor.name} ({vendor.vendor_id}), Token: {token_no}, Status: {status_to_update}")
+        logger.info(f"🔧 Manager: {manager.name}, Vendor: {vendor.name} ({vendor.vendor_id})")
 
         # Get business day range in UTC
         start_dt, end_dt = get_vendor_business_day_range(vendor)
 
         if not start_dt or not end_dt:
-            logger.warning(f"[get_today_orders] Invalid date range for vendor_id={vendor.id}")
+            logger.warning(f"Invalid date range for vendor_id={vendor.id}")
             return Response({"error": "Invalid date range"}, status=400)
         
         order = Order.objects.filter(token_no=token_no, vendor=vendor, created_at__range=(start_dt, end_dt)).first()
@@ -231,7 +231,7 @@ def manager_order_update(request):
             "vendor_id": vendor.vendor_id,
             "location_id": vendor.location_id,
             "logo_url": logo_url,
-            "type": "foodstatus" if status_to_update == "ready" else "manager",
+            "type": "foodstatus" if action_type == "ready" else "manager",
             "message_id":None
         }
 
@@ -247,7 +247,7 @@ def manager_order_update(request):
 
             # 2. Update in DB
             device = None  # Assuming device is not used in this context
-            updated_order = update_existing_order_by_manager(token_no, vendor, device, status_to_update, manager)
+            updated_order = update_existing_order_by_manager(token_no, vendor, device, action_type, manager)
             if not updated_order:
                 logger.warning(f"❌ Failed to update order {token_no}")
                 return Response({"message": "Order update failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -456,7 +456,12 @@ def device_call(request):
         
         # Send order update via MQTT
         logger.info(f"Sending order update via MQTT for vendor {vendor.vendor_id}")
-        send_order_update(vendor)
+        mqtt = send_order_update(vendor)
+        if mqtt:
+            logger.info(f"✅ MQTT update sent successfully for vendor {vendor.vendor_id}")
+        else:
+            logger.error(f"❌ Failed to send MQTT update for vendor {vendor.vendor_id}")
+            return Response({"message": "Failed to send MQTT update."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         # Notify Android TV
         android_tv_success, android_tv_info = notify_android_tv(vendor, data)
         logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
@@ -481,9 +486,10 @@ def device_call(request):
             "android_tv": android_tv_success,
             "android_tv_info": android_tv_info,
             "web_push": not push_errors,
-            "web_push_info": push_errors
+            "web_push_info": push_errors,
+            "mqtt": mqtt 
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
-        logger.exception("🔥 Unhandled exception in manager_order_update:")
+        logger.exception(f"🔥 Unhandled exception in manager_order_update:{str(e)}")
         return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

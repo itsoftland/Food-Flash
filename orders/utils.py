@@ -17,14 +17,18 @@ def send_fcm_multicast(fcm_tokens, data_payload):
         return False, {"error": "No tokens to send"}
 
     try:
+        # Ensure payload is dict
+        if isinstance(data_payload, str):
+            data_payload = json.loads(data_payload)
+        token_no = str(data_payload.get('token_no', ''))
         message = messaging.MulticastMessage(
             data={
                 "type": "ready_orders",
-                "orders": data_payload,
+                "orders": json.dumps(data_payload),
             },
             notification=messaging.Notification(
                 title="Order Tracking Started",
-                body="A customer has entered their token number. Track the order now."
+                body=f"A customer has entered their token number {token_no}. Track the order now."
             ),
             tokens=fcm_tokens,
         )
@@ -79,4 +83,4 @@ def send_to_managers(vendor, data):
         logger.warning(f"[FCM] No tokens found for vendor {vendor.name}")
         return False, {"error": "No tokens"}
 
-    return send_fcm_multicast(tokens, json.dumps(data))
+    return send_fcm_multicast(tokens,data)

@@ -91,7 +91,17 @@ def publish_mqtt(vendor, payload):
         client = get_or_create_client(cfg)
 
         logger.info(f"Publishing to {cfg['topic']} (QoS={cfg['qos']})")
-        client.publish(cfg["topic"], json.dumps(payload), qos=int(cfg["qos"]), retain=False)
+        result = client.publish(cfg["topic"], json.dumps(payload), qos=int(cfg["qos"]), retain=False)
+        
+        # result is MQTTMessageInfo
+        if result.rc == mqtt.MQTT_ERR_SUCCESS:
+            logger.info(f"✅ MQTT publish successful | mid={result.mid}")
+            return True
+        else:
+            logger.error(f"❌ MQTT publish failed | rc={result.rc}")
+            return False
 
     except Exception as e:
         logger.exception(f"MQTT publish error: {e}")
+        return False
+

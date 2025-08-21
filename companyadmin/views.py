@@ -11,18 +11,23 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-
 from orders.serializers import AdminOutletSerializer
 from vendors.models import Vendor,AdminOutlet
 
 @login_required
 def registration(request):
-    cache.clear()
+    # Clear only cache entries relevant to this view
+    cache.delete_many([
+        'registration_page_data',
+    ])
     return render(request, 'companyadmin/registration.html')
 
 @login_required
 def order_update(request):
-    cache.clear()
+    # Clear only cache entries relevant to this view
+    cache.delete_many([
+        'update_order_page_data',
+    ])
     return render(request, 'companyadmin/update_order.html')
 
 @api_view(['POST'])
@@ -119,7 +124,6 @@ def register_company(request):
 def product_authentication(request):
     product_authentication_url = getattr(settings, "LICENSE_PORTAL_URL")
     external_url = product_authentication_url + "api/ProductAuthentication"
-    print(f"External URL: {external_url}")
     try:
         # Forward the received JSON payload to the external API
         response = requests.post(
