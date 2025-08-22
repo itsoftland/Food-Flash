@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
   FILTERED_ORDERS: '/company/api/filtered_orders/',
   PRODUCT_AUTH_URL : '/companyadmin/api/product-authentication/',
   COMPANY_UPDATE_URL : '/api/company-update/',
+  CREATE_USER: '/company/api/create_user/',
 
   
   // Add more endpoints here

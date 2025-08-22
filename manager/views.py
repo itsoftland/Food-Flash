@@ -565,8 +565,8 @@ def device_call(request):
             "message_id":None
         }
 
-        android_tv_success = None
-        android_tv_info = None
+        android_tv_success = False
+        android_tv_info = False
         push_errors = []
 
         # FCM push notifications if TV communication mode is not MQTT

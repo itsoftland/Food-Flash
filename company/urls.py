@@ -6,6 +6,7 @@ urlpatterns = [
     path('outlets/', views.outlets, name='outlets'),
     path('create_outlet/', views.create_outlet, name='create_outlet'),
     path('update_outlet/', views.update_outlet_page, name='update_outlet_page'),
+    path('users/', views.users, name='users'), 
     path('keypad_devices/', views.keypad_devices, name='keypad_devices'),
     path('android_tvs/', views.android_tvs, name='android_tvs'),
     path('configurations/', views.configurations, name='configurations'),

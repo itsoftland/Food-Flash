@@ -352,34 +352,126 @@ def submit_feedback(request):
 def login_view(request):
    return render(request, 'orders/login.html')
 
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def login_api_view(request):
+#     username = request.data.get('username')
+#     password = request.data.get('password')
+#     requested_role = request.data.get('role')  # Only sent by manager/web apps
+
+#     if not username or not password:
+#         return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#     user = authenticate(request, username=username, password=password)
+#     if user is None:
+#         return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+#     login(request, user)
+#     refresh = RefreshToken.for_user(user)
+
+#     # 1. Manager or Web user (role explicitly sent)
+#     if requested_role in ['manager', 'web']:
+#         try:
+#             profile = UserProfile.objects.get(user=user, role=requested_role)
+#             return Response({
+#                 'message': 'Login successful',
+#                 'access': str(refresh.access_token),
+#                 'refresh': str(refresh),
+#                 'user': {
+#                     'username': user.username,
+#                     'role': profile.role,
+#                     'vendor_id': profile.vendor.id if profile.vendor else None,
+#                     'vendor_name': profile.vendor.name if profile.vendor else None,
+#                     'customer_id': profile.admin_outlet.customer_id if profile.admin_outlet else None,
+#                     'outlet_name': profile.admin_outlet.customer_name if profile.admin_outlet else None,
+#                     'manager_id': profile.id,
+#                     'manager_name': profile.name,
+#                 }
+#             }, status=status.HTTP_200_OK)
+#         except UserProfile.DoesNotExist:
+#             return Response({'error': f"This user does not have the '{requested_role}' role."}, status=status.HTTP_403_FORBIDDEN)
+
+#     # 2. Superadmin
+#     if user.is_superuser:
+#         return Response({
+#             'message': 'Login successful',
+#             'access': str(refresh.access_token),
+#             'refresh': str(refresh),
+#             'user': {
+#                 'username': user.username,
+#                 'role': 'Super Admin',
+#             }
+#         }, status=status.HTTP_200_OK)
+
+#     # 3. Company Admin (AdminOutlet)
+#     if user.is_staff and hasattr(user, 'admin_outlet'):
+#         customer_id = user.admin_outlet.customer_id
+#         request.session['customer_id'] = customer_id
+#         return Response({
+#             'message': 'Login successful',
+#             'access': str(refresh.access_token),
+#             'refresh': str(refresh),
+#             'user': {
+#                 'username': user.admin_outlet.customer_name,
+#                 'role': 'Company',
+#                 'customer_id': customer_id,
+#             }
+#         }, status=status.HTTP_200_OK)
+
+#     # 4. Outlet Login (Vendor)
+#     if Vendor.objects.filter(user=user).exists():
+#         vendor = Vendor.objects.get(user=user)
+#         return Response({
+#             'message': 'Login successful',
+#             'access': str(refresh.access_token),
+#             'refresh': str(refresh),
+#             'user': {
+#                 'username': vendor.name,
+#                 'role': 'Outlet',
+#                 'vendor_id': vendor.id
+#             }
+#         }, status=status.HTTP_200_OK)
+
+#     return Response({'error': 'User type not recognized.'}, status=status.HTTP_403_FORBIDDEN)
+
+# Define mappings for roles
+MANAGER_ROLE_MAP = {
+    'admin_manager': 'Admin Manager',
+    'outlet_manager': 'Outlet Manager',
+    'order_manager': 'Order Manager',
+    'web_user': 'Web User',
+}
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_api_view(request):
     username = request.data.get('username')
     password = request.data.get('password')
-    requested_role = request.data.get('role')  # Only sent by manager/web apps
+    requested_role = request.data.get('role')
 
     if not username or not password:
         return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = authenticate(request, username=username, password=password)
-    if user is None:
-        return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+    user = authenticate(username=username, password=password)
 
-    login(request, user)
+    if not user:
+        return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+
     refresh = RefreshToken.for_user(user)
 
-    # 1. Manager or Web user (role explicitly sent)
-    if requested_role in ['manager', 'web']:
+    # 1. Check Manager roles (UserProfile with a specific role)
+    if requested_role:
         try:
             profile = UserProfile.objects.get(user=user, role=requested_role)
+            role_display = MANAGER_ROLE_MAP.get(profile.role, profile.role)
+
             return Response({
                 'message': 'Login successful',
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
                 'user': {
                     'username': user.username,
-                    'role': profile.role,
+                    'role': role_display,
                     'vendor_id': profile.vendor.id if profile.vendor else None,
                     'vendor_name': profile.vendor.name if profile.vendor else None,
                     'customer_id': profile.admin_outlet.customer_id if profile.admin_outlet else None,
@@ -413,7 +505,7 @@ def login_api_view(request):
             'refresh': str(refresh),
             'user': {
                 'username': user.admin_outlet.customer_name,
-                'role': 'Company',
+                'role': 'Company Admin',
                 'customer_id': customer_id,
             }
         }, status=status.HTTP_200_OK)
@@ -433,7 +525,6 @@ def login_api_view(request):
         }, status=status.HTTP_200_OK)
 
     return Response({'error': 'User type not recognized.'}, status=status.HTTP_403_FORBIDDEN)
-
 
 
 

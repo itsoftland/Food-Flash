@@ -395,11 +395,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class UserProfileCreateSerializer(serializers.Serializer):
     ROLE_CHOICES = [
-        ('manager', 'Manager (Android APK)'),
-        ('web', 'Web User'),
+        ('admin_manager', 'Admin Manager'),
+        ('outlet_manager', 'Outlet Manager'),
+        ('order_manager', 'Order Manager'),
+        ('web_user', 'Web User'),
         ('both', 'Both Manager and Web User'),
     ]
-
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)

@@ -3,10 +3,7 @@
 {% block title %}Create New User{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-<link rel="stylesheet" href="{% static 'utils/css/choices.css' %}">
 <link rel="stylesheet" href="{% static 'utils/css/modals.css' %}">
-<link rel="stylesheet" href="{% static 'company/css/create_outlet.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -14,7 +11,7 @@
   <div class="container-fluid">
     <div class="row mb-2 align-items-center justify-content-between">
       <div class="col-sm-6">
-        <h1 class="page-title">New Outlet</h1>
+        <h1 class="page-title">New User</h1>
       </div>
     </div>
   </div>
@@ -24,67 +21,60 @@
   <div class="container-fluid">
     <div class="card shadow-sm border-0">
       <div class="card-body">
-        <form id="create-outlet-form" method="POST" 
-        enctype="multipart/form-data" class="px-0 py-0 mx-auto"
-         style="max-width: 900px;">
+        <form id="create-user-form" method="POST" enctype="multipart/form-data" class="px-0 py-0 mx-auto" style="max-width: 900px;">
           {% csrf_token %}
+          
           <!-- Row 1 -->
           <div class="row">
             <div class="form-group col-md-6">
-              <label for="name">Outlet Name</label>
+              <label for="name">Full Name</label>
               <input type="text" id="name" name="name" class="form-control form-control-sm" required />
             </div>
             <div class="form-group col-md-6">
-              <label for="alias_name">Outlet Alias Name</label>
-              <input type="text" id="alias_name" name="alias_name" class="form-control form-control-sm" required />
+              <label for="username">Username</label>
+              <input type="text" id="username" name="username" class="form-control form-control-sm" required />
             </div>
           </div>
 
           <!-- Row 2 -->
           <div class="row">
             <div class="form-group col-md-6">
-              <label for="tv-select">Android TV's</label>
-              <div class="choices-scroll-wrapper">
-                <select id="tv-select" name="tv_mapping[]" multiple></select>
-              </div>
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" class="form-control form-control-sm" required />
             </div>
             <div class="form-group col-md-6">
-              <label for="device-select">Keypad Devices</label>
-              <div class="choices-scroll-wrapper">
-                <select id="device-select" name="device_mapping[]" multiple></select>
-              </div>
+              <label for="confirm_password">Confirm Password</label>
+              <input type="password" id="confirm_password" name="confirm_password" class="form-control form-control-sm" required />
             </div>
           </div>
 
-          <!-- Row 3 -->
+          <!-- Row 3: Roles Multi-select -->
           <div class="row">
             <div class="form-group col-md-6">
-              <label for="logo">Logo</label>
-              <small class="form-text text-muted mb-2">Recommended: 1080×1080 | PNG or SVG</small>
-              <input type="file" id="logo" name="logo" accept=".png,.svg" class="form-control-file" />
+              <label for="role">Role</label>
+              <select name="role" id="role" class="form-control form-control-sm" required>
+                <option value="">-- Select Role --</option>
+                <option value="admin_manager">Admin Manager</option>
+                <option value="outlet_manager">Outlet Manager</option>
+                <option value="order_manager">Order Manager</option>
+                <option value="web_user">Web User</option>
+              </select>
             </div>
             <div class="form-group col-md-6">
-              <label for="menu_files">Menu Files</label>
-              <small class="form-text text-muted mb-2">Upload multiple files | PDF, JPG, PNG, SVG | Max 5MB each</small>
-              <input type="file" id="menu_files" name="menu_files" multiple accept=".pdf,.jpg,.jpeg,.png,.svg" class="form-control-file" />
+              <label for="outlet">Outlet</label>
+              <select name="vendor_id" id="outlet" class="form-control form-control-sm" required>
+                <!-- Dynamically populated with vendor list -->
+                 <option value="">-- Select Outlet --</option>
+              </select>
             </div>
           </div>
 
-          <!-- Row 4 -->
-          <div class="row">
-            <div class="form-group col-md-6">
-              <label for="place_id">Place ID</label>
-              <input type="text" id="place_id" name="place_id" class="form-control form-control-sm" />
-            </div>
-            <div class="form-group col-md-6">
-              <label for="location">Location</label>
-              <select name="location" id="location" class="form-control form-control-sm" required></select>
-            </div>
-          </div>
+          <!-- Hidden field for customer_id -->
+          <input type="hidden" name="customer_id" value="{{ request.user.customer.id }}">
 
           <!-- Submit -->
           <div class="text-center mt-1">
-            <button type="submit" class="btn btn-golden shadow-sm px-4 py-1">Create Outlet</button>
+            <button type="submit" class="btn btn-golden shadow-sm px-4 py-1">Create User</button>
           </div>
         </form>
       </div>
@@ -95,7 +85,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-<script type="module" src="{% static 'company/js/createOutlet.js' %}"></script>
-<script type="module" src="{% static 'company/js/createOutletData.js' %}"></script>
+<script type="module" src="{% static 'company/js/create_user.js' %}"></script>
+
 {% endblock %}

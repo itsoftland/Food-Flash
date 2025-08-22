@@ -59,6 +59,10 @@ def update_outlet_page(request):
     return render(request, "company/outlets/update_outlet.html")
 
 @login_required
+def users(request):
+    return render(request, 'company/create_user.html')
+
+@login_required
 def keypad_devices(request):
     return render(request, 'company/keypad_devices.html')
 

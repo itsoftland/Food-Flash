@@ -112,6 +112,12 @@
               </ul>
             </li>
             <li class="nav-item">
+              <a href="{% url 'company:users' %}" class="nav-link {% if request.resolver_match.url_name == 'users' %}active{% endif %}">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Users</p>
+              </a>
+            </li>
+            <li class="nav-item">
               <a href="{% url 'company:keypad_devices' %}" class="nav-link {% if request.resolver_match.url_name == 'keypad_devices' %}active{% endif %}">
                 <i class="nav-icon fas fa-mobile-retro"></i>
                 <p>Keypad Devices</p>
