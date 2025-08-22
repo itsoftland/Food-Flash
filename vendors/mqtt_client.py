@@ -41,8 +41,10 @@ def get_mqtt_config_for_vendor(vendor, device=None):
     """
     if not vendor:
         return {}
-    admin_outlet = getattr(vendor, "admin_outlet", None)
-    mqtt_server = getattr(admin_outlet, "mqtt_server", None) if admin_outlet else None
+
+    config = getattr(vendor, "config", None)
+    mqtt_server = getattr(config, "mqtt_server", None) if config else None
+
     return {
         "topic": get_mqtt_topic(vendor, device),
         "host": mqtt_server.host if mqtt_server else None,
@@ -52,6 +54,7 @@ def get_mqtt_config_for_vendor(vendor, device=None):
         "qos": mqtt_server.qos if mqtt_server else None,
         "tls": getattr(mqtt_server, "tls", False) if mqtt_server else False
     }
+
 
 def get_or_create_client(cfg):
     key = f"{cfg['host']}:{cfg['port']}:{cfg.get('username')}"

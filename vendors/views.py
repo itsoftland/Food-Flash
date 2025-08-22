@@ -19,7 +19,8 @@ from .utils import send_push_notification, notify_web_push
 from static.utils.functions.queries import get_order
 from firebase_admin import messaging
 from .mqtt_client import get_mqtt_config_for_vendor
-
+from orders.utils import send_to_managers
+from vendors.services.order_service import send_order_update
 logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
@@ -28,10 +29,6 @@ def get_current_time(request):
     current_ist = localtime(now())
     formatted_time = current_ist.strftime('%Y-%m-%d %H:%M:%S')
     return Response({'current_time': formatted_time})
-
-# def manage_order(request):
-#     cache.clear()
-#     return render(request, 'order_management.html')
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -407,135 +404,91 @@ def notify_fcm(vendor, data):
 
 PUSH_COOLDOWN_SECONDS = 2
 
-# @api_view(['PATCH'])
-# @permission_classes([AllowAny])
-# def update_order(request):
-#     try:
-#         logger.info(f"PATCH /update_order from IP {request.META.get('REMOTE_ADDR')} — UA: {request.META.get('HTTP_USER_AGENT')}")
-        
-#         data = request.data
-#         required_fields = ['vendor_id', 'token_no', 'device_id', 'counter_no', 'status']
-#         missing = [f for f in required_fields if not data.get(f)]
-        
-#         if missing:
-#             logger.info(f"Missing fields: {', '.join(missing)}")
-#             return Response({"message": f"Missing fields: {', '.join(missing)}"}, status=status.HTTP_400_BAD_REQUEST)
-#         try:
-#             vendor = get_vendor(data['vendor_id'])
-#         except Vendor.DoesNotExist:
-#             return Response({"message": "Vendor not found"}, status=404)
-
-#         try:
-#             device = get_device(data['device_id'], vendor.id)
-#         except Device.DoesNotExist:
-#             return Response({"message": "Device not found"}, status=404)
-
-#         status_to_update = data['status']
-#         token_no = data['token_no']
-#         counter_no = data['counter_no']
-
-#         logger.info(f"Resolved Vendor: {vendor.name}, Device: {device.serial_no}, Token No: {token_no}, Counter No: {counter_no}, Status: {status_to_update}")
-
-#         # FCM Push
-#         try:
-#             fcm_result = notify_fcm(vendor, data)
-#             logger.info(f"FCM sent. Result: {fcm_result}")
-#         except Exception as e:
-#             logger.exception("FCM sending failed")
-#             fcm_result = {"error": str(e)}
-
-#         # Order Create or Update
-#         order = create_or_update_order(token_no, vendor, device, counter_no, status_to_update)
-
-#         push_errors = []
-#         if status_to_update.lower() == "ready" and (
-#             not order.notified_at or (now() - order.notified_at).total_seconds() > PUSH_COOLDOWN_SECONDS
-#         ):
-#             vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
-#             payload = {
-#                 "title": "Order Update",
-#                 "body": f"Your order {token_no} is now ready.",
-#                 "token_no": token_no,
-#                 "status": status_to_update,
-#                 "counter_no": counter_no,
-#                 "name": vendor.name,
-#                 "vendor_id": vendor.vendor_id,
-#                 "location_id": vendor.location_id,
-#                 "logo_url": vendor_serializer.data.get("logo_url", ""),
-#                 "type": "foodstatus"
-#             }
-#             try:
-#                 push_errors = notify_web_push(order, vendor, payload)
-#             except Exception as push_err:
-#                 logger.error(f"Web push failed: {str(push_err)}")
-#                 push_errors = [str(push_err)]
-            
-#             logger.info(f"Web push notifications sent. Errors: {push_errors}")
-#             order.notified_at = now()
-#             order.save(update_fields=['notified_at'])
-#             logger.info(f"Marked order {token_no} as notified.")
-            
-#         response_msg = {"message": "Order updated and notifications sent.", "token_no": token_no}
-#         # if push_errors:
-#         #     response_msg.update({"message": "Order updated. FCM sent. Some web pushes failed.", "push_errors": push_errors})
-#         #     return Response(response_msg, status=status.HTTP_207_MULTI_STATUS)
-
-#         return Response(response_msg, status=status.HTTP_200_OK)
-
-#     except Exception as e:
-#         logger.error(f"Exception message: {str(e)}")
-#         return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 @api_view(['PATCH'])
 @permission_classes([AllowAny])
 def update_order(request):
     try:
-        logger.info(f"PATCH /update_order from IP {request.META.get('REMOTE_ADDR')} — UA: {request.META.get('HTTP_USER_AGENT')}")
+        logger.info(
+            f"[update_order] PATCH request from IP={request.META.get('REMOTE_ADDR')} "
+            f"UA={request.META.get('HTTP_USER_AGENT')}"
+        )
         
+        # Validate request data
         data = request.data
         required_fields = ['vendor_id', 'token_no', 'device_id', 'counter_no', 'status']
         missing = [f for f in required_fields if not data.get(f)]
-        
         if missing:
-            logger.info(f"Missing fields: {', '.join(missing)}")
-            return Response({"message": f"Missing fields: {', '.join(missing)}"}, status=status.HTTP_400_BAD_REQUEST)
+            logger.warning(f"[update_order] Missing fields: {', '.join(missing)}")
+            return Response(
+                {"message": f"Missing fields: {', '.join(missing)}"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get vendor and device
         try:
             vendor = get_vendor(data['vendor_id'])
         except Vendor.DoesNotExist:
-            return Response({"message": "Vendor not found"}, status=404)
+            logger.warning(f"[update_order] Vendor not found: vendor_id={data['vendor_id']}")
+            return Response({"message": "Vendor not found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             device = get_device(data['device_id'], vendor.id)
         except Device.DoesNotExist:
-            return Response({"message": "Device not found"}, status=404)
+            logger.warning(
+                f"[update_order] Device not found: device_id={data['device_id']} vendor_id={vendor.id}"
+            )
+            return Response({"message": "Device not found"}, status=status.HTTP_404_NOT_FOUND)
 
         status_to_update = data['status']
         token_no = data['token_no']
         counter_no = data['counter_no']
 
-        logger.info(f"Resolved Vendor: {vendor.name}, Device: {device.serial_no}, Token No: {token_no}, Counter No: {counter_no}, Status: {status_to_update}")
-        # FCM Push
-        try:
-            fcm_result = notify_fcm(vendor, data)
-            logger.info(f"FCM sent. Result: {fcm_result}")
-        except Exception as e:
-            logger.exception("FCM sending failed")
-            fcm_result = {"error": str(e)}
-        # Order Create or Update
+        logger.info(
+            f"[update_order] Resolved: vendor={vendor.name} device={device.serial_no} "
+            f"token_no={token_no} counter_no={counter_no} status={status_to_update}"
+        )
+        
+        # FCM push notifications if TV communication mode is not MQTT
+        if vendor.config.tv_communication_mode != "MQTT":
+            try:
+                fcm_result = notify_fcm(vendor, data)
+                logger.info(f"[update_order] FCM sent successfully: {fcm_result}")
+            except Exception as e:
+                logger.exception("[update_order] FCM sending failed")
+                fcm_result = {"error": str(e)}
+        
+        # Create or update order in DB
         order = create_or_update_order(token_no, vendor, device, counter_no, status_to_update)
+        logger.info(f"[update_order] Order {order.id} created/updated for token_no={token_no}")
+        
         # MQTT Publish
-        from vendors.services.order_service import send_order_update
-        # Publish MQTT update
-        logger.info(f"Sending MQTT update for vendor {vendor.vendor_id} with token {token_no}")
-        # Ensure the vendor has a config with mqtt_mode set
+        logger.info(f"[update_order] Sending MQTT update for vendor {vendor.vendor_id}, token {token_no}")
+        
         if not hasattr(vendor, 'config') or not vendor.config.mqtt_mode:
-            logger.warning(f"Vendor {vendor.vendor_id} has no MQTT configuration.")
-            return Response({"message": "Vendor has no MQTT configuration."}, status=status.HTTP_400_BAD_REQUEST)
+            logger.warning(f"[update_order] Vendor {vendor.vendor_id} has no MQTT configuration")
+            return Response(
+                {"message": "Vendor has no MQTT configuration."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
-        # Send order update via MQTT
-        logger.info(f"Sending order update via MQTT for vendor {vendor.vendor_id}")
-        send_order_update(vendor)
+        try:
+            mqtt = send_order_update(vendor)
+            if mqtt:
+                logger.info(f"[update_order] ✅ MQTT update sent successfully for vendor {vendor.vendor_id}")
+            else:
+                logger.error(f"[update_order] ❌ Failed to send MQTT update for vendor {vendor.vendor_id}")
+                return Response(
+                    {"message": "Failed to send MQTT update."}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        except Exception as mqtt_err:
+            logger.exception(f"[update_order] MQTT publish failed: {mqtt_err}")
+            return Response(
+                {"message": "MQTT publish failed."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         
+        # Web push notifications if status is "ready"
         push_errors = []
         if status_to_update.lower() == "ready" and (
             not order.notified_at or (now() - order.notified_at).total_seconds() > PUSH_COOLDOWN_SECONDS
@@ -553,24 +506,28 @@ def update_order(request):
                 "logo_url": vendor_serializer.data.get("logo_url", ""),
                 "type": "foodstatus"
             }
+
+            # Notify managers via FCM
+            send_to_managers(vendor, payload)
+            
             try:
                 push_errors = notify_web_push(order, vendor, payload)
             except Exception as push_err:
-                logger.error(f"Web push failed: {str(push_err)}")
+                logger.error(f"[update_order] Web push failed: {push_err}")
                 push_errors = [str(push_err)]
             
-            logger.info(f"Web push notifications sent. Errors: {push_errors}")
+            logger.info(f"[update_order] Web push notifications sent. Errors: {push_errors}")
             order.notified_at = now()
             order.save(update_fields=['notified_at'])
-            logger.info(f"Marked order {token_no} as notified.")
-            
-        response_msg = {"message": "Order updated and notifications sent.", "token_no": token_no}
-        # if push_errors:
-        #     response_msg.update({"message": "Order updated. FCM sent. Some web pushes failed.", "push_errors": push_errors})
-        #     return Response(response_msg, status=status.HTTP_207_MULTI_STATUS)
+            logger.info(f"[update_order] Marked order {token_no} as notified at {order.notified_at}")
 
+        response_msg = {
+            "message": "Order updated and notifications sent.",
+            "token_no": token_no
+        }
+        logger.info(f"[update_order] Completed successfully for token {token_no}")
         return Response(response_msg, status=status.HTTP_200_OK)
 
     except Exception as e:
-        logger.error(f"Exception message: {str(e)}")
+        logger.exception(f"[update_order] Unexpected error: {e}")
         return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

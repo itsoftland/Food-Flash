@@ -1,63 +1,88 @@
 import logging
 from datetime import timedelta
 
-from django.utils import timezone
 from django.conf import settings
+from django.utils import timezone
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-
-from vendors.models import (Order,ChatMessage)
-from vendors.serializers import OrdersSerializer
-from vendors.utils import notify_web_push
-from vendors.services.order_service import send_order_update
-
 from orders.serializers import VendorLogoSerializer
-from .serializers import ChatMessageSerializer  
 
-from .utils.utils import get_manager_vendor
-from static.utils.functions.utils import (get_vendor_current_time,
-                                          get_vendor_current_date,
-                                          get_vendor_business_day_range)
-from static.utils.functions.queries import update_existing_order_by_manager
+from vendors.models import ChatMessage, Order
+from vendors.serializers import OrdersSerializer
+from vendors.services.order_service import send_order_update
+from vendors.utils import notify_web_push
+from vendors.order_utils import get_last_tokens 
+
+from .serializers import ChatMessageSerializer
+from .utils.utils import get_manager_vendor, get_suggestion_messages
+
 from static.utils.functions.notifications import notify_android_tv
+from static.utils.functions.queries import update_existing_order_by_manager
 
-
+from static.utils.functions.utils import (
+    get_vendor_business_day_range,
+    get_vendor_current_date,
+    get_vendor_current_time,
+)
 
 logger = logging.getLogger(__name__)
 
-# Create your views here.
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_order_by_manager(request):
+    """
+    API endpoint: Create an order manually by a manager.
+    - Requires a valid `token_no` in the request body.
+    - If an order already exists for today with the same token, it returns the existing order.
+    - Otherwise, it creates a new order and returns its details.
+    """
+
+    logger.info("[create_order_by_manager] Request started | user=%s", request.user.username)
+
     token_no = request.data.get('token_no')
-    # Validate inputs
-    if not token_no :
+    logger.debug("[create_order_by_manager] Incoming token_no=%s", token_no)
+
+    # === Step 1: Validate input ===
+    if not token_no:
+        logger.warning("[create_order_by_manager] Missing token_no | user=%s", request.user.username)
         return Response({'error': 'token_no is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         token_no = int(token_no)
     except ValueError:
+        logger.warning("[create_order_by_manager] Invalid token_no (non-integer) | value=%s | user=%s",
+                       token_no, request.user.username)
         return Response({'error': 'All fields must be valid integers.'}, status=status.HTTP_400_BAD_REQUEST)
-    # Get vendor from logged-in manager
-    vendor = get_manager_vendor(request.user)
-    # Dynamically build the base URL
-    base_url = request.build_absolute_uri('/')  
-    # Build the tracking URL (assuming 'home/' is always part of it)
-    tracking_url = f"{base_url}home/?location_id={vendor.location_id}&vendor_id={vendor.vendor_id}&token_no={token_no}"
 
-    # Check if order already exists
+    # === Step 2: Resolve vendor for the manager ===
+    vendor = get_manager_vendor(request.user)
+    logger.info("[create_order_by_manager] Vendor resolved | vendor_id=%s | vendor_name=%s | user=%s",
+                vendor.id, vendor.name, request.user.username)
+
+    # Dynamically build tracking URL
+    base_url = request.build_absolute_uri('/')
+    tracking_url = f"{base_url}home/?location_id={vendor.location_id}&vendor_id={vendor.vendor_id}&token_no={token_no}"
+    logger.debug("[create_order_by_manager] Tracking URL generated | url=%s", tracking_url)
+
+    # === Step 3: Check if order already exists for today ===
     try:
         start_dt, end_dt = get_vendor_business_day_range(vendor)
-
         if not start_dt or not end_dt:
-            logger.warning(f"[get_today_orders] Invalid date range for vendor_id={vendor.id}")
+            logger.error("[create_order_by_manager] Invalid business day range | vendor_id=%s", vendor.id)
             return Response({"error": "Invalid date range"}, status=400)
-        order = Order.objects.filter(token_no=token_no, vendor=vendor, created_at__range=(start_dt, end_dt)).first()
-        if order: 
+
+        order = Order.objects.filter(
+            token_no=token_no, vendor=vendor, created_at__range=(start_dt, end_dt)
+        ).first()
+
+        if order:
+            logger.info("[create_order_by_manager] Order already exists | order_id=%s | token_no=%s | vendor_id=%s",
+                        order.id, token_no, vendor.id)
             return Response({
                 'message': 'Order already exists for this token number.',
                 'id': order.id,
@@ -78,9 +103,10 @@ def create_order_by_manager(request):
                 'updated_at': order.updated_at,
             }, status=status.HTTP_200_OK)
     except Order.DoesNotExist:
-        pass
+        logger.debug("[create_order_by_manager] No existing order found | token_no=%s | vendor_id=%s",
+                     token_no, vendor.id)
 
-    # Create new order
+    # === Step 4: Create new order ===
     try:
         new_order_data = {
             'name': vendor.name,
@@ -94,48 +120,85 @@ def create_order_by_manager(request):
             'type': 'foodstatus',
             'manager_id': request.user.profile_roles.first().id if request.user.profile_roles.exists() else None,
         }
+        logger.debug("[create_order_by_manager] New order data prepared | data=%s", new_order_data)
 
         serializer = OrdersSerializer(data=new_order_data)
         if serializer.is_valid():
             serializer.save()
             data = serializer.data
-            # Add tracking URL to the response data
             data['tracking_url'] = tracking_url
             data['message'] = 'Order created successfully by manager.'
+
+            logger.info("[create_order_by_manager] New order created successfully | order_id=%s | token_no=%s | vendor_id=%s",
+                        data.get('id'), token_no, vendor.id)
             return Response(data, status=status.HTTP_201_CREATED)
         else:
+            logger.warning("[create_order_by_manager] Serializer validation failed | errors=%s", serializer.errors)
             return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.exception("[create_order_by_manager] Unexpected error occurred | token_no=%s | vendor_id=%s | error=%s",
+                         token_no, vendor.id, str(e))
+        return Response({'error': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_today_orders(request):
+    """
+    API endpoint: Retrieve all orders for today for the manager's vendor.
+    - Returns order details only.
+    """
+
     try:
-        logger.info(f"[get_today_orders] Request started by user={request.user.username}")
+        # === Step 1: Request start log ===
+        logger.info(
+            "[get_today_orders] Request started | user=%s | method=%s | path=%s",
+            request.user.username, request.method, request.path
+        )
 
-        # Get vendor from logged-in manager
+        # === Step 2: Resolve vendor for the logged-in manager ===
         vendor = get_manager_vendor(request.user)
-        logger.info(f"[get_today_orders] Vendor resolved: id={vendor.id}, name={vendor.name}")
+        logger.info(
+            "[get_today_orders] Vendor resolved | vendor_id=%s | vendor_name=%s | user=%s",
+            vendor.id, vendor.name, request.user.username
+        )
 
-         # Get business day range in UTC
+        # === Step 3: Get business day range (UTC) ===
         start_dt, end_dt = get_vendor_business_day_range(vendor)
-
         if not start_dt or not end_dt:
-            logger.warning(f"[get_today_orders] Invalid date range for vendor_id={vendor.id}")
+            logger.warning(
+                "[get_today_orders] Invalid business day range | vendor_id=%s",
+                vendor.id
+            )
             return Response({"error": "Invalid date range"}, status=400)
+        logger.debug(
+            "[get_today_orders] Business day range | vendor_id=%s | start=%s | end=%s",
+            vendor.id, start_dt, end_dt
+        )
 
-        # Fetch orders for today
+        # === Step 4: Fetch today's orders ===
         todays_orders = Order.objects.filter(
             vendor=vendor,
             created_at__range=(start_dt, end_dt)
         ).order_by('-updated_at')
-        logger.info(f"[get_today_orders] Found {todays_orders.count()} orders for vendor_id={vendor.id}")
+        logger.info(
+            "[get_today_orders] Fetched orders | vendor_id=%s | count=%s",
+            vendor.id, todays_orders.count()
+        )
 
-        # Serialize
+        # === Step 5: Serialize orders ===
         data = OrdersSerializer(todays_orders, many=True, context={'request': request}).data
+        logger.debug(
+            "[get_today_orders] Serialized orders | vendor_id=%s | serialized_count=%s",
+            vendor.id, len(data)
+        )
 
-        logger.info(f"[get_today_orders] Returning {len(data)} orders for user={request.user.username}")
+        # === Step 6: Return response ===
+        logger.info(
+            "[get_today_orders] Returning response | user=%s | orders_count=%s",
+            request.user.username, len(data)
+        )
         return Response({
             "message": "Today's orders retrieved successfully.",
             "count": len(data),
@@ -143,87 +206,156 @@ def get_today_orders(request):
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
-        logger.exception(f"[get_today_orders] Error occurred for user={request.user.username}: {e}")
-        return Response({"error": str(e)}, status=500)
+        # === Step 7: Handle unexpected errors ===
+        logger.exception(
+            "[get_today_orders] Unexpected error | user=%s | error=%s",
+            request.user.username, str(e)
+        )
+        return Response({"error": "Internal server error"}, status=500)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_suggestions(request):
+    """
+    API endpoint to fetch manager suggestion messages for the current vendor.
+    - Only accessible to authenticated users.
+    - Retrieves vendor linked to the logged-in manager.
+    - Collects suggestion messages for today and last 2 working days.
+    """
+
+    try:
+        # === Step 1: Request start log ===
+        logger.info(
+            "[get_suggestion_messages] Request started | user=%s | method=%s | path=%s",
+            request.user.username, request.method, request.path
+        )
+
+        # === Step 2: Resolve vendor from manager user ===
+        vendor = get_manager_vendor(request.user)
+        logger.info(
+            "[get_suggestion_messages] Vendor resolved | vendor_id=%s | vendor_name=%s | user=%s",
+            vendor.id, vendor.name, request.user.username
+        )
+
+        # === Step 3: Fetch suggestions for vendor ===
+        suggestions = get_suggestion_messages(vendor,limit=10)
+        logger.info(
+            "[get_suggestion_messages] Suggestions fetched | vendor_id=%s | count=%s",
+            vendor.id, len(suggestions)
+        )
+        logger.debug(
+            "[get_suggestion_messages] Suggestions detail | vendor_id=%s | suggestions=%s",
+            vendor.id, suggestions
+        )
+
+        # === Step 4: Successful response ===
+        response_data = {
+            "message": "Suggestion messages retrieved successfully.",
+            "suggestions": suggestions,
+            "count": len(suggestions),
+        }
+        logger.info(
+            "[get_suggestion_messages] Response ready | vendor_id=%s | count=%s",
+            vendor.id, len(suggestions)
+        )
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except NotFound as nf:
+        # Specific case: Vendor not found
+        logger.warning(
+            "[get_suggestion_messages] Vendor not found | user=%s | error=%s",
+            request.user.username, str(nf)
+        )
+        return Response({"error": str(nf)}, status=status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+        # Catch-all for unexpected errors
+        logger.exception(
+            "[get_suggestion_messages] Unexpected error | user=%s | error=%s",
+            request.user.username, str(e)
+        )
+        return Response({"error": "Internal server error"}, status=500)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def manager_order_update(request):
+    """
+    API endpoint: Allows a manager to update an order status or send a custom message.
+    Actions supported:
+        - "ready": Marks order ready, updates DB, notifies Android TV & web push.
+        - "delivered": Marks order delivered, updates DB & sends web push.
+        - "cancelled": Cancels order, updates DB & sends web push.
+        - "message": Sends a custom manager message to customer via web push.
+    """
+
     try:
-        logger.info("📥 PATCH /manager_order_update")
-        logger.debug(f"Request Data: {request.data}")
+        logger.info("📥 PATCH /manager_order_update called | user=%s", request.user.username)
+        logger.debug("Request data: %s", request.data)
 
         data = request.data
-        required_fields = ['token_no','status','action']
+        required_fields = ['token_no', 'status', 'action']
         missing = [f for f in required_fields if f not in data or data[f] in [None, ""]]
 
+        # === Step 1: Validate required fields ===
         if missing:
-            logger.warning(f"⛔ Missing fields: {', '.join(missing)}")
-            return Response({"message": f"Missing fields: {', '.join(missing)}"}, status=status.HTTP_400_BAD_REQUEST)
+            logger.warning("⛔ Missing fields: %s", ', '.join(missing))
+            return Response(
+                {"message": f"Missing fields: {', '.join(missing)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # Validate token_no as int
+        # === Step 2: Validate token_no ===
         try:
             token_no = int(data['token_no'])
         except (TypeError, ValueError):
-            logger.warning("❌ token_no must be a valid integer.")
+            logger.warning("❌ token_no must be a valid integer | value=%s", data['token_no'])
             return Response({"message": "token_no must be a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
 
         status_to_update = data['status']
         action = request.data.get("action", "").lower()
+        if action not in ["ready", "message", "delivered", "cancelled"]:
+            return Response({"message": "Invalid action type."}, status=status.HTTP_400_BAD_REQUEST)
+        action_type = action
 
-        if action:
-            # New clients send explicit action
-            if action not in ["ready", "message", "delivered", "cancelled"]:
-                return Response({"message": "Invalid action type."}, status=status.HTTP_400_BAD_REQUEST)
-            action_type = action
-
-        # Validate manager
+        # === Step 3: Validate manager & vendor ===
         manager = getattr(request.user, 'profile_roles', None)
         if not manager or not manager.exists():
-            logger.warning("⚠️ No manager profile found for the user.")
+            logger.warning("⚠️ No manager profile found for user=%s", request.user.username)
             return Response({"message": "User is not a manager."}, status=status.HTTP_403_FORBIDDEN)
-
         manager = manager.first()
         if not manager.vendor:
-            logger.warning("⚠️ Manager does not have an associated vendor.")
+            logger.warning("⚠️ Manager %s has no vendor", manager.name)
             return Response({"message": "Manager does not have an associated vendor."}, status=status.HTTP_403_FORBIDDEN)
 
         vendor = manager.vendor
-        logger.info(f"🔧 Manager: {manager.name}, Vendor: {vendor.name} ({vendor.vendor_id})")
+        logger.info("🔧 Manager: %s | Vendor: %s (%s)", manager.name, vendor.name, vendor.vendor_id)
 
-        # Get business day range in UTC
+        # === Step 4: Get today's business day range ===
         start_dt, end_dt = get_vendor_business_day_range(vendor)
-
         if not start_dt or not end_dt:
-            logger.warning(f"Invalid date range for vendor_id={vendor.id}")
+            logger.warning("Invalid date range for vendor_id=%s", vendor.id)
             return Response({"error": "Invalid date range"}, status=400)
-        
+
         order = Order.objects.filter(token_no=token_no, vendor=vendor, created_at__range=(start_dt, end_dt)).first()
         if not order:
-            logger.warning(f"❌ No order found for token_no {token_no} today.")
+            logger.warning("❌ No order found for token_no %s today.", token_no)
             return Response({"message": f"Order with token_no {token_no} not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Serialize vendor logo
+        # === Step 5: Serialize vendor logo ===
         vendor_serializer = VendorLogoSerializer(vendor, context={'request': request})
         logo_url = vendor_serializer.data.get("logo_url", "")
         if not logo_url:
-            logger.warning(f"⚠️ No logo URL found for vendor {vendor.name}. Using default logo.")
+            logger.warning("⚠️ No logo URL for vendor %s", vendor.name)
             return Response({"message": "Vendor logo not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        if action_type == "ready":
-            body = f"Your order {token_no} status: {status_to_update.capitalize()}"
-        elif action_type == "message":
-            body = f"Your order {token_no} has an update from the manager."
-        elif action_type == "delivered":
-            body = f"Your order {token_no} has been delivered."
-        elif action_type == "cancelled":
-            body = f"Unfortunately Your order {token_no} has been cancelled."
 
-        # Prepare common push payload
+        # === Step 6: Prepare push payload ===
         payload = {
             "title": "Order Update by Manager",
-            "body": body,
+            "body": f"Your order {token_no} status: {status_to_update.capitalize()}" if action_type == "ready"
+                    else f"Your order {token_no} has an update from the manager." if action_type == "message"
+                    else f"Your order {token_no} has been delivered." if action_type == "delivered"
+                    else f"Your order {token_no} has been cancelled.",
             "token_no": token_no,
             "status": status_to_update.lower(),
             "counter_no": order.counter_no,
@@ -231,66 +363,64 @@ def manager_order_update(request):
             "vendor_id": vendor.vendor_id,
             "location_id": vendor.location_id,
             "logo_url": logo_url,
-            "type": "foodstatus" if action_type == "ready" else "manager",
-            "message_id":None
+            "type": "foodstatus" if action_type in ["ready", "delivered", "cancelled"] else "manager",
+            "message_id": None
         }
 
-        android_tv_success = None
-        android_tv_info = None
-        push_errors = []
+        android_tv_success, android_tv_info, push_errors = None, None, []
 
-        # ✅ IF status is "ready"
+        # === Step 7: Handle different action types ===
         if action_type == "ready":
-            # 1. Notify Android TV
-            android_tv_success, android_tv_info = notify_android_tv(vendor, data)
-            logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
+            # FCM push notifications if TV communication mode is not MQTT
+            if vendor.config.tv_communication_mode != "MQTT":
+                # 1. Notify Android TV
+                android_tv_success, android_tv_info = notify_android_tv(vendor, data)
+                logger.info("📺 Android TV notified | Success=%s | Info=%s", android_tv_success, android_tv_info)
 
-            # 2. Update in DB
-            device = None  # Assuming device is not used in this context
-            updated_order = update_existing_order_by_manager(token_no, vendor, device, action_type, manager)
+            # 2. Update order in DB
+            updated_order = update_existing_order_by_manager(token_no, vendor, None, action_type, manager)
             if not updated_order:
-                logger.warning(f"❌ Failed to update order {token_no}")
+                logger.warning("❌ Failed to update order %s", token_no)
                 return Response({"message": "Order update failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.info("✅ Order %s updated to %s", updated_order.token_no, status_to_update)
 
-            logger.info(f"✅ Order {updated_order.token_no} updated to status: {status_to_update}")
+            # 3. Send MQTT update
+            logger.info(f"📡 Sending MQTT update for vendor {vendor.vendor_id} with token {token_no}")
+            if not hasattr(vendor, 'config') or not vendor.config.mqtt_mode:
+                logger.warning(f"⚠️ Vendor {vendor.vendor_id} has no MQTT configuration.")
+                return Response({"message": "Vendor has no MQTT configuration."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 3. Send Web Push (only if cooldown passed)
+            mqtt_success = send_order_update(vendor)
+            if mqtt_success:
+                logger.info(f"✅ MQTT update sent successfully for vendor {vendor.vendor_id}")
+            else:
+                logger.error(f"❌ Failed to send MQTT update for vendor {vendor.vendor_id}")
+                return Response({"message": "Failed to send MQTT update."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # 4. Send Web Push (only if cooldown passed)
             cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 1)
             if not order.notified_at or (timezone.now() - order.notified_at) > timedelta(seconds=cooldown):
-                logger.info(f"📤 Sending web push...")
+                logger.info("📤 Sending web push...")
                 push_errors = notify_web_push(order, vendor, payload)
                 order.notified_at = timezone.now()
                 order.save(update_fields=["notified_at"])
-                logger.info(f"🕒 Order {token_no} marked as notified at {order.notified_at}")
+                logger.info("🕒 Order %s marked as notified at %s", token_no, order.notified_at)
             else:
-                logger.info(f"⏳ Cooldown active. Skipping web push for {token_no}.")
-        # ✅ IF status is "delivered"        
-        elif action_type == "delivered":
-            logger.info(f"🚚 Marking order {token_no} as delivered by manager {manager.name}")
+                logger.info("⏳ Cooldown active. Skipping web push for %s", token_no)
+
+        elif action_type in ["delivered", "cancelled"]:
+            logger.info("🔔 %s order %s by manager %s", action_type.capitalize(), token_no, manager.name)
             updated_order = update_existing_order_by_manager(token_no, vendor, None, action_type, manager)
             if updated_order:
-                payload["title"] = "Order Delivered"
-                payload["type"] = "foodstatus"
-                push_errors = notify_web_push(order, vendor, payload)
-        elif action_type == "cancelled":
-            logger.info(f"🗑️ Cancelling order {token_no} by manager {manager.name}")
-            updated_order = update_existing_order_by_manager(token_no, vendor, None, "cancelled", manager)
-            if updated_order:
-                payload["title"] = "Order Cancelled"
-                payload["type"] = "foodstatus"
+                payload["title"] = f"Order {action_type.capitalize()}"
                 push_errors = notify_web_push(order, vendor, payload)
 
-        # IF status is "message" 
-        else:
+        else:  # action_type == "message"
             MAX_MESSAGE_LENGTH = 200
-
             if status_to_update and len(status_to_update) > MAX_MESSAGE_LENGTH:
-                return Response(
-                    {"error": f"Message too long. Limit is {MAX_MESSAGE_LENGTH} characters."},
-                    status=400
-                )
-            logger.info("ℹ️ Status not 'ready' — skipping DB and Android TV. Sending web push with type 'manager'.")
-            # 1. Save chat message first with is_send=True (optimistic approach)
+                return Response({"error": f"Message too long. Limit is {MAX_MESSAGE_LENGTH} characters."}, status=400)
+
+            logger.info("ℹ️ Sending manager message via web push")
             chat_message = ChatMessage.objects.create(
                 vendor=vendor,
                 token_no=token_no,
@@ -299,27 +429,17 @@ def manager_order_update(request):
                 is_send=True,
                 message_text=status_to_update
             )
-
-            # 2. Add message ID to payload
             payload["message_id"] = chat_message.id
             payload["status"] = status_to_update
-
-            # 3. Try sending the web push
             push_errors = notify_web_push(order, vendor, payload)
-
-            if not push_errors:
-                logger.info(f"📤 Web push sent successfully for {token_no}")
-            else:
-                error_messages = "\n".join(
-                    f"{error.__class__.__name__}: {str(error)}" for error in push_errors
-                )
-                logger.warning(f"❌ Failed to send web push for {token_no}. Errors:\n{error_messages}")
-
-                # 4. Update the ChatMessage to is_send=False since push failed
+            if push_errors:
+                logger.warning("❌ Failed web push for %s | Errors: %s", token_no, push_errors)
                 chat_message.is_send = False
                 chat_message.save(update_fields=["is_send"])
+            else:
+                logger.info("📤 Web push sent successfully for %s", token_no)
 
-        # 📦 Final response
+        # === Step 8: Return final response ===
         return Response({
             "success": True,
             "message": f"Order {'updated and ' if action_type == 'ready' else ''}notified successfully.",
@@ -327,12 +447,14 @@ def manager_order_update(request):
             "android_tv": android_tv_success,
             "android_tv_info": android_tv_info,
             "web_push": not push_errors,
-            "web_push_info": push_errors
+            "web_push_info": push_errors,
+            "mqtt":mqtt_success if action_type == "ready" else None
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
-        logger.exception("🔥 Unhandled exception in manager_order_update:")
+        logger.exception("🔥 Unhandled exception in manager_order_update | user=%s", request.user.username)
         return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -447,6 +569,12 @@ def device_call(request):
         android_tv_info = None
         push_errors = []
 
+        # FCM push notifications if TV communication mode is not MQTT
+        if vendor.config.tv_communication_mode != "MQTT":
+            # Notify Android TV
+            android_tv_success, android_tv_info = notify_android_tv(vendor, data)
+            logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
+            
        # MQTT Publish
         logger.info(f"Sending MQTT update for vendor {vendor.vendor_id} with token {token_no}")
         # Ensure the vendor has a config with mqtt_mode set
@@ -455,16 +583,13 @@ def device_call(request):
             return Response({"message": "Vendor has no MQTT configuration."}, status=status.HTTP_400_BAD_REQUEST)
         
         # Send order update via MQTT
-        logger.info(f"Sending order update via MQTT for vendor {vendor.vendor_id}")
+        logger.info(f"Sending order update via MQTT for vendor {vendor.vendor_id},MQTT Server: {vendor.config.mqtt_server}")
         mqtt = send_order_update(vendor)
         if mqtt:
             logger.info(f"✅ MQTT update sent successfully for vendor {vendor.vendor_id}")
         else:
             logger.error(f"❌ Failed to send MQTT update for vendor {vendor.vendor_id}")
             return Response({"message": "Failed to send MQTT update."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # Notify Android TV
-        android_tv_success, android_tv_info = notify_android_tv(vendor, data)
-        logger.info(f"📺 Android TV FCM sent | Success: {android_tv_success} | Info: {android_tv_info}")
 
         # Send Web Push (only if cooldown passed)
         cooldown = getattr(settings, "PUSH_COOLDOWN_SECONDS", 1)
@@ -493,3 +618,73 @@ def device_call(request):
     except Exception as e:
         logger.exception(f"🔥 Unhandled exception in manager_order_update:{str(e)}")
         return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_recent_tokens(request):
+    """
+    API endpoint to fetch the last N order tokens for the current vendor.
+    - Only accessible to authenticated users.
+    - Retrieves vendor linked to the logged-in manager.
+    - Collects last N tokens where N is defined in vendor's config.
+    """
+
+    try:
+        # === Step 1: Request start log ===
+        logger.info(
+            "[get_last_tokens] Request started | user=%s | method=%s | path=%s",
+            request.user.username, request.method, request.path
+        )
+
+        # === Step 2: Resolve vendor from manager user ===
+        vendor = get_manager_vendor(request.user)
+        logger.info(
+            "[get_last_tokens] Vendor resolved | vendor_id=%s | vendor_name=%s | user=%s",
+            vendor.id, vendor.name, request.user.username
+        )
+
+        if not hasattr(vendor, 'config') or not vendor.config.token_display_limit:
+            logger.warning(
+                "[get_last_tokens] Vendor has no token display limit configured | vendor_id=%s",
+                vendor.id
+            )
+            return Response({"error": "Vendor has no token display limit configured."}, status=400)
+
+        limit = vendor.config.token_display_limit
+
+        # === Step 3: Fetch last N tokens for the vendor ===
+        tokens = get_last_tokens(vendor, limit)
+        logger.info(
+            "[get_last_tokens] Tokens fetched | vendor_id=%s | tokens=%s",
+            vendor.id, tokens
+        )
+
+        # === Step 4: Successful response ===
+        response_data = {
+            "message": "Last tokens retrieved successfully.",
+            "tokens": tokens,
+            "count": len(tokens),
+        }
+        logger.info(
+            "[get_last_tokens] Response ready | vendor_id=%s | count=%s",
+            vendor.id, len(tokens)
+        )
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    except NotFound as nf:
+        # Specific case: Vendor not found
+        logger.warning(
+            "[get_last_tokens] Vendor not found | user=%s | error=%s",
+            request.user.username, str(nf)
+        )
+        return Response({"error": str(nf)}, status=status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+        # Catch-all for unexpected errors
+        logger.exception(
+            "[get_last_tokens] Unexpected error | user=%s | error=%s",
+            request.user.username, str(e)   
+        )
+        return Response({"error": str(e)}, status=500)
+            

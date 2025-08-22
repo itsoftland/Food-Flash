@@ -23,14 +23,6 @@ class AdminOutlet(models.Model):
         User, on_delete=models.CASCADE, related_name='admin_outlet',
         null=True, blank=True
     )
-    mqtt_server = models.ForeignKey(
-        MqttServerConfig,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        default=1,
-        related_name="admin_outlets"
-    )
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     gst_number = models.CharField(max_length=100, blank=True, null=True)
     customer_name = models.CharField(max_length=255, blank=True, null=True)
@@ -95,7 +87,23 @@ class Vendor(models.Model):
 
 class VendorConfig(models.Model):
     vendor = models.OneToOneField(Vendor, on_delete=models.CASCADE, related_name="config")
+    mqtt_server = models.ForeignKey(
+        MqttServerConfig,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        default=1,
+        related_name="vendor_configs"
+    )
     token_display_limit = models.PositiveIntegerField(default=8)
+    tv_communication_mode = models.CharField(
+        max_length=20,
+        choices=[
+            ("MQTT", "MQTT"),
+            ("Firebase", "Firebase")
+        ],
+        default="MQTT"
+    )
     mqtt_mode = models.CharField(
         max_length=20,
         choices=[
@@ -111,6 +119,7 @@ class VendorConfig(models.Model):
         choices=[(tz, tz) for tz in pytz.all_timezones], 
         default="UTC"
     )
+    
 
 
 class Device(models.Model):
