@@ -340,7 +340,13 @@ def login_api_view(request):
         return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
     login(request, user)
     refresh = RefreshToken.for_user(user)
-
+    MANAGER_ROLE_MAP = {
+        'admin_manager': 'Admin Manager',
+        'outlet_manager': 'Outlet Manager',
+        'order_manager': 'Order Manager',
+        'web_manager': 'Web Manager',
+    }
+    
     # 1. Manager Login (UserProfile with a specific role)
     if requested_role:
         try:
@@ -348,14 +354,14 @@ def login_api_view(request):
                 user=user,
                 role__in=['outlet_manager', 'admin_manager', 'order_manager']
             )
-
+            role_display = MANAGER_ROLE_MAP.get(profile.role, profile.role)
             return Response({
                 'message': 'Login successful',
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
                 'user': {
                     'username': user.username,
-                    'role': profile.role,
+                    'role': role_display,
                     'vendor_id': profile.vendor.id if profile.vendor else None,
                     'vendor_name': profile.vendor.name if profile.vendor else None,
                     'customer_id': profile.admin_outlet.customer_id if profile.admin_outlet else None,
