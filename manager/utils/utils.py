@@ -116,5 +116,31 @@ def get_suggestion_messages(vendor,limit):
 
     return suggestions
 
+def get_order_counts(orders_queryset, serialized_data):
+    """
+    Calculate counts for each order status and number of orders with unread notifications.
+    Returns a flat dictionary suitable to merge directly into the response.
+    """
+    counts = {
+        "unread": 0,
+        "delivered": 0,
+        "ready": 0,
+        "preparing": 0,
+        "created": 0,
+        "cancelled": 0
+    }
+
+    # Count orders by status
+    for order in orders_queryset:
+        status_name = getattr(order, 'status', '').lower()
+        if status_name in counts:
+            counts[status_name] += 1
+
+    # Count orders with new_notifications > 0 (Unread)
+    counts["unread"] = sum(1 for item in serialized_data if item.get("new_notifications", 0) > 0)
+
+    return counts
+
+
 
 

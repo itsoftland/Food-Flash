@@ -19,7 +19,8 @@ from vendors.utils import notify_web_push
 from vendors.order_utils import get_last_tokens 
 
 from .serializers import ChatMessageSerializer
-from .utils.utils import get_manager_vendor, get_suggestion_messages
+from .utils.utils import (get_manager_vendor, get_suggestion_messages,
+                          get_order_counts)
 
 from static.utils.functions.notifications import notify_android_tv
 from static.utils.functions.queries import update_existing_order_by_manager
@@ -186,6 +187,7 @@ def get_today_orders(request):
             "[get_today_orders] Fetched orders | vendor_id=%s | count=%s",
             vendor.id, todays_orders.count()
         )
+        
 
         # === Step 5: Serialize orders ===
         data = OrdersSerializer(todays_orders, many=True, context={'request': request}).data
@@ -199,11 +201,17 @@ def get_today_orders(request):
             "[get_today_orders] Returning response | user=%s | orders_count=%s",
             request.user.username, len(data)
         )
-        return Response({
+        
+        # Compute counts (including unread based on new_notifications)
+        status_counts = get_order_counts(todays_orders, data)
+        # Merge counts into response
+        response_data = {
             "message": "Today's orders retrieved successfully.",
-            "count": len(data),
-            "detail": data,
-        }, status=status.HTTP_200_OK)
+            "count":len(data),
+            **status_counts,   # Unpack counts as individual keys
+            "detail": data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     except Exception as e:
         # === Step 7: Handle unexpected errors ===
