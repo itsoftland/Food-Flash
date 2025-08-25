@@ -320,127 +320,9 @@ def submit_feedback(request):
     else:
         return Response({'success': False, 'errors': serializer.errors}, status=400)
 
-# @api_view(['GET'])
-# @permission_classes([AllowAny])
-# def get_recent_ready_orders(request):
-#     try:
-#         vendor_id = request.GET.get('vendor_id')
-#         if not vendor_id:
-#             return Response({"error": "vendor_id required"}, status=400)
-
-#         # Filter recent 'ready' orders for the given vendor
-#         recent_orders = Order.objects.filter(
-#             vendor__vendor_id=vendor_id,
-#             status='ready'
-#         ).order_by('-updated_at')[:8]
-
-#         # Serialize and add 'is_new' field
-#         data = []
-#         for order in recent_orders:
-#             serialized = OrdersSerializer(order, context={'request': request}).data
-#             serialized['is_new'] = not order.shown_on_tv
-#             data.append(serialized)
-
-#         # Mark these orders as shown
-#         Order.objects.filter(id__in=[order.id for order in recent_orders], shown_on_tv=False).update(shown_on_tv=True)
-
-#         return Response(data, status=200)
-
-#     except Exception as e:
-#         return Response({"error": str(e)}, status=500)
-
 def login_view(request):
    return render(request, 'orders/login.html')
 
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def login_api_view(request):
-#     username = request.data.get('username')
-#     password = request.data.get('password')
-#     requested_role = request.data.get('role')  # Only sent by manager/web apps
-
-#     if not username or not password:
-#         return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-#     user = authenticate(request, username=username, password=password)
-#     if user is None:
-#         return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
-
-#     login(request, user)
-#     refresh = RefreshToken.for_user(user)
-
-#     # 1. Manager or Web user (role explicitly sent)
-#     if requested_role in ['manager', 'web']:
-#         try:
-#             profile = UserProfile.objects.get(user=user, role=requested_role)
-#             return Response({
-#                 'message': 'Login successful',
-#                 'access': str(refresh.access_token),
-#                 'refresh': str(refresh),
-#                 'user': {
-#                     'username': user.username,
-#                     'role': profile.role,
-#                     'vendor_id': profile.vendor.id if profile.vendor else None,
-#                     'vendor_name': profile.vendor.name if profile.vendor else None,
-#                     'customer_id': profile.admin_outlet.customer_id if profile.admin_outlet else None,
-#                     'outlet_name': profile.admin_outlet.customer_name if profile.admin_outlet else None,
-#                     'manager_id': profile.id,
-#                     'manager_name': profile.name,
-#                 }
-#             }, status=status.HTTP_200_OK)
-#         except UserProfile.DoesNotExist:
-#             return Response({'error': f"This user does not have the '{requested_role}' role."}, status=status.HTTP_403_FORBIDDEN)
-
-#     # 2. Superadmin
-#     if user.is_superuser:
-#         return Response({
-#             'message': 'Login successful',
-#             'access': str(refresh.access_token),
-#             'refresh': str(refresh),
-#             'user': {
-#                 'username': user.username,
-#                 'role': 'Super Admin',
-#             }
-#         }, status=status.HTTP_200_OK)
-
-#     # 3. Company Admin (AdminOutlet)
-#     if user.is_staff and hasattr(user, 'admin_outlet'):
-#         customer_id = user.admin_outlet.customer_id
-#         request.session['customer_id'] = customer_id
-#         return Response({
-#             'message': 'Login successful',
-#             'access': str(refresh.access_token),
-#             'refresh': str(refresh),
-#             'user': {
-#                 'username': user.admin_outlet.customer_name,
-#                 'role': 'Company',
-#                 'customer_id': customer_id,
-#             }
-#         }, status=status.HTTP_200_OK)
-
-#     # 4. Outlet Login (Vendor)
-#     if Vendor.objects.filter(user=user).exists():
-#         vendor = Vendor.objects.get(user=user)
-#         return Response({
-#             'message': 'Login successful',
-#             'access': str(refresh.access_token),
-#             'refresh': str(refresh),
-#             'user': {
-#                 'username': vendor.name,
-#                 'role': 'Outlet',
-#                 'vendor_id': vendor.id
-#             }
-#         }, status=status.HTTP_200_OK)
-
-#     return Response({'error': 'User type not recognized.'}, status=status.HTTP_403_FORBIDDEN)
-
-# Define mappings for roles
-MANAGER_ROLE_MAP = {
-    'admin_manager': 'Admin Manager',
-    'outlet_manager': 'Outlet Manager',
-    'order_manager': 'Order Manager',
-    'web_user': 'Web User',
-}
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -456,14 +338,16 @@ def login_api_view(request):
 
     if not user:
         return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
-
+    login(request, user)
     refresh = RefreshToken.for_user(user)
 
-    # 1. Check Manager roles (UserProfile with a specific role)
+    # 1. Manager Login (UserProfile with a specific role)
     if requested_role:
         try:
-            profile = UserProfile.objects.get(user=user, role=requested_role)
-            role_display = MANAGER_ROLE_MAP.get(profile.role, profile.role)
+            profile = UserProfile.objects.get(
+                user=user,
+                role__in=['outlet_manager', 'admin_manager', 'order_manager']
+            )
 
             return Response({
                 'message': 'Login successful',
@@ -471,7 +355,7 @@ def login_api_view(request):
                 'refresh': str(refresh),
                 'user': {
                     'username': user.username,
-                    'role': role_display,
+                    'role': profile.role,
                     'vendor_id': profile.vendor.id if profile.vendor else None,
                     'vendor_name': profile.vendor.name if profile.vendor else None,
                     'customer_id': profile.admin_outlet.customer_id if profile.admin_outlet else None,
@@ -483,7 +367,7 @@ def login_api_view(request):
         except UserProfile.DoesNotExist:
             return Response({'error': f"This user does not have the '{requested_role}' role."}, status=status.HTTP_403_FORBIDDEN)
 
-    # 2. Superadmin
+    # 2. Superadmin Login
     if user.is_superuser:
         return Response({
             'message': 'Login successful',
@@ -495,7 +379,7 @@ def login_api_view(request):
             }
         }, status=status.HTTP_200_OK)
 
-    # 3. Company Admin (AdminOutlet)
+    # 3. Company Login(AdminOutlet)
     if user.is_staff and hasattr(user, 'admin_outlet'):
         customer_id = user.admin_outlet.customer_id
         request.session['customer_id'] = customer_id
@@ -505,7 +389,7 @@ def login_api_view(request):
             'refresh': str(refresh),
             'user': {
                 'username': user.admin_outlet.customer_name,
-                'role': 'Company Admin',
+                'role': 'Company',
                 'customer_id': customer_id,
             }
         }, status=status.HTTP_200_OK)

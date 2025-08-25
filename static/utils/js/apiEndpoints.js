@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
   PRODUCT_AUTH_URL : '/companyadmin/api/product-authentication/',
   COMPANY_UPDATE_URL : '/api/company-update/',
   CREATE_USER: '/company/api/create_user/',
+  GET_USERS: '/company/api/get_users/',
 
   
   // Add more endpoints here

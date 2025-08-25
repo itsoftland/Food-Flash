@@ -241,7 +241,7 @@ class AndroidAPK(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ('mac_address', 'admin_outlet')
+        unique_together = ('mac_address', 'user_profile')
 
 class SiteConfig(models.Model):
     maintenance_mode = models.BooleanField(default=False)

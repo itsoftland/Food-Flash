@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def get_manager_vendor(user):
     logger.info("Fetching vendor for manager user: %s", user)
-    profile = user.profile_roles.filter(role='manager').first()
+    profile = user.profile_roles.first()
     if not profile or not profile.vendor:
         logger.warning("No vendor found for manager user: %s", user)
         raise NotFound("Vendor not found for this manager")

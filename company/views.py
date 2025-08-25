@@ -21,7 +21,7 @@ from vendors.models import (Vendor, Device, AdminOutlet,
                             AndroidDevice,AdvertisementImage,
                             AdvertisementProfileAssignment,
                             AdvertisementProfile,Order,
-                            ArchivedOrder)
+                            ArchivedOrder,UserProfile)
 
 from static.utils.functions.validation import validate_fields
 from static.utils.functions.utils import get_time_ranges,get_filtered_date_range
@@ -37,7 +37,8 @@ from .serializers import (VendorSerializer,
                           AdminOutletAutoDeleteSerializer,
                           DashboardMetricsSerializer,
                           DeviceSerializer,AndroidDeviceSerializer,
-                          OrderSerializer,UserProfileCreateSerializer
+                          OrderSerializer,UserProfileCreateSerializer,
+                          UserListDetailSerializer
                           )
 
 logger = logging.getLogger(__name__)
@@ -59,8 +60,12 @@ def update_outlet_page(request):
     return render(request, "company/outlets/update_outlet.html")
 
 @login_required
-def users(request):
-    return render(request, 'company/create_user.html')
+def create_users(request):
+    return render(request, 'company/users/create_user.html')
+
+@login_required
+def user_list(request):
+    return render(request, 'company/users/user_list.html')
 
 @login_required
 def keypad_devices(request):
@@ -422,6 +427,43 @@ def create_user(request):
 
     # If validation fails
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from collections import defaultdict
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_users(request):
+    """
+    API to fetch all users for the logged-in admin's outlet with roles aggregated.
+    """
+    try:
+        admin_outlet = request.user.admin_outlet
+        users = UserProfile.objects.filter(admin_outlet=admin_outlet).select_related('user', 'admin_outlet', 'vendor')
+
+        # Group users by user.id and aggregate roles
+        grouped_users = defaultdict(lambda: {'roles': []})
+        
+        for u in users:
+            uid = u.user.id
+            if 'instance' not in grouped_users[uid]:
+                grouped_users[uid]['instance'] = u
+            grouped_users[uid]['roles'].append(u.role)
+
+        # Serialize each user once, with aggregated roles
+        serialized_data = []
+        for data in grouped_users.values():
+            instance = data['instance']
+            serializer = UserListDetailSerializer(instance, context={'request': request}).data
+            serializer['roles'] = list(set(data['roles']))  # Remove duplicates if any
+            serialized_data.append(serializer)
+
+        return Response({
+            'message': 'Users retrieved successfully.',
+            'users': serialized_data
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.exception("Error retrieving users")
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

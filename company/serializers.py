@@ -464,3 +464,22 @@ class UserProfileCreateSerializer(serializers.Serializer):
 
         return created_profiles if len(created_profiles) > 1 else created_profiles[0]
 
+class UserListDetailSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    outlet_name = serializers.CharField(source='admin_outlet.name', read_only=True)
+    vendor_name = serializers.CharField(source='vendor.name', read_only=True, default=None)
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            'id',
+            'username',
+            'email',
+            'name',
+            'outlet_name',
+            'vendor_name',
+            'created_at',
+            'updated_at',
+            # Note: We won't include `role` here; instead, we manually inject `roles`
+        ]

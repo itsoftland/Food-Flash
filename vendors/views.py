@@ -11,7 +11,7 @@ from rest_framework import serializers
 
 from .models import (Order, Vendor, Device,
                      AndroidDevice, PushSubscription,
-                     AdminOutlet, AndroidAPK)
+                     AdminOutlet, AndroidAPK, UserProfile)
 
 from .serializers import OrdersSerializer
 from orders.serializers import VendorLogoSerializer
@@ -265,66 +265,171 @@ def register_android_device(request):
         logger.error("Customer not found for customer_id=%s", customer_id)
         return Response({"error": "Customer not found."}, status=404)
 
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def register_android_apk(request):
+#     token = request.data.get('token')
+#     customer_id = request.data.get('customer_id') 
+#     mac_address = request.data.get('mac_address')  
+#     apk_version = request.data.get('apk_version') 
+
+#     request_ip = request.META.get('REMOTE_ADDR', 'Unknown')
+#     user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
+#     logger.info("Android APK registration attempt from IP: %s | User-Agent: %s", request_ip, user_agent)
+#     logger.debug("Incoming data — token: %s, customer_id: %s, mac: %s, version: %s", token, customer_id, mac_address, apk_version)
+
+#     if not token or not customer_id or not mac_address or not apk_version:
+#         logger.warning("Missing fields: token=%s, customer_id=%s, mac_address=%s, apk_version=%s", token, customer_id, mac_address, apk_version)
+#         return Response({"error": "Fields 'token', 'customer_id', 'mac_address', and 'apk_version' are required."}, status=400) 
+
+#     try:
+#         # Validate customer
+#         admin_outlet = AdminOutlet.objects.get(customer_id=customer_id)
+#         logger.info("Validated customer: %s", customer_id)
+
+#         # Check if device exists by MAC
+#         device = AndroidAPK.objects.filter(mac_address=mac_address, admin_outlet=admin_outlet).first()
+
+#         if device:
+#             logger.info("Device already exists. Updating token and version for MAC: %s", mac_address)
+#             device.token = token
+#             device.apk_version = apk_version
+#             device.save()
+#         else:
+#             logger.info("New AndroidAPK device. Registering MAC: %s", mac_address)
+#             device = AndroidAPK.objects.create(
+#                 token=token,
+#                 mac_address=mac_address,
+#                 apk_version=apk_version,
+#                 admin_outlet=admin_outlet
+#             )
+
+#         # Check if mapped to a manager
+#         if device.user_profile:
+#             logger.info("Device is already mapped to manager: %s", device.user_profile.name)
+#             return Response({
+#                 "status": "Device is mapped to a manager.",
+#                 "mapped": True,
+#                 "manager_id": device.user_profile.id,
+#                 "manager_name": device.user_profile.name,
+#             }, status=200)
+#         else:
+#             logger.info("Device registered, not mapped to manager.")
+#             return Response({
+#                 "status": "Device is registered but not yet mapped to a manager.",
+#                 "mapped": False,
+#                 "manager_id": None,
+#                 "manager_name": None,
+#             }, status=200)
+
+#     except AdminOutlet.DoesNotExist:
+#         logger.error("Customer ID not found: %s", customer_id)
+#         return Response({"error": "Customer not found."}, status=404)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_android_apk(request):
+    """
+    Registers or updates an Android APK device for a customer.
+    - Validates customer and optional manager_id.
+    - Updates or creates the AndroidAPK record.
+    - Returns mapping status with manager if available.
+    """
     token = request.data.get('token')
-    customer_id = request.data.get('customer_id') 
-    mac_address = request.data.get('mac_address')  
-    apk_version = request.data.get('apk_version') 
+    customer_id = request.data.get('customer_id')
+    mac_address = request.data.get('mac_address')
+    apk_version = request.data.get('apk_version')
+    manager_id = request.data.get('manager_id')
 
-    request_ip = request.META.get('REMOTE_ADDR', 'Unknown')
-    user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
-    logger.info("Android APK registration attempt from IP: %s | User-Agent: %s", request_ip, user_agent)
-    logger.debug("Incoming data — token: %s, customer_id: %s, mac: %s, version: %s", token, customer_id, mac_address, apk_version)
+    logger.debug(
+        "[register_android_apk] Incoming data — token=%s, customer_id=%s, mac=%s, version=%s, manager_id=%s",
+        token, customer_id, mac_address, apk_version, manager_id
+    )
 
+    # === Step 1: Validate Required Fields ===
     if not token or not customer_id or not mac_address or not apk_version:
-        logger.warning("Missing fields: token=%s, customer_id=%s, mac_address=%s, apk_version=%s", token, customer_id, mac_address, apk_version)
-        return Response({"error": "Fields 'token', 'customer_id', 'mac_address', and 'apk_version' are required."}, status=400) 
+        logger.warning(
+            "[register_android_apk] Missing required fields — token=%s, customer_id=%s, mac=%s, apk_version=%s",
+            token, customer_id, mac_address, apk_version
+        )
+        return Response(
+            {"error": "Fields 'token', 'customer_id', 'mac_address', and 'apk_version' are required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     try:
-        # Validate customer
+        # === Step 2: Validate Customer ===
         admin_outlet = AdminOutlet.objects.get(customer_id=customer_id)
-        logger.info("Validated customer: %s", customer_id)
+        logger.info("[register_android_apk] Validated customer_id=%s", customer_id)
 
-        # Check if device exists by MAC
-        device = AndroidAPK.objects.filter(mac_address=mac_address, admin_outlet=admin_outlet).first()
+        user_profile = None
+        # === Step 3: Validate Manager if Provided ===
+        if manager_id:
+            try:
+                user_profile = UserProfile.objects.get(
+                    id=manager_id,
+                    role__in=['outlet_manager', 'admin_manager', 'order_manager'],
+                    admin_outlet=admin_outlet
+                )
+                logger.info("[register_android_apk] Validated manager_id=%s for customer_id=%s", manager_id, customer_id)
+            except UserProfile.DoesNotExist:
+                logger.warning("[register_android_apk] Invalid manager_id=%s for customer_id=%s", manager_id, customer_id)
+                return Response({"error": "Invalid manager ID for this customer."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # === Step 4: Check Device by MAC and Manager ===
+        device = AndroidAPK.objects.filter(
+            mac_address=mac_address,
+            admin_outlet=admin_outlet,
+            user_profile=user_profile if user_profile else None
+        ).first()
         if device:
-            logger.info("Device already exists. Updating token and version for MAC: %s", mac_address)
+            logger.info(
+                "[register_android_apk] Device already exists. Updating token and version — MAC=%s, manager=%s",
+                mac_address, user_profile.name if user_profile else "None"
+            )
             device.token = token
             device.apk_version = apk_version
+            if user_profile:
+                device.user_profile = user_profile
             device.save()
         else:
-            logger.info("New AndroidAPK device. Registering MAC: %s", mac_address)
+            logger.info("[register_android_apk] Registering new device — MAC=%s", mac_address)
             device = AndroidAPK.objects.create(
                 token=token,
                 mac_address=mac_address,
                 apk_version=apk_version,
-                admin_outlet=admin_outlet
+                admin_outlet=admin_outlet,
+                user_profile=user_profile
             )
 
-        # Check if mapped to a manager
+        # === Step 5: Return Mapping Status ===
         if device.user_profile:
-            logger.info("Device is already mapped to manager: %s", device.user_profile.name)
+            logger.info(
+                "[register_android_apk] Device mapped to manager_id=%s (%s)",
+                device.user_profile.id, device.user_profile.name
+            )
             return Response({
                 "status": "Device is mapped to a manager.",
                 "mapped": True,
                 "manager_id": device.user_profile.id,
                 "manager_name": device.user_profile.name,
-            }, status=200)
-        else:
-            logger.info("Device registered, not mapped to manager.")
-            return Response({
-                "status": "Device is registered but not yet mapped to a manager.",
-                "mapped": False,
-                "manager_id": None,
-                "manager_name": None,
-            }, status=200)
+            }, status=status.HTTP_200_OK)
+
+        logger.info("[register_android_apk] Device registered but not mapped to any manager.")
+        return Response({
+            "status": "Device is registered but not yet mapped to a manager.",
+            "mapped": False,
+            "manager_id": None,
+            "manager_name": None,
+        }, status=status.HTTP_200_OK)
 
     except AdminOutlet.DoesNotExist:
-        logger.error("Customer ID not found: %s", customer_id)
-        return Response({"error": "Customer not found."}, status=404)
+        logger.error("[register_android_apk] Customer ID not found: %s", customer_id)
+        return Response({"error": "Customer not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+        logger.exception("[register_android_apk] Unexpected error: %s", str(e))
+        return Response({"error": "Internal server error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def send_firebase_admin_multicast(fcm_tokens, data_payload):
     """
