@@ -3,7 +3,8 @@ from vendors.models import (Vendor,AndroidDevice,
                             Device ,AdvertisementImage,
                             AdvertisementProfile,
                             AdvertisementProfileAssignment,
-                            AdminOutlet,UserProfile)
+                            AdminOutlet,UserProfile,
+                            AndroidAPK)
 from django.contrib.auth.models import User
 from django.db.models import Q
 import json
@@ -349,6 +350,26 @@ class DeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
         fields = ['id', 'serial_no', 'vendor', 'created_at', 'updated_at']
+class ManagerDeviceSerializer(serializers.ModelSerializer):
+    admin_outlet = serializers.CharField(source='admin_outlet.name', read_only=True)
+    user_profile = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AndroidAPK
+        fields = [
+            'id', 'token', 'mac_address', 'apk_version',
+            'admin_outlet', 'user_profile', 'created_at', 'updated_at'
+        ]
+
+    def get_user_profile(self, obj):
+        if obj.user_profile:
+            return {
+                "id": obj.user_profile.id if obj.user_profile else None,
+                "name": obj.user_profile.name if obj.user_profile else None,
+                "role": obj.user_profile.role if obj.user_profile else None
+            }
+        return None
+
 
 class AndroidDeviceSerializer(serializers.ModelSerializer):
     vendor = VendorSerializer(read_only=True)

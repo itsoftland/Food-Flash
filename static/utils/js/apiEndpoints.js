@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
   COMPANY_UPDATE_URL : '/api/company-update/',
   CREATE_USER: '/company/api/create_user/',
   GET_USERS: '/company/api/get_users/',
+  GET_MANAGER_DEVICES:'/company/api/get_manager_devices/'
 
   
   // Add more endpoints here

@@ -10,6 +10,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from itertools import chain
 from operator import attrgetter
+from collections import defaultdict
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
@@ -21,7 +22,8 @@ from vendors.models import (Vendor, Device, AdminOutlet,
                             AndroidDevice,AdvertisementImage,
                             AdvertisementProfileAssignment,
                             AdvertisementProfile,Order,
-                            ArchivedOrder,UserProfile)
+                            ArchivedOrder,UserProfile,
+                            AndroidAPK)
 
 from static.utils.functions.validation import validate_fields
 from static.utils.functions.utils import get_time_ranges,get_filtered_date_range
@@ -38,7 +40,7 @@ from .serializers import (VendorSerializer,
                           DashboardMetricsSerializer,
                           DeviceSerializer,AndroidDeviceSerializer,
                           OrderSerializer,UserProfileCreateSerializer,
-                          UserListDetailSerializer
+                          UserListDetailSerializer,ManagerDeviceSerializer
                           )
 
 logger = logging.getLogger(__name__)
@@ -66,6 +68,10 @@ def create_users(request):
 @login_required
 def user_list(request):
     return render(request, 'company/users/user_list.html')
+
+@login_required
+def manager_devices(request):
+    return render(request, 'company/manager_devices.html')
 
 @login_required
 def keypad_devices(request):
@@ -427,7 +433,7 @@ def create_user(request):
 
     # If validation fails
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-from collections import defaultdict
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_users(request):
@@ -464,6 +470,29 @@ def get_users(request):
         logger.exception("Error retrieving users")
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_manager_devices(request):
+    admin_outlet = getattr(request.user, 'admin_outlet', None)
+    if not admin_outlet:
+        return Response({"error": "AdminOutlet not associated with this user."}, status=404)
+
+    filter_type = request.GET.get('filter', 'all')  # Options: mapped, unmapped, all
+
+    if filter_type == 'mapped':
+        devices = AndroidAPK.objects.filter(admin_outlet=admin_outlet,user_profile__isnull=False)
+    elif filter_type == 'unmapped':
+        devices = AndroidAPK.objects.filter(admin_outlet=admin_outlet, user_profile__isnull=True)
+    else:  # 'all' or invalid filter
+        # Return both mapped (only for this admin_outlet) and unmapped devices
+        devices = AndroidAPK.objects.filter(admin_outlet=admin_outlet)
+
+    serializer = ManagerDeviceSerializer(devices, many=True)
+    return Response({
+        "message": "Manager Devices fetched successfully.",
+        "devices": serializer.data,
+        "count": devices.count(),
+        }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
