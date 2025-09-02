@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const tokenFromQR = urlParams.get('token_no');
     const toggleBtn = document.getElementById("toggleArrowBtn");
     const pageWrapper = document.querySelector(".page-wrapper");
+    const isOpenedFromPush = urlParams.get('from_push');
+    console.log("isOpenedFromPush",isOpenedFromPush);
+    console.log("parameters in url",tokenFromQR,locationId,vendorFromQR);
 
     let isAdVisible = true;
 
@@ -327,7 +330,7 @@ document.addEventListener('DOMContentLoaded', async function() {
      // fallback handler
 
     // Show chat window if token is present
-    if (tokenFromQR) {
+    if (tokenFromQR && !isOpenedFromPush) {
         console.log("Token from QR:", tokenFromQR);
         const permissionStatus = localStorage.getItem("permissionStatus")
 

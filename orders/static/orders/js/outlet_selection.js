@@ -23,6 +23,10 @@
             newUrl.searchParams.set("location_id", locationId);
             newUrl.searchParams.set("vendor_id",hasVendorId);
             newUrl.searchParams.set("token_no", hasTokenNo);
+            // ✅ Preserve from_push if present
+            if (urlParams.has("from_push")) {
+                newUrl.searchParams.set("from_push", urlParams.get("from_push"));
+            }
 
             window.location.replace(newUrl.toString());
         } else {

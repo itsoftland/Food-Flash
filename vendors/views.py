@@ -247,13 +247,21 @@ def register_android_device(request):
 
     # Check vendor mapping
     if hasattr(device, 'vendor') and device.vendor:
-        logger.info("Device mapped to vendor: %s (ID: %s)", device.vendor.name, device.vendor.vendor_id)
+        mqtt_config = get_mqtt_config_for_vendor(device.vendor, device)
+
+        logger.info(
+            "Device mapped to vendor: %s (ID: %s) | MQTT Config: %s",
+            device.vendor.name,
+            device.vendor.vendor_id,
+            json.dumps(mqtt_config)
+        )
+
         return Response({
             "status": "Device is mapped to vendor.",
             "mapped": True,
             "vendor_id": device.vendor.vendor_id,
             "vendor_name": device.vendor.name,
-            "mqtt_config": get_mqtt_config_for_vendor(device.vendor, device)
+            "mqtt_config": mqtt_config
         }, status=status.HTTP_200_OK)
 
     logger.info("Device registered but not mapped to any vendor.")
@@ -409,13 +417,13 @@ def register_android_apk(request):
     )
 
     # === Step 1: Validate Required Fields ===
-    if not token or not customer_id or not mac_address or not apk_version:
+    if not token or not customer_id or not mac_address or not apk_version or not manager_id:
         logger.warning(
-            "[register_android_apk] Missing required fields — token=%s, customer_id=%s, mac=%s, apk_version=%s",
-            token, customer_id, mac_address, apk_version
+            "[register_android_apk] Missing required fields — token=%s, customer_id=%s, mac=%s, apk_version=%s, manager_id=%s",
+            token, customer_id, mac_address, apk_version, manager_id
         )
         return Response(
-            {"error": "Fields 'token', 'customer_id', 'mac_address', and 'apk_version' are required."},
+            {"error": "Fields 'token', 'customer_id', 'mac_address', 'apk_version' and 'manager_id' are required."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
