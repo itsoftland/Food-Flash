@@ -20,3 +20,6 @@ local_settings.py
 
 # Ignore deployment/startup scripts
 start_gunicorn.sh
+
+#workspace
+Food-Flash.code-workspace
